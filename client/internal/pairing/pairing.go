@@ -1,0 +1,183 @@
+// Copyright 2025 Amazon.com Inc
+// Licensed under the Apache License, Version 2.0
+//
+// Pairing manages the TR-12 pairing and authentication flow with the host service.
+package pairing
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/credentials"
+	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/models"
+	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
+)
+
+const maxTimeoutSec = 5
+
+// Pairing manages the pairing process with the host service.
+type Pairing struct {
+	Certs        *credentials.Store
+	DeviceType   string
+	HostID       string
+	PairingURL   string
+	AuthURL      string
+	StartTime    int64
+	PairResponse *models.PairResponseContent
+	AuthResponse *models.AuthenticateResponseContent
+	httpClient   *http.Client
+}
+
+// New creates a new Pairing instance.
+func New(certs *credentials.Store, deviceType, hostID, pairingURL, authURL string) *Pairing {
+	return &Pairing{
+		Certs:      certs,
+		DeviceType: deviceType,
+		HostID:     hostID,
+		PairingURL: pairingURL,
+		AuthURL:    authURL,
+		StartTime:  time.Now().Unix(),
+		httpClient: &http.Client{Timeout: maxTimeoutSec * time.Second},
+	}
+}
+
+// getSuccessData returns the PairSuccessData if available.
+func (p *Pairing) getSuccessData() *tr12models.PairSuccessData {
+	if p.PairResponse == nil || p.PairResponse.Result.Success == nil {
+		return nil
+	}
+	return &p.PairResponse.Result.Success.Success
+}
+
+// IsExpired returns true if the pairing code has expired.
+func (p *Pairing) IsExpired() bool {
+	sd := p.getSuccessData()
+	if sd == nil {
+		return false
+	}
+	elapsed := time.Now().Unix() - p.StartTime
+	return float64(elapsed) > float64(sd.PairingTimeoutSeconds)
+}
+
+// ExpiresIn returns seconds until the pairing code expires.
+func (p *Pairing) ExpiresIn() int {
+	sd := p.getSuccessData()
+	if sd == nil {
+		return 0
+	}
+	remaining := float64(sd.PairingTimeoutSeconds) - float64(time.Now().Unix()-p.StartTime)
+	if remaining < 0 {
+		return 0
+	}
+	return int(remaining)
+}
+
+// GetPairingCode returns the current pairing code.
+func (p *Pairing) GetPairingCode() string {
+	sd := p.getSuccessData()
+	if sd != nil {
+		return sd.PairingCode
+	}
+	return ""
+}
+
+// GetNewPairingCode requests a new pairing code from the host service.
+func (p *Pairing) GetNewPairingCode() error {
+	if err := p.Certs.GenerateKeysAndCSR(); err != nil {
+		return fmt.Errorf("failed to generate keys: %w", err)
+	}
+	reqBody := models.PairRequestContent{
+		DeviceType: p.DeviceType,
+		HostId:     p.HostID,
+		Csr:        p.Certs.CSR,
+		Version:    models.ProtocolVersion,
+	}
+	body, _ := json.Marshal(reqBody)
+	log.Printf("[PAIR] POST %s/pair  body=%s", p.PairingURL, string(body))
+	resp, err := p.httpClient.Post(p.PairingURL+"/pair", "application/json", bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("pairing unable to connect to the service: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("[PAIR] Response status=%d body=%s", resp.StatusCode, string(respBody))
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("pairing API error - StatusCode: %d - Response: %s", resp.StatusCode, string(respBody))
+	}
+	var pairResp models.PairResponseContent
+	if err := json.Unmarshal(respBody, &pairResp); err != nil {
+		return fmt.Errorf("pairing service response was not valid: %w", err)
+	}
+	p.PairResponse = &pairResp
+	p.StartTime = time.Now().Unix()
+
+	// Check for failure
+	if pairResp.Result.Failure != nil {
+		reason := pairResp.Result.Failure.Failure.Reason
+		switch reason {
+		case tr12models.VERSION_NOT_SUPPORTED:
+			return fmt.Errorf("TR-12 version not supported: %s", reason)
+		case tr12models.DEVICE_TYPE_NOT_SUPPORTED:
+			return fmt.Errorf("device type not supported: %s", reason)
+		case tr12models.HOST_ID_MISMATCH:
+			return fmt.Errorf("host ID does not match the host endpoint: %s", reason)
+		default:
+			return fmt.Errorf("unknown pairing failure: %s", reason)
+		}
+	}
+	if pairResp.Result.Success == nil {
+		return fmt.Errorf("unexpected pairing response: no success or failure data")
+	}
+	return nil
+}
+
+// AuthenticatePairingCode polls the auth endpoint. Returns true if claimed and certs written.
+func (p *Pairing) AuthenticatePairingCode() (bool, error) {
+	sd := p.getSuccessData()
+	if sd == nil {
+		return false, fmt.Errorf("no pairing code to authenticate")
+	}
+	reqBody := models.AuthenticateRequestContent{
+		DeviceId:    sd.DeviceId,
+		PairingCode: sd.PairingCode,
+		AccessCode:  sd.AccessCode,
+	}
+	body, _ := json.Marshal(reqBody)
+	log.Printf("[AUTH] POST %s/authenticate  body=%s", p.AuthURL, string(body))
+	resp, err := p.httpClient.Post(p.AuthURL+"/authenticate", "application/json", bytes.NewReader(body))
+	if err != nil {
+		return false, fmt.Errorf("auth unable to connect to the service: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("[AUTH] Response status=%d body=%s", resp.StatusCode, string(respBody))
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("auth API error - StatusCode: %d - Response: %s", resp.StatusCode, string(respBody))
+	}
+	var authResp models.AuthenticateResponseContent
+	if err := json.Unmarshal(respBody, &authResp); err != nil {
+		return false, fmt.Errorf("auth service response was not valid: %w", err)
+	}
+	p.AuthResponse = &authResp
+	log.Printf("[AUTH] Parsed: status=%s mqttUri=%q region=%q hasHostSettings=%v hasCaCert=%v hasDeviceCert=%v",
+		authResp.Status, authResp.GetMqttUri(), authResp.GetRegion(),
+		authResp.HasHostSettings(), authResp.HasCaCert(), authResp.HasDeviceCert())
+
+	switch authResp.Status {
+	case tr12models.STANDBY:
+		return false, nil
+	case tr12models.CLAIMED:
+		log.Printf("[AUTH] Device CLAIMED — writing certs to filesystem for deviceId=%s", sd.DeviceId)
+		if err := p.Certs.WriteToFilesystem(sd.DeviceId, &authResp); err != nil {
+			return false, fmt.Errorf("unable to write certs to disk: %w", err)
+		}
+		return true, nil
+	default:
+		return false, fmt.Errorf("unexpected auth status: %s", authResp.Status)
+	}
+}
