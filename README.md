@@ -28,7 +28,11 @@ Both consume the same **shared TR-12 protocol models** from the `models/` submod
 The TR-12 protocol models live in a git submodule. You must pull them when cloning:
 
 ```bash
+SSH Method: (recommended)
 git clone --recurse-submodules git@github.com:vsf-tv/TR-12-Client-and-Host-Go.git
+
+HTTP Method:
+git clone --recurse-submodules https://github.com/vsf-tv/TR-12-Client-and-Host-Go.git
 ```
 
 If you already cloned without `--recurse-submodules`:
