@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // CddSdk is the core TR-12 Client Device Discovery SDK engine.
 // It manages the state machine, MQTT connection, pairing, authentication,
@@ -18,6 +27,7 @@ import (
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/pairing"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/thumbnails"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/utils"
+	cddsdkgo "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
 	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
 )
 
@@ -36,8 +46,8 @@ type CddSdk struct {
 	state              string
 	hostID             string
 	registration       map[string]interface{}
-	configPayload      map[string]interface{} // raw MQTT config payload
-	configUpdateID     string                 // update ID for config
+	configPayload      *cddsdkgo.DeviceConfiguration // deserialized MQTT config payload
+	configUpdateID     string                         // update ID for config
 	updateID           *utils.UpdateID
 	statusThrottle     *utils.Throttle
 	configThrottle     *utils.Throttle
@@ -105,17 +115,23 @@ func (s *CddSdk) initThrottles(intervalSeconds int) {
 }
 
 func (s *CddSdk) initializeHost(registration map[string]interface{}, hostID string) error {
+	s.logger.Infof("initializeHost: loading host config for %s from basePath=%s", hostID, s.basePath)
 	s.registration = registration
 	hostConfig, err := utils.GetHostConfiguration(hostID, s.basePath)
 	if err != nil {
+		s.logger.Errorf("initializeHost: failed to load host config: %v", err)
 		return err
 	}
+	s.logger.Infof("initializeHost: host config loaded. serviceId=%s pairingUrl=%s authUrl=%s", hostConfig.ServiceId, hostConfig.PairingUrl, hostConfig.AuthUrl)
 	s.certs, err = credentials.NewStore(s.certsPath, s.deviceLocalID, hostID)
 	if err != nil {
+		s.logger.Errorf("initializeHost: failed to create credential store: %v", err)
 		return err
 	}
+	s.logger.Infof("initializeHost: credential store created at %s", s.certs.Dir)
 	s.pairer = pairing.New(s.certs, s.deviceType, hostConfig.ServiceId, hostConfig.PairingUrl, hostConfig.AuthUrl)
 	s.hostID = hostID
+	s.logger.Infof("initializeHost: complete for host %s", hostID)
 	return nil
 }
 

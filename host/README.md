@@ -24,6 +24,20 @@ This is the cloud-side counterpart to the [Go CDD SDK](../client/). It replaces 
                                         └─────────────────────────────────────┘
 ```
 
+## Service ID and Device Configuration
+
+The `--service-id` flag on the host **must match** the `serviceId` field in the device's host configuration file (`host_configuration/<host_id>.json`). The device sends this value as `hostId` in the `/pair` request, and the host rejects it with `HOST_ID_MISMATCH` if they don't match.
+
+Example — host started with `--service-id tr12-host` requires the device config to have:
+```json
+{
+  "serviceId": "tr12-host",
+  ...
+}
+```
+
+The default value for both is `tr12-host`, so they match out of the box. If you change one, change the other.
+
 ## Requirements
 
 - Go 1.22 or newer
@@ -32,10 +46,20 @@ This is the cloud-side counterpart to the [Go CDD SDK](../client/). It replaces 
 
 ```bash
 cd host
-go build -o tr12-host ./cmd/tr12-host/
+go build -o bin/tr12-host ./cmd/tr12-host/
 ```
 
 Produces a single ~18 MB static binary. No CGO, no external dependencies.
+
+### Cross-Compilation
+
+```bash
+# Linux x86_64 (EC2, server)
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/tr12-host-linux-amd64 ./cmd/tr12-host/
+
+# Linux ARM64 (Raspberry Pi, ARM servers)
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/tr12-host-linux-arm64 ./cmd/tr12-host/
+```
 
 ## Quick Start
 
@@ -43,13 +67,25 @@ Produces a single ~18 MB static binary. No CGO, no external dependencies.
 # Start the service (first run auto-generates CA, server cert, and JWT secret)
 ./tr12-host --host-address 192.168.1.100
 
-# Or with all options
+# With MQTT on port 443 (firewall-friendly, requires cap_net_bind_service or root)
+sudo setcap 'cap_net_bind_service=+ep' ./tr12-host
+./tr12-host --host-address 192.168.1.100 --mqtt-port 443
+
+# With HTTPS using a Let's Encrypt certificate
+./tr12-host \
+  --host-address mydomain.example.com \
+  --mqtt-port 443 \
+  --https \
+  --tls-cert /etc/letsencrypt/live/mydomain.example.com/fullchain.pem \
+  --tls-key /etc/letsencrypt/live/mydomain.example.com/privkey.pem
+
+# All options
 ./tr12-host \
   --host-address 192.168.1.100 \
   --http-port 8080 \
   --mqtt-port 8883 \
   --db-path ./tr12-host.db \
-  --service-id my-host \
+  --service-id tr12-host \
   --service-name "My TR-12 Host" \
   --cert-expiry-days 30 \
   --rotation-interval-days 30 \
@@ -76,13 +112,16 @@ Subsequent runs load all credentials from the database.
 | `--http-port` | No | `8080` | HTTP API port |
 | `--mqtt-port` | No | `8883` | MQTT broker TLS port |
 | `--db-path` | No | `./tr12-host.db` | SQLite database file path |
-| `--service-id` | No | `tr12-host` | Service identifier |
+| `--service-id` | No | `tr12-host` | Service identifier — **must match `serviceId` in the device's host config file** |
 | `--service-name` | No | `TR-12 Host Service` | Human-readable name |
 | `--cert-expiry-days` | No | `30` | Device certificate validity (days) |
 | `--rotation-interval-days` | No | `30` | Auto-rotation interval (days) |
 | `--pairing-timeout` | No | `1800` | Pairing code timeout (seconds) |
 | `--jwt-expiry-hours` | No | `24` | JWT token expiration (hours) |
 | `--log-level` | No | `info` | `debug`, `info`, `warn`, `error` |
+| `--https` | No | `false` | Enable HTTPS for the HTTP API |
+| `--tls-cert` | No | — | Path to TLS certificate file (e.g. Let's Encrypt `fullchain.pem`) |
+| `--tls-key` | No | — | Path to TLS private key file (e.g. Let's Encrypt `privkey.pem`) |
 
 ## API Reference
 
@@ -224,10 +263,15 @@ After a device calls `/pair` and receives a pairing code, claim it into your acc
 curl -X PUT http://localhost:8080/authorize/A3B7K9 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"expiration_days": 730}'
+  -d '{
+    "expiration_days": 730,
+    "device_name": "Studio Encoder 1",
+    "location_name": "New York Studio",
+    "rotation_interval_days": 365
+  }'
 ```
 
-The `expiration_days` parameter is optional (default: 730 / 2 years). This sets the device's registration lifetime.
+All fields are optional. Defaults: `expiration_days=730`, `rotation_interval_days=365`. `rotation_interval_days` must be between 30 and 1825.
 
 #### List Devices
 
@@ -283,37 +327,56 @@ Response:
 
 #### Update Device Configuration
 
-Push a desired configuration to the device via MQTT:
+Push a desired configuration to the device via MQTT, and optionally update device metadata. Both `metadata` and `deviceConfiguration` are optional — include either or both:
 
 ```bash
 curl -X PUT http://localhost:8080/device/001XI02IJ2FtSIirk01 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "channels": [
-      {
-        "id": "SDI-1",
-        "state": "ACTIVE",
-        "settings": {
-          "simpleSettings": [
-            {"key": "resolution", "value": "1080p"}
-          ]
-        },
-        "connection": {
-          "transportProtocol": {
-            "srtCaller": {
-              "ip": "10.0.0.50",
-              "port": 9000,
-              "minimumLatencyMilliseconds": 3000
+    "metadata": {
+      "name": "Studio Encoder 1",
+      "location": "New York Studio",
+      "rotation_interval_days": 365
+    },
+    "deviceConfiguration": {
+      "simpleSettings": [
+        {"key": "sync_clock_source", "value": "NTP"}
+      ],
+      "channels": [
+        {
+          "id": "CH01",
+          "state": "ACTIVE",
+          "settings": {
+            "simpleSettings": [
+              {"key": "RS01", "value": "1920x1080"},
+              {"key": "MB01", "value": "10000"}
+            ]
+          },
+          "connection": {
+            "transportProtocol": {
+              "srtCaller": {
+                "ip": "10.0.0.50",
+                "port": 9000,
+                "minimumLatencyMilliseconds": 3000
+              }
             }
           }
         }
-      }
-    ]
+      ]
+    }
   }'
 ```
 
-The service validates the configuration against the device's registration before publishing. Invalid channel IDs, setting keys, or protocol types are rejected with a descriptive 400 error.
+To use a profile instead of individual settings for a channel:
+
+```bash
+"settings": {
+  "profile": { "id": "h264c" }
+}
+```
+
+The service validates the configuration against the device's registration before publishing. Invalid channel IDs, setting keys, profile IDs, or protocol types are rejected with a descriptive 400 error.
 
 #### Deprovision Device
 

@@ -1,7 +1,20 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package api
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -53,9 +66,30 @@ func (h *DeviceHandlers) UpdateConfiguration(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "code": 400})
 		return
 	}
-	if err := h.deviceSvc.UpdateConfiguration(deviceID, accountID, body); err != nil {
-		writeServiceError(c, err)
-		return
+
+	// Try to parse as the new structured request first
+	var req models.UpdateDeviceRequest
+	if jsonErr := json.Unmarshal(body, &req); jsonErr == nil && (req.Metadata != nil || req.DeviceConfiguration != nil) {
+		// New format: { metadata: {...}, deviceConfiguration: {...} }
+		if req.Metadata != nil {
+			if err := h.deviceSvc.UpdateDeviceMetadata(deviceID, accountID, req.Metadata); err != nil {
+				writeServiceError(c, err)
+				return
+			}
+		}
+		if req.DeviceConfiguration != nil {
+			cfgBytes, _ := json.Marshal(req.DeviceConfiguration)
+			if err := h.deviceSvc.UpdateConfiguration(deviceID, accountID, cfgBytes); err != nil {
+				writeServiceError(c, err)
+				return
+			}
+		}
+	} else {
+		// Legacy format: raw DeviceConfiguration JSON
+		if err := h.deviceSvc.UpdateConfiguration(deviceID, accountID, body); err != nil {
+			writeServiceError(c, err)
+			return
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"device_id": deviceID, "message": "Device updated", "error": ""})
 }
@@ -66,7 +100,7 @@ func (h *DeviceHandlers) Claim(c *gin.Context) {
 	pairingCode := c.Param("pairingCode")
 	var req models.ClaimRequest
 	c.ShouldBindJSON(&req) // optional body
-	if err := h.deviceSvc.Claim(pairingCode, accountID, req.ExpirationDays); err != nil {
+	if err := h.deviceSvc.Claim(pairingCode, accountID, req.ExpirationDays, req.LocationName, req.DeviceName, req.RotationIntervalDays); err != nil {
 		writeServiceError(c, err)
 		return
 	}

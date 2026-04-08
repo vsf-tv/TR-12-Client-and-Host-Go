@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // MQTT connection, subscription, and callback handling for the CDD SDK.
 package sdk
@@ -16,6 +25,7 @@ import (
 
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/models"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/utils"
+	cddsdkgo "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
 	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
 )
 
@@ -37,9 +47,9 @@ func parseBrokerAddress(raw string) string {
 }
 
 // startConnect attempts an MQTT connection once certs are available.
-func (s *CddSdk) startConnect() (models.ConnectResponseContent, error) {
+func (s *CddSdk) startConnect() (cddsdkgo.ConnectResponseContent, error) {
 	if s.is(models.StateReconnecting, models.StateConnected) {
-		return models.ConnectResponseContent{
+		return cddsdkgo.ConnectResponseContent{
 			Success:  true,
 			State:    s.state,
 			Message:  "Already connected or automatically re-connecting",
@@ -48,7 +58,7 @@ func (s *CddSdk) startConnect() (models.ConnectResponseContent, error) {
 		}, nil
 	}
 	if s.mqttClient != nil && s.state == models.StateConnecting {
-		return models.ConnectResponseContent{
+		return cddsdkgo.ConnectResponseContent{
 			Success: true, State: s.state, Message: "Connecting",
 		}, nil
 	}
@@ -63,7 +73,7 @@ func (s *CddSdk) startConnect() (models.ConnectResponseContent, error) {
 	)
 	if err != nil {
 		s.reset()
-		return models.ConnectResponseContent{
+		return cddsdkgo.ConnectResponseContent{
 			Success: false, State: s.state,
 			Message: "Unable to connect at this time. Check network connection.",
 			Error:   utils.ExceptionToErrorDetails(fmt.Errorf("SSL setup error: %w", err)),
@@ -72,14 +82,14 @@ func (s *CddSdk) startConnect() (models.ConnectResponseContent, error) {
 
 	if err := s.connectMQTT(tlsConfig); err != nil {
 		s.reset()
-		return models.ConnectResponseContent{
+		return cddsdkgo.ConnectResponseContent{
 			Success: false, State: s.state,
 			Message: "Unable to connect at this time. Check network connection.",
 			Error:   utils.ExceptionToErrorDetails(fmt.Errorf("connection error: %w", err)),
 		}, nil
 	}
 
-	return models.ConnectResponseContent{
+	return cddsdkgo.ConnectResponseContent{
 		Success:  true,
 		State:    s.state,
 		Message:  "Connection started",
@@ -223,18 +233,44 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 	s.logger.Infof("****** CONFIG UPDATE received on topic=%s payloadLen=%d", msg.Topic(), len(msg.Payload()))
 	s.logger.Infof("****** CONFIG UPDATE payload: %s", string(msg.Payload()))
 
-	var config map[string]interface{}
-	if err := json.Unmarshal(msg.Payload(), &config); err != nil {
-		s.logger.Errorf("Could not parse configuration update: %v", err)
+	// Extract updateId first (it's an envelope field, not part of DeviceConfiguration)
+	var envelope map[string]json.RawMessage
+	if err := json.Unmarshal(msg.Payload(), &envelope); err != nil {
+		s.logger.Errorf("Could not parse configuration update envelope: %v", err)
 		return
 	}
-	// Extract and remove updateId — it's a host-service envelope field, not part of the device config
-	if uid, ok := config["updateId"]; ok {
-		s.logger.Infof("****** CONFIG UPDATE updateId=%v", uid)
-		delete(config, "updateId")
+
+	var updateID string
+	if rawUID, ok := envelope["updateId"]; ok {
+		// updateId may be a number or string from the host service
+		var numID float64
+		var strID string
+		if err := json.Unmarshal(rawUID, &numID); err == nil {
+			updateID = fmt.Sprintf("%d", int(numID))
+		} else if err := json.Unmarshal(rawUID, &strID); err == nil {
+			updateID = strID
+		}
+		s.logger.Infof("****** CONFIG UPDATE updateId=%s", updateID)
 	}
-	s.configPayload = config
-	s.configUpdateID = s.updateID.Get()
+	if updateID == "" {
+		updateID = s.updateID.Get()
+	}
+
+	// Deserialize the payload (without updateId) into DeviceConfiguration
+	delete(envelope, "updateId")
+	payloadBytes, err := json.Marshal(envelope)
+	if err != nil {
+		s.logger.Errorf("Could not re-marshal config payload: %v", err)
+		return
+	}
+	var deviceConfig cddsdkgo.DeviceConfiguration
+	if err := json.Unmarshal(payloadBytes, &deviceConfig); err != nil {
+		s.logger.Errorf("Could not deserialize DeviceConfiguration: %v", err)
+		return
+	}
+
+	s.configPayload = &deviceConfig
+	s.configUpdateID = updateID
 	s.logger.Infof("****** CONFIG UPDATE stored, configUpdateID=%s", s.configUpdateID)
 }
 

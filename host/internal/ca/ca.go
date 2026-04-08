@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package ca
 
 import (
@@ -70,6 +82,42 @@ func New(store *db.Store, hostAddress string) (*CA, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse server TLS: %w", err)
 	}
+
+	// Regenerate server cert if the host address has changed
+	serverCert, parseErr := x509.ParseCertificate(c.ServerTLS.Certificate[0])
+	needsRegen := parseErr != nil
+	if !needsRegen {
+		if ip := net.ParseIP(hostAddress); ip != nil {
+			found := false
+			for _, certIP := range serverCert.IPAddresses {
+				if certIP.Equal(ip) { found = true; break }
+			}
+			needsRegen = !found
+		} else {
+			found := false
+			for _, dns := range serverCert.DNSNames {
+				if dns == hostAddress { found = true; break }
+			}
+			needsRegen = !found
+		}
+	}
+	if needsRegen {
+		fmt.Printf("Host address changed to %s — regenerating server certificate\n", hostAddress)
+		newServerCertPEM, newServerKeyPEM, err := c.generateServerCert(hostAddress)
+		if err != nil {
+			return nil, fmt.Errorf("regenerate server cert: %w", err)
+		}
+		if err := store.SetConfig("server_cert_pem", newServerCertPEM); err != nil {
+			return nil, fmt.Errorf("save server cert: %w", err)
+		}
+		if err := store.SetConfig("server_key_pem", newServerKeyPEM); err != nil {
+			return nil, fmt.Errorf("save server key: %w", err)
+		}
+		c.ServerTLS, err = tls.X509KeyPair(newServerCertPEM, newServerKeyPEM)
+		if err != nil {
+			return nil, fmt.Errorf("parse new server TLS: %w", err)
+		}
+	}
 	return c, nil
 }
 
@@ -135,18 +183,23 @@ func (c *CA) generateServerCert(hostAddress string) (certPEM, keyPEM []byte, err
 	if err != nil {
 		return nil, nil, err
 	}
+	// Use a fixed service name in the SAN — not the transient IP.
+	// The device validates against the CA cert (mutual TLS), so hostname
+	// verification is redundant and breaks on IP changes.
 	template := &x509.Certificate{
 		SerialNumber: big.NewInt(2),
-		Subject:      pkix.Name{CommonName: hostAddress, Organization: []string{"TR-12"}},
+		Subject:      pkix.Name{CommonName: "tr12-host", Organization: []string{"TR-12"}},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().Add(365 * 24 * time.Hour),
 		KeyUsage:     x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		DNSNames:     []string{"tr12-host", "localhost"},
 	}
+	// Also add the current IP so standard TLS clients work without InsecureSkipVerify
 	if ip := net.ParseIP(hostAddress); ip != nil {
 		template.IPAddresses = []net.IP{ip}
 	} else {
-		template.DNSNames = []string{hostAddress}
+		template.DNSNames = append(template.DNSNames, hostAddress)
 	}
 	certDER, err := x509.CreateCertificate(rand.Reader, template, c.CACert, &key.PublicKey, c.CAKey)
 	if err != nil {
@@ -199,6 +252,14 @@ func (c *CA) TLSConfig() *tls.Config {
 		Certificates: []tls.Certificate{c.ServerTLS},
 		ClientAuth:   tls.RequireAnyClientCert,
 		ClientCAs:    caPool,
+	}
+}
+
+// HTTPTLSConfig returns a TLS config for the HTTP server — no client cert required.
+func (c *CA) HTTPTLSConfig() *tls.Config {
+	return &tls.Config{
+		Certificates: []tls.Certificate{c.ServerTLS},
+		MinVersion:   tls.VersionTLS12,
 	}
 }
 

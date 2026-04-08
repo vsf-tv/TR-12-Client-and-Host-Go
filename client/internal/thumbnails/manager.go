@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // ThumbnailManager handles periodic upload of device preview images
 // based on subscription requests from the host service.
@@ -50,7 +59,7 @@ func (u *Uploader) run() {
 	period := int(u.request.GetPeriod())
 	for {
 		now := time.Now().Unix()
-		if float64(now) >= float64(u.request.GetExpires()) {
+		if now >= int64(u.request.GetExpires()) {
 			u.logger.Info("Thumbnails: Subscription Expired.")
 			return
 		}
@@ -71,7 +80,7 @@ func (u *Uploader) run() {
 }
 
 func validateRequestParams(req *tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) bool {
-	if float64(time.Now().Unix()) >= float64(req.GetExpires()) {
+	if time.Now().Unix() >= int64(req.GetExpires()) {
 		logger.Info("Thumbnail: Request expired.")
 		return false
 	}
@@ -122,7 +131,6 @@ func (m *Manager) UpdateThumbnail(sub *models.RequestThumbnailRequestContent) er
 	for key, req := range sub.Requests {
 		if existing, ok := m.uploaders[key]; ok {
 			existing.stop()
-			time.Sleep(200 * time.Millisecond)
 		}
 		if !validateRequestParams(&req, m.logger) {
 			continue

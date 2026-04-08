@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package db
 
 import (
@@ -76,7 +88,10 @@ CREATE TABLE IF NOT EXISTS devices (
     pairing_code           TEXT,
     access_code            TEXT,
     pairing_expires_at     TEXT,
-    config_update_id       INTEGER NOT NULL DEFAULT 0
+    config_update_id       INTEGER NOT NULL DEFAULT 0,
+    location_name          TEXT,
+    device_name            TEXT,
+    rotation_interval_days INTEGER NOT NULL DEFAULT 365
 );
 
 CREATE TABLE IF NOT EXISTS thumbnails (
@@ -99,6 +114,39 @@ CREATE TABLE IF NOT EXISTS device_logs (
 CREATE INDEX IF NOT EXISTS idx_devices_account ON devices(account_id);
 CREATE INDEX IF NOT EXISTS idx_devices_pairing_code ON devices(pairing_code);
 `
-	_, err := s.DB.Exec(schema)
-	return err
+	if _, err := s.DB.Exec(schema); err != nil {
+		return err
+	}
+	// Additive migrations for existing databases
+	migrations := []string{
+		`ALTER TABLE devices ADD COLUMN location_name TEXT`,
+		`ALTER TABLE devices ADD COLUMN device_name TEXT`,
+		`ALTER TABLE devices ADD COLUMN rotation_interval_days INTEGER NOT NULL DEFAULT 365`,
+	}
+	for _, m := range migrations {
+		if _, err := s.DB.Exec(m); err != nil {
+			// Ignore "duplicate column" errors — column already exists
+			if !isDuplicateColumnError(err) {
+				return fmt.Errorf("migration failed: %s: %w", m, err)
+			}
+		}
+	}
+	return nil
+}
+
+func isDuplicateColumnError(err error) bool {
+	return err != nil && (contains(err.Error(), "duplicate column") || contains(err.Error(), "already exists"))
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsStr(s, substr))
+}
+
+func containsStr(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
 }

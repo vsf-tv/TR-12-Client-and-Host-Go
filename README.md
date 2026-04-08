@@ -46,14 +46,14 @@ A `go.work` file at the repo root links all three Go modules (client, host, mode
 ```bash
 # CDD SDK (device-side daemon)
 cd client
-go build -o cdd-sdk ./cmd/cdd-sdk
+go build -o bin/cdd-sdk ./cmd/cdd-sdk
 
 # Application Reference Design (simulated encoder)
-go build -o ard ./cmd/ard
+go build -o bin/ard ./cmd/application_reference_design
 
 # Host Service
 cd ../host
-go build -o tr12-host ./cmd/tr12-host
+go build -o bin/tr12-host ./cmd/tr12-host
 ```
 
 ## Quick Start — Running Locally
@@ -64,7 +64,7 @@ You need three terminals for the running processes, plus a way to interact with 
 
 ```bash
 cd host
-./tr12-host --host-address 127.0.0.1 --http-port 8080 --mqtt-port 8883
+./bin/tr12-host --host-address 127.0.0.1 --http-port 8080 --mqtt-port 8883
 ```
 
 On first run this auto-generates a CA, server cert, JWT secret, and SQLite database.
@@ -75,15 +75,14 @@ On first run this auto-generates a CA, server cert, JWT secret, and SQLite datab
 export CERTS=~/TR-12-Certs
 mkdir -p $CERTS
 cd client
-./cdd-sdk --internal_device_id test001 --certs_path $CERTS \
-  --log_path /tmp/sdk-logs --ip 127.0.0.1 --port 8603 --device_type SOURCE
+./bin/cdd-sdk --internal_device_id test001 --certs_path $CERTS --log_path /tmp/sdk-logs --ip 127.0.0.1 --port 8603 --device_type SOURCE
 ```
 
 ### Terminal 3 — ARD (simulated device application)
 
 ```bash
 cd client
-./ard --host_id local_go_host
+./bin/ard --host_id local_go_host
 ```
 
 The ARD will print a pairing code, e.g. `Device is not paired. Pairing Code: A3B7K9 Expires in: 1800s.`
@@ -210,12 +209,12 @@ The `-tags integration` flag is required; without it the tests are skipped. Typi
 TR-12-Client-and-Host-Go/
 ├── client/                          # Device-side SDK + ARD
 │   ├── cmd/cdd-sdk/                 #   SDK entry point
-│   ├── cmd/ard/                     #   ARD entry point
+│   ├── cmd/application_reference_design/                     #   ARD entry point
 │   ├── internal/                    #   SDK internals (pairing, MQTT, creds, etc.)
 │   ├── pkg/cddmodels/              #   CDD SDK protocol models (generated)
 │   ├── host_configuration/          #   Host config JSON files
 │   ├── payloads/                    #   Sample registration/config payloads
-│   ├── application_reference/       #   Sample thumbnail images for ARD
+│   │   └── thumbnails/       #   Sample thumbnail images for ARD
 │   └── go.mod
 ├── host/                            # Host-side service
 │   ├── cmd/tr12-host/               #   Entry point

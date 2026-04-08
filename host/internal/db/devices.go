@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package db
 
 import (
@@ -32,17 +44,20 @@ func (s *Store) GetDevice(deviceID string) (*models.Device, error) {
 	var lastSeen, sourceIP, regExpires sql.NullString
 	var currentCert, previousCert, certExpires, prevCertExpires, lastRotation sql.NullString
 	var csrPEM, pairingCode, accessCode, pairingExpires sql.NullString
+	var locationName, deviceName sql.NullString
 	err := s.DB.QueryRow(`SELECT
 		device_id, account_id, device_type, state, registration, desired_config, actual_config, status,
 		online, last_seen, source_ip, paired_at, registration_expires_at,
 		current_cert_pem, previous_cert_pem, cert_expires_at, prev_cert_expires_at, last_rotation_at,
-		csr_pem, pairing_code, access_code, pairing_expires_at, config_update_id
+		csr_pem, pairing_code, access_code, pairing_expires_at, config_update_id,
+		COALESCE(location_name, ''), COALESCE(device_name, '')
 		FROM devices WHERE device_id = ?`, deviceID).Scan(
 		&d.DeviceID, &d.AccountID, &d.DeviceType, &d.State,
 		&reg, &desCfg, &actCfg, &status,
 		&online, &lastSeen, &sourceIP, &d.PairedAt, &regExpires,
 		&currentCert, &previousCert, &certExpires, &prevCertExpires, &lastRotation,
 		&csrPEM, &pairingCode, &accessCode, &pairingExpires, &d.ConfigUpdateID,
+		&locationName, &deviceName,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -67,6 +82,8 @@ func (s *Store) GetDevice(deviceID string) (*models.Device, error) {
 	d.PairingCode = nullStr(pairingCode)
 	d.AccessCode = nullStr(accessCode)
 	d.PairingExpiresAt = nullStr(pairingExpires)
+	d.LocationName = nullStr(locationName)
+	d.DeviceName = nullStr(deviceName)
 	return d, nil
 }
 
@@ -78,17 +95,20 @@ func (s *Store) GetDeviceByPairingCode(code string) (*models.Device, error) {
 	var lastSeen, sourceIP, regExpires sql.NullString
 	var currentCert, previousCert, certExpires, prevCertExpires, lastRotation sql.NullString
 	var csrPEM, pairingCode, accessCode, pairingExpires sql.NullString
+	var locationName, deviceName sql.NullString
 	err := s.DB.QueryRow(`SELECT
 		device_id, account_id, device_type, state, registration, desired_config, actual_config, status,
 		online, last_seen, source_ip, paired_at, registration_expires_at,
 		current_cert_pem, previous_cert_pem, cert_expires_at, prev_cert_expires_at, last_rotation_at,
-		csr_pem, pairing_code, access_code, pairing_expires_at, config_update_id
+		csr_pem, pairing_code, access_code, pairing_expires_at, config_update_id,
+		COALESCE(location_name, ''), COALESCE(device_name, '')
 		FROM devices WHERE pairing_code = ?`, code).Scan(
 		&d.DeviceID, &d.AccountID, &d.DeviceType, &d.State,
 		&reg, &desCfg, &actCfg, &status,
 		&online, &lastSeen, &sourceIP, &d.PairedAt, &regExpires,
 		&currentCert, &previousCert, &certExpires, &prevCertExpires, &lastRotation,
 		&csrPEM, &pairingCode, &accessCode, &pairingExpires, &d.ConfigUpdateID,
+		&locationName, &deviceName,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -113,13 +133,16 @@ func (s *Store) GetDeviceByPairingCode(code string) (*models.Device, error) {
 	d.PairingCode = nullStr(pairingCode)
 	d.AccessCode = nullStr(accessCode)
 	d.PairingExpiresAt = nullStr(pairingExpires)
+	d.LocationName = nullStr(locationName)
+	d.DeviceName = nullStr(deviceName)
 	return d, nil
 }
 
 // ListDevicesByAccount returns all devices for an account.
 func (s *Store) ListDevicesByAccount(accountID string) ([]*models.Device, error) {
 	rows, err := s.DB.Query(`SELECT
-		device_id, account_id, device_type, state, online, last_seen, paired_at, cert_expires_at
+		device_id, account_id, device_type, state, online, last_seen, paired_at, cert_expires_at,
+		COALESCE(location_name, ''), COALESCE(device_name, '')
 		FROM devices WHERE account_id = ? ORDER BY paired_at DESC`, accountID)
 	if err != nil {
 		return nil, err
@@ -130,7 +153,7 @@ func (s *Store) ListDevicesByAccount(accountID string) ([]*models.Device, error)
 		d := &models.Device{}
 		var online int
 		var lastSeen, certExpires sql.NullString
-		if err := rows.Scan(&d.DeviceID, &d.AccountID, &d.DeviceType, &d.State, &online, &lastSeen, &d.PairedAt, &certExpires); err != nil {
+		if err := rows.Scan(&d.DeviceID, &d.AccountID, &d.DeviceType, &d.State, &online, &lastSeen, &d.PairedAt, &certExpires, &d.LocationName, &d.DeviceName); err != nil {
 			return nil, err
 		}
 		d.Online = online != 0
@@ -139,6 +162,13 @@ func (s *Store) ListDevicesByAccount(accountID string) ([]*models.Device, error)
 		devices = append(devices, d)
 	}
 	return devices, rows.Err()
+}
+
+// UpdateDeviceMetadata updates the editable metadata fields.
+func (s *Store) UpdateDeviceMetadata(deviceID, name, location string, rotationIntervalDays int) error {
+	_, err := s.DB.Exec(`UPDATE devices SET device_name = ?, location_name = ?, rotation_interval_days = ? WHERE device_id = ?`,
+		name, location, rotationIntervalDays, deviceID)
+	return err
 }
 
 // UpdateDeviceState sets the device state and optionally clears config/status fields.
@@ -154,13 +184,13 @@ func (s *Store) UpdateDeviceState(deviceID, state string, clearData bool) error 
 	return err
 }
 
-// ClaimDevice marks a device as claimed by an account.
-// Pairing fields are preserved so the SDK can complete its final /authenticate poll.
-func (s *Store) ClaimDevice(deviceID, accountID, registrationExpiresAt string) error {
+// ClaimDevice marks a device as claimed by an account with optional metadata.
+func (s *Store) ClaimDevice(deviceID, accountID, registrationExpiresAt, locationName, deviceName string, rotationIntervalDays int) error {
 	_, err := s.DB.Exec(`UPDATE devices SET
-		account_id = ?, state = 'ACTIVE', registration_expires_at = ?
+		account_id = ?, state = 'ACTIVE', registration_expires_at = ?,
+		location_name = ?, device_name = ?, rotation_interval_days = ?
 		WHERE device_id = ?`,
-		accountID, registrationExpiresAt, deviceID,
+		accountID, registrationExpiresAt, locationName, deviceName, rotationIntervalDays, deviceID,
 	)
 	return err
 }

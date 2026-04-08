@@ -267,3 +267,79 @@ func TestDeprovision(t *testing.T) {
 		t.Fatal("expected directory to be removed after deprovision")
 	}
 }
+
+func TestRotateCerts_SameCertNewURI(t *testing.T) {
+	// Cert unchanged but URI changes — should still return updated=true
+	// so the SDK reconnects with the new broker address.
+	dir := t.TempDir()
+	s, _ := NewStore(dir, "dev1", "host1")
+	s.PrivKey = "key"
+
+	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
+	auth := tr12models.NewAuthenticateResponseContent(tr12models.CLAIMED)
+	auth.SetCaCert("ca")
+	auth.SetDeviceCert("same-cert")
+	auth.SetMqttUri("tls://old:8883")
+	auth.SetRegion("local")
+	auth.SetHostSettings(*hs)
+	s.WriteToFilesystem("dev1", auth)
+
+	rotate := &tr12models.RotateCertificatesRequestContent{
+		MqttUri:    "tls://new:8883", // URI changed
+		DeviceCert: "same-cert",      // cert unchanged
+		Region:     "local",
+	}
+	updated, err := s.RotateCerts(rotate)
+	if err != nil {
+		t.Fatalf("RotateCerts: %v", err)
+	}
+	if !updated {
+		t.Fatal("expected updated=true when URI changes even if cert is same")
+	}
+	// Cert file should be unchanged
+	data, _ := os.ReadFile(s.DeviceCertFile)
+	if string(data) != "same-cert" {
+		t.Fatalf("cert file should not change, got %q", string(data))
+	}
+	// URI should be updated in connection_settings
+	csData, _ := os.ReadFile(s.ConnSettingsFile)
+	var cs ConnectionSettings
+	json.Unmarshal(csData, &cs)
+	if cs.URI != "tls://new:8883" {
+		t.Fatalf("expected updated URI tls://new:8883, got %q", cs.URI)
+	}
+}
+
+func TestRotateCerts_NilConnSettings_URINotUpdated(t *testing.T) {
+	// If ConnSettings is nil (e.g. connection_settings file was deleted),
+	// the URI update is skipped but the cert is still updated.
+	// This documents the known behavior — not a crash, but URI stays stale.
+	dir := t.TempDir()
+	s, _ := NewStore(dir, "dev1", "host1")
+	s.PrivKey = "key"
+
+	// Write only the cert file, leave ConnSettings nil
+	os.WriteFile(s.DeviceCertFile, []byte("old-cert"), 0600)
+
+	rotate := &tr12models.RotateCertificatesRequestContent{
+		MqttUri:    "tls://new:8883",
+		DeviceCert: "new-cert",
+		Region:     "local",
+	}
+	updated, err := s.RotateCerts(rotate)
+	if err != nil {
+		t.Fatalf("RotateCerts: %v", err)
+	}
+	if !updated {
+		t.Fatal("expected updated=true (cert changed)")
+	}
+	// Cert updated
+	data, _ := os.ReadFile(s.DeviceCertFile)
+	if string(data) != "new-cert" {
+		t.Fatalf("expected new-cert, got %q", string(data))
+	}
+	// ConnSettings still nil — URI was not persisted
+	if s.ConnSettings != nil {
+		t.Fatal("expected ConnSettings to remain nil")
+	}
+}

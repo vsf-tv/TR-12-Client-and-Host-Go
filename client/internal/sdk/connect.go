@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package sdk
 
 import (
@@ -10,44 +19,48 @@ import (
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/credentials"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/models"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/utils"
+	cddsdkgo "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
 	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
 )
 
 // Connect implements the TR-12 connect state machine.
-func (s *CddSdk) Connect(registration map[string]interface{}, hostID string) models.ConnectResponseContent {
+func (s *CddSdk) Connect(registration map[string]interface{}, hostID string) cddsdkgo.ConnectResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
-	s.logger.Info("Connect")
+	s.logger.Info("Connecting to host:" + hostID)
 
 	// Initialize if needed
 	if s.hostID == "" || s.hostID != hostID {
+		s.logger.Infof("Initializing host: %s (current: %s)", hostID, s.hostID)
 		s.reset()
 		if err := s.initializeHost(registration, hostID); err != nil {
+			s.logger.Errorf("Failed to initialize host %s: %v", hostID, err)
 			s.reset()
-			return models.ConnectResponseContent{
+			return cddsdkgo.ConnectResponseContent{
 				Success: false, State: s.state,
 				Message: fmt.Sprintf("Error in connect() %v", err),
 				Error:   utils.ExceptionToErrorDetails(err),
 			}
 		}
+		s.logger.Infof("Host initialized: %s", hostID)
 	}
 
-	var resp models.ConnectResponseContent
+	var resp cddsdkgo.ConnectResponseContent
 	var err error
 
 	switch s.state {
 	case models.StateConnecting:
-		resp = models.ConnectResponseContent{
+		resp = cddsdkgo.ConnectResponseContent{
 			Success: true, State: s.state, Message: "Connecting to the service",
 		}
 	case models.StateConnected:
-		resp = models.ConnectResponseContent{
+		resp = cddsdkgo.ConnectResponseContent{
 			Success:  true, State: s.state, Message: "Connected",
 			DeviceId: tr12models.PtrString(s.certs.GetDeviceID()),
 			Region:   tr12models.PtrString(s.certs.GetRegion()),
 		}
 	case models.StateReconnecting:
-		resp = models.ConnectResponseContent{
+		resp = cddsdkgo.ConnectResponseContent{
 			Success:  true, State: s.state, Message: "Reconnecting...",
 			DeviceId: tr12models.PtrString(s.certs.GetDeviceID()),
 			Region:   tr12models.PtrString(s.certs.GetRegion()),
@@ -61,7 +74,7 @@ func (s *CddSdk) Connect(registration map[string]interface{}, hostID string) mod
 	if err != nil {
 		s.logger.Errorf("Exception: %v", err)
 		s.reset()
-		return models.ConnectResponseContent{
+		return cddsdkgo.ConnectResponseContent{
 			Success: false, State: s.state,
 			Message: fmt.Sprintf("Error in connect() %v", err),
 			Error:   utils.ExceptionToErrorDetails(err),
@@ -70,10 +83,10 @@ func (s *CddSdk) Connect(registration map[string]interface{}, hostID string) mod
 	return resp
 }
 
-func (s *CddSdk) handlePairingState() (models.ConnectResponseContent, error) {
+func (s *CddSdk) handlePairingState() (cddsdkgo.ConnectResponseContent, error) {
 	loaded, err := s.loadCerts()
 	if err != nil {
-		return models.ConnectResponseContent{}, err
+		return cddsdkgo.ConnectResponseContent{}, err
 	}
 	if loaded {
 		return s.startConnect()
@@ -81,7 +94,7 @@ func (s *CddSdk) handlePairingState() (models.ConnectResponseContent, error) {
 	// Expired?
 	if s.pairer.IsExpired() {
 		s.reset()
-		return models.ConnectResponseContent{
+		return cddsdkgo.ConnectResponseContent{
 			Success: false, State: s.state,
 			Message: "Pairing code expired. Reconnect to get a new one.",
 		}, nil
@@ -89,12 +102,12 @@ func (s *CddSdk) handlePairingState() (models.ConnectResponseContent, error) {
 	// Poll for credentials
 	claimed, err := s.pairer.AuthenticatePairingCode()
 	if err != nil {
-		return models.ConnectResponseContent{}, err
+		return cddsdkgo.ConnectResponseContent{}, err
 	}
 	if claimed {
 		loaded, err := s.loadCerts()
 		if err != nil {
-			return models.ConnectResponseContent{}, err
+			return cddsdkgo.ConnectResponseContent{}, err
 		}
 		if loaded {
 			hs, _ := s.certs.GetHostSettings()
@@ -104,11 +117,11 @@ func (s *CddSdk) handlePairingState() (models.ConnectResponseContent, error) {
 			return s.startConnect()
 		}
 		s.reset()
-		return models.ConnectResponseContent{}, fmt.Errorf("device was authenticated, but couldn't load certs")
+		return cddsdkgo.ConnectResponseContent{}, fmt.Errorf("device was authenticated, but couldn't load certs")
 	}
 	// Still waiting
 	expires := tr12models.PtrFloat32(float32(s.pairer.ExpiresIn()))
-	return models.ConnectResponseContent{
+	return cddsdkgo.ConnectResponseContent{
 		Success:     true, State: models.StatePairing,
 		Message:     "Waiting for device to be claimed",
 		PairingCode: tr12models.PtrString(s.pairer.GetPairingCode()),
@@ -116,10 +129,10 @@ func (s *CddSdk) handlePairingState() (models.ConnectResponseContent, error) {
 	}, nil
 }
 
-func (s *CddSdk) handleDisconnectedState() (models.ConnectResponseContent, error) {
+func (s *CddSdk) handleDisconnectedState() (cddsdkgo.ConnectResponseContent, error) {
 	loaded, err := s.loadCerts()
 	if err != nil {
-		return models.ConnectResponseContent{}, err
+		return cddsdkgo.ConnectResponseContent{}, err
 	}
 	if loaded {
 		hs, _ := s.certs.GetHostSettings()
@@ -130,11 +143,11 @@ func (s *CddSdk) handleDisconnectedState() (models.ConnectResponseContent, error
 	}
 	// Need to pair
 	if err := s.pairer.GetNewPairingCode(); err != nil {
-		return models.ConnectResponseContent{}, err
+		return cddsdkgo.ConnectResponseContent{}, err
 	}
 	s.transition(models.StatePairing)
 	expires := tr12models.PtrFloat32(float32(s.pairer.ExpiresIn()))
-	return models.ConnectResponseContent{
+	return cddsdkgo.ConnectResponseContent{
 		Success:     true, State: models.StatePairing,
 		Message:     "Connecting pending. Waiting for device to be claimed",
 		PairingCode: tr12models.PtrString(s.pairer.GetPairingCode()),
@@ -143,133 +156,133 @@ func (s *CddSdk) handleDisconnectedState() (models.ConnectResponseContent, error
 }
 
 // Disconnect gracefully disconnects from the host service.
-func (s *CddSdk) Disconnect() models.DisconnectResponseContent {
+func (s *CddSdk) Disconnect() cddsdkgo.DisconnectResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Disconnect")
 	s.reset()
-	return models.DisconnectResponseContent{
+	return cddsdkgo.DisconnectResponseContent{
 		Success: true, State: models.StateDisconnected, Message: "Disconnected",
 	}
 }
 
 // GetConnectionStatus returns the current connection state.
-func (s *CddSdk) GetConnectionStatus() models.GetConnectionStatusResponseContent {
+func (s *CddSdk) GetConnectionStatus() cddsdkgo.GetConnectionStatusResponseContent {
 	s.logger.Info("Get Connection Status")
-	return models.GetConnectionStatusResponseContent{
+	return cddsdkgo.GetConnectionStatusResponseContent{
 		Success: true, State: s.state, Message: "",
 	}
 }
 
 // Deprovision removes the device from the host service and deletes credentials.
-func (s *CddSdk) Deprovision(hostID string, force bool) models.DeprovisionResponseContent {
+func (s *CddSdk) Deprovision(hostID string, force bool) cddsdkgo.DeprovisionResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Deprovision")
 
 	if !s.connectedTo(hostID) && !force {
-		return models.DeprovisionResponseContent{
+		return cddsdkgo.DeprovisionResponseContent{
 			Success: true, State: s.state,
 			Message: fmt.Sprintf("Must use --force to deprovision client while not CONNECTED to: %s", hostID),
 		}
 	}
 	if err := s.handleDeprovision(hostID); err != nil {
-		return models.DeprovisionResponseContent{
+		return cddsdkgo.DeprovisionResponseContent{
 			Success: false, State: s.state,
 			Message: fmt.Sprintf("Error in Deprovision: %v", err),
 			Error:   utils.ExceptionToErrorDetails(err),
 		}
 	}
-	return models.DeprovisionResponseContent{
+	return cddsdkgo.DeprovisionResponseContent{
 		Success: true, State: s.state,
 		Message: fmt.Sprintf("Deprovisioned credentials for host: %s", hostID),
 	}
 }
 
 // GetConfiguration returns the latest cached configuration.
-func (s *CddSdk) GetConfiguration() models.GetConfigurationResponseContent {
+// GetConfiguration returns the latest cached configuration.
+func (s *CddSdk) GetConfiguration() cddsdkgo.GetConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Get Configuration")
-	config := &models.ConfigurationData{
-		Payload:  s.configPayload,
-		UpdateID: s.configUpdateID,
+	var configData *cddsdkgo.ConfigurationData
+	if s.configPayload != nil || s.configUpdateID != "" {
+		configData = cddsdkgo.NewConfigurationData()
+		configData.Payload = s.configPayload
+		if s.configUpdateID != "" {
+			configData.UpdateId = &s.configUpdateID
+		}
 	}
-	return models.GetConfigurationResponseContent{
-		Success: true, State: s.state,
-		Message:       "Latest configuration provided",
-		Configuration: config,
-	}
+	resp := cddsdkgo.NewGetConfigurationResponseContent(true, s.state, "Latest configuration provided")
+	resp.Configuration = configData
+	return *resp
 }
 
 // ReportStatus publishes a status payload to the host service.
-func (s *CddSdk) ReportStatus(payload map[string]interface{}) models.ReportStatusResponseContent {
+func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportStatusResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Report Status")
 
 	if err := s.canPublishNow(s.statusThrottle); err != nil {
-		return models.ReportStatusResponseContent{
+		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state, Message: err.Error(),
 			Error: utils.ExceptionToErrorDetails(err),
 		}
 	}
 	hs, err := s.certs.GetHostSettings()
 	if err != nil {
-		return models.ReportStatusResponseContent{
+		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state, Message: err.Error(),
 			Error: utils.ExceptionToErrorDetails(err),
 		}
 	}
 	if err := s.doPublishMessage(payload, hs.PubReportStatusTopic); err != nil {
-		return models.ReportStatusResponseContent{
+		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state,
 			Message: fmt.Sprintf("Status update not sent: %v", err),
 			Error:   utils.ExceptionToErrorDetails(err),
 		}
 	}
-	return models.ReportStatusResponseContent{
+	return cddsdkgo.ReportStatusResponseContent{
 		Success: true, State: s.state, Message: "Status update sent",
 	}
 }
 
 // ReportConfiguration publishes an actual configuration payload to the host service.
-func (s *CddSdk) ReportConfiguration(payload map[string]interface{}) models.ReportActualConfigurationResponseContent {
+// ReportConfiguration publishes an actual configuration payload to the host service.
+func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.DeviceConfiguration) cddsdkgo.ReportActualConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Report Configuration")
 
 	if err := s.canPublishNow(s.configThrottle); err != nil {
-		return models.ReportActualConfigurationResponseContent{
-			Success: false, State: s.state, Message: err.Error(),
-			Error: utils.ExceptionToErrorDetails(err),
-		}
+		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())
+		return *resp
 	}
 	hs, err := s.certs.GetHostSettings()
 	if err != nil {
-		return models.ReportActualConfigurationResponseContent{
-			Success: false, State: s.state, Message: err.Error(),
-			Error: utils.ExceptionToErrorDetails(err),
-		}
+		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())
+		return *resp
 	}
 	if err := s.doPublishMessage(payload, hs.PubReportActualConfigurationTopic); err != nil {
-		return models.ReportActualConfigurationResponseContent{
-			Success: false, State: s.state,
-			Message: fmt.Sprintf("Configuration update not sent: %v", err),
-			Error:   utils.ExceptionToErrorDetails(err),
-		}
+		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, fmt.Sprintf("Configuration update not sent: %v", err))
+		return *resp
 	}
-	return models.ReportActualConfigurationResponseContent{
-		Success: true, State: s.state, Message: "Configuration update sent",
-	}
+	resp := cddsdkgo.NewReportActualConfigurationResponseContent(true, s.state, "Configuration update sent")
+	return *resp
 }
 
 func (s *CddSdk) handleDeprovision(hostID string) error {
-	defer s.reset()
+	// Inform host before resetting so connectedTo() check still works
 	if s.connectedTo(hostID) {
 		s.informHostServiceDeprovision(hostID)
 	}
-	return s.deleteCredentials(hostID)
+	err := s.deleteCredentials(hostID)
+	// Reset last — mirrors Python's finally: self._reset()
+	// This ensures connect() cannot sneak in and start pairing before certs are deleted.
+	s.reset()
+	return err
 }
 
 func (s *CddSdk) informHostServiceDeprovision(hostID string) {
@@ -292,7 +305,7 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 		token := s.mqttClient.Publish(hs.PubDeprovisionTopic, 1, false, data)
 		token.WaitTimeout(3 * time.Second)
 	}
-	time.Sleep(3 * time.Second)
+	// No sleep needed — WaitTimeout above ensures delivery before we proceed
 }
 
 func (s *CddSdk) deleteCredentials(hostID string) error {

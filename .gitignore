@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+.vscode
 
 # Test binary, built with `go test -c`
 *.test
@@ -27,14 +28,22 @@ go.work.sum
 # .idea/
 # .vscode/
 
-# Built binaries
-client/cdd-sdk
-client/ard
-host/tr12-host
+# Built binaries — all go into bin/ directories, never tracked
+client/bin/
+host/bin/
+
+# Proprietary device integrations — not part of the reference implementation
+client/cmd/proprietary*/
+client/proprietary*
+
+console/
+requirements/
+deploy.sh
 
 # Host configuration files (user-specific, only local_go_host.json is tracked)
 client/host_configuration/dev_*.json
 client/host_configuration/vsf_*.json
+client/host_configuration/ec2_*.json
 
 # SQLite database files
 *.db

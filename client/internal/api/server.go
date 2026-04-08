@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // REST API server hosting the TR-12 client-side endpoints.
 // Mirrors the Python SDK's Flask server_flask.py.
@@ -13,6 +22,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/sdk"
+	cddsdkgo "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
 )
 
 // Server wraps the Gin engine and SDK client.
@@ -103,12 +113,10 @@ func (s *Server) reportStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-type reportConfigRequest struct {
-	Configuration map[string]interface{} `json:"configuration"`
-}
-
 func (s *Server) reportConfiguration(c *gin.Context) {
-	var req reportConfigRequest
+	var req struct {
+		Configuration *cddsdkgo.DeviceConfiguration `json:"configuration"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Configuration == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "configuration is required"})
 		return

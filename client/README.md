@@ -46,15 +46,29 @@ Managed via Go modules (`go.mod`):
 
 ```bash
 cd client
-go build -o cdd-sdk ./cmd/cdd-sdk/
+go build -o bin/cdd-sdk ./cmd/cdd-sdk/
 ```
 
-This produces a single static binary `cdd-sdk` (~13 MB).
+This produces a single static binary `bin/cdd-sdk` (~13 MB).
+
+### Cross-Compilation
+
+Go's built-in cross-compilation requires no additional toolchain — just set `GOOS`, `GOARCH`, and `CGO_ENABLED=0`:
+
+```bash
+# Linux x86_64 (EC2, server)
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/cdd-sdk-linux-amd64 ./cmd/cdd-sdk/
+
+# Linux ARM64 (embedded devices, Raspberry Pi, PetaLinux)
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/cdd-sdk-arm64 ./cmd/cdd-sdk/
+```
+
+The resulting binary is fully self-contained — no runtime dependencies, no Python interpreter, no pip packages. Copy it to the target device and run it directly.
 
 ## Usage
 
 ```bash
-./cdd-sdk \
+./bin/cdd-sdk \
   --internal_device_id <device_name> \
   --certs_path <persistent_cert_directory> \
   --log_path <writable_log_directory> \
@@ -78,17 +92,12 @@ This produces a single static binary `cdd-sdk` (~13 MB).
 
 ```bash
 export CERTS_PATH="$HOME/cdd_certs"
+mkdir -p $CERTS_PATH
 export ID="my_device_123"
 
 mkdir -p $CERTS_PATH /tmp/cdd_logs
 
-./cdd-sdk \
-  --internal_device_id $ID \
-  --certs_path $CERTS_PATH \
-  --log_path /tmp/cdd_logs \
-  --ip 127.0.0.1 \
-  --port 8603 \
-  --device_type SOURCE
+./bin/cdd-sdk --internal_device_id $ID -certs_path $CERTS_PATH --log_path /tmp/cdd_logs --ip 127.0.0.1 --port 8603 --device_type SOURCE
 ```
 
 ## REST API Endpoints
@@ -199,13 +208,13 @@ Credentials are stored at `<certs_path>/<internal_device_id>/<host_id>/`. The `-
 1. Build the SDK:
    ```bash
    cd client
-   go build -o cdd-sdk ./cmd/cdd-sdk/
+   go build -o bin/cdd-sdk ./cmd/cdd-sdk/
    ```
 
 2. Start the SDK:
    ```bash
    mkdir -p /tmp/cdd_certs /tmp/cdd_logs
-   ./cdd-sdk \
+   ./bin/cdd-sdk \
      --internal_device_id my_device_123 \
      --certs_path /tmp/cdd_certs \
      --log_path /tmp/cdd_logs \
@@ -244,7 +253,43 @@ See the [Python SDK README](https://github.com/vsf-tv/gccg-cdd) for detailed sec
 
 ## Application Reference Design (ARD)
 
-The ARD is a companion program that simulates a 1-channel encoder device making REST calls on the SDK daemon. It mirrors the Python ARD at `gccg-cdd/src/application_reference/`.
+The ARD is a companion program that simulates a 1-channel encoder device making REST calls on the SDK daemon. It mirrors the Python ARD at `gccg-cdd/src/thumbnails/`.
+
+### DeviceCallbacks Interface
+
+The core integration pattern is the `DeviceCallbacks` interface (`internal/application_reference_design/device_callbacks.go`). Any device integration implements this interface — the `ApplicationLoop` and `Tr12Shim` only know the interface, never the concrete implementation.
+
+**Apply (set) side** — called when the host sends a new desired configuration:
+- `UpdateDeviceKeyValue` — device-level setting (e.g. clock source)
+- `UpdateChannelSettings` — channel simple setting (e.g. framerate, codec, bitrate)
+- `UpdateChannelProfile` — profile selection
+- `UpdateChannelConnection` — transport protocol config (SRT caller/listener, RIST, etc.)
+- `UpdateChannelState` — ACTIVE or IDLE
+
+**Read-back (get) side** — called when building the actual configuration to report back:
+- `GetDeviceUpdatedValue`, `GetChannelUpdatedValue`, `GetChannelProfileValue`
+- `GetChannelConnection`, `GetChannelState`
+- `GetDeviceStatus`, `GetChannelStatus`
+
+**Two implementations ship with this repo:**
+
+`ArdCallbacks` (`internal/application_reference_design/callbacks.go`) — the reference implementation using a simulated ffmpeg encoder. Study this to understand the pattern.
+
+`OspreyCallbacks` (`internal/device/osprey_callbacks.go`, gitignored) — a real device implementation that calls the Osprey encoder's HTTP API. This is the template for any real device integration.
+
+Both are wired into `ApplicationLoop` identically:
+
+```go
+// ARD binary — mock encoder:
+callbacks := ard.NewArdCallbacks()
+loop := ard.NewApplicationLoop(sdkURL, callbacks, &registration)
+
+// proprietary-osprey-encoder-bridge — real device:
+callbacks := device.NewOspreyCallbacks(deviceURL, deviceType)
+loop := ard.NewApplicationLoop(sdkURL, callbacks, &registration)
+```
+
+The `ApplicationLoop` drives the TR-12 lifecycle: connect → get configuration → apply via callbacks → read back actual state → report. The `Tr12Shim` walks TR-12 model structures and dispatches to the callbacks.
 
 ### What the ARD Does
 
@@ -261,7 +306,7 @@ The ARD is a companion program that simulates a 1-channel encoder device making 
 
 ```bash
 cd client
-go build -o ard ./cmd/ard/
+go build -o bin/ard ./cmd/application_reference_design/
 ```
 
 ### Run the ARD
@@ -269,7 +314,7 @@ go build -o ard ./cmd/ard/
 First, start the SDK daemon in Terminal 1:
 ```bash
 mkdir -p /tmp/cdd_certs /tmp/cdd_logs
-./cdd-sdk \
+./bin/cdd-sdk \
   --internal_device_id my_device_123 \
   --certs_path /tmp/cdd_certs \
   --log_path /tmp/cdd_logs \
@@ -281,10 +326,10 @@ mkdir -p /tmp/cdd_certs /tmp/cdd_logs
 Then start the ARD in Terminal 2:
 ```bash
 # Against the VSF test endpoint:
-./ard --host_id vsf_test_host
+./bin/ard --host_id vsf_test_host
 
 # Or against the local TR-12 Host Service:
-./ard --host_id local_go_host
+./bin/ard --host_id local_go_host
 ```
 
 The ARD accepts these flags:
@@ -311,8 +356,8 @@ The ARD accepts these flags:
 The ARD expects these files relative to its working directory:
 
 - `payloads/1_channel_encoder/registration.json` — device registration payload
-- `application_reference/thumbnail_images_sdi/` — SDI thumbnail source images
-- `application_reference/thumbnail_images_hdmi/` — HDMI thumbnail source images
+- `cmd/application_reference_design/thumbnails/thumbnail_images_sdi/` — SDI thumbnail source images
+- `cmd/application_reference_design/thumbnails/thumbnail_images_hdmi/` — HDMI thumbnail source images
 
 ## Project Structure
 
@@ -320,30 +365,38 @@ The ARD expects these files relative to its working directory:
 client/
 ├── cmd/
 │   ├── cdd-sdk/main.go              # SDK entry point, CLI flag parsing
-│   └── ard/main.go                  # ARD entry point
+│   ├── ard/main.go                  # ARD entry point
+│   └── proprietary-osprey-encoder-bridge/                 # Device integration shim (gitignored — device-specific)
+│       ├── main.go
+│       ├── device_deploy.sh
+│       ├── osprey_registration.json
+│       └── web/                     # Device web console overrides
 ├── host_configuration/               # Host config JSON files
 │   └── vsf_test_host.json
 ├── payloads/
 │   └── 1_channel_encoder/
 │       ├── registration.json         # Device registration payload
 │       └── configuration.json        # Example desired configuration
-├── application_reference/
+│   └── thumbnails/
 │   ├── thumbnail_images_sdi/         # Sample SDI thumbnails
 │   └── thumbnail_images_hdmi/        # Sample HDMI thumbnails
 ├── internal/
 │   ├── api/server.go                 # Gin REST API server
 │   ├── ard/
 │   │   ├── application.go           # ARD main run loop
-│   │   ├── callbacks.go             # TR-12 device callbacks
+│   │   ├── application_loop.go      # Reusable ApplicationLoop (ARD + proprietary-osprey-encoder-bridge)
+│   │   ├── callbacks.go             # ArdCallbacks — reference DeviceCallbacks implementation
+│   │   ├── device_callbacks.go      # DeviceCallbacks interface definition
 │   │   ├── encoder.go               # ffmpeg encoder simulation
 │   │   ├── sdk_client.go            # SDK REST client
 │   │   ├── shim.go                  # TR-12 model shim
 │   │   └── thumbnails.go            # Thumbnail image simulator
+│   ├── device/                       # Device-specific callbacks (gitignored)
+│   │   └── osprey_callbacks.go      # OspreyCallbacks — real device implementation
 │   ├── cddlogger/logger.go          # JSON rotating file logger
 │   ├── credentials/store.go         # X.509 cert persistence
 │   ├── models/
-│   │   ├── tr12_models.go           # TR-12 protocol models
-│   │   └── sdk_models.go            # Client API response models
+│   │   └── tr12_models.go           # TR-12 protocol model aliases + state constants
 │   ├── pairing/pairing.go           # Pairing/auth flow
 │   ├── sdk/
 │   │   ├── sdk.go                   # Core SDK struct and state machine

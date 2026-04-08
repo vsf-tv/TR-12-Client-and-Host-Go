@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package utils
 
 import (
@@ -18,7 +27,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/pkg/cddmodels"
+	cddsdkgo "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
 	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
 )
 
@@ -122,6 +131,23 @@ func SSLContext(caCertFile, deviceCertFile, privateKeyFile, iotProtocolName stri
 		Certificates:       []tls.Certificate{cert},
 		NextProtos:         []string{iotProtocolName},
 		MinVersion:         tls.VersionTLS12,
+		// Skip hostname verification — the server cert is signed by our private CA
+		// (validated via VerifyPeerCertificate below). Hostname checking breaks on IP changes.
+		InsecureSkipVerify: true,
+		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+			if len(rawCerts) == 0 {
+				return fmt.Errorf("no server certificate provided")
+			}
+			cert, err := x509.ParseCertificate(rawCerts[0])
+			if err != nil {
+				return fmt.Errorf("failed to parse server cert: %w", err)
+			}
+			opts := x509.VerifyOptions{Roots: caCertPool}
+			if _, err := cert.Verify(opts); err != nil {
+				return fmt.Errorf("server cert not trusted by our CA: %w", err)
+			}
+			return nil
+		},
 	}, nil
 }
 
@@ -131,7 +157,12 @@ func UploadFile(localPath, remotePath string, timeout int, fileType string) erro
 	if err != nil {
 		return fmt.Errorf("failed to read %s file %s: %w", fileType, localPath, err)
 	}
-	client := &http.Client{Timeout: time.Duration(timeout) * time.Second}
+	client := &http.Client{
+		Timeout: time.Duration(timeout) * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 	req, err := http.NewRequest(http.MethodPut, remotePath, bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("failed to create upload request: %w", err)
@@ -211,11 +242,11 @@ func (u *UpdateID) Get() string {
 }
 
 // ExceptionToErrorDetails converts a Go error to an ErrorDetails model.
-func ExceptionToErrorDetails(err error) *cddmodels.ErrorDetails {
+func ExceptionToErrorDetails(err error) *cddsdkgo.ErrorDetails {
 	if err == nil {
 		return nil
 	}
-	return &cddmodels.ErrorDetails{
+	return &cddsdkgo.ErrorDetails{
 		Type:    fmt.Sprintf("%T", err),
 		Message: err.Error(),
 		Details: err.Error(),

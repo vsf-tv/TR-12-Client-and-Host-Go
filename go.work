@@ -4,5 +4,6 @@ use (
 	./client
 	./host
 	./models/TR-12-Models/generated/tr12go
+	./models/cdd_sdk/generated/cdd_sdkgo
 	./test/integration
 )

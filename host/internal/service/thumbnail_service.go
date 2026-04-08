@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package service
 
 import (
@@ -60,7 +72,11 @@ func (s *ThumbnailService) lookupThumbnailLocalPath(deviceID, sourceID string) s
 
 // RequestThumbnail creates a subscription and publishes to the device.
 func (s *ThumbnailService) RequestThumbnail(deviceID, sourceID string) error {
-	uploadURL := fmt.Sprintf("http://%s:%d/upload/thumbnail/%s/%s", s.cfg.HostAddress, s.cfg.HTTPPort, deviceID, sourceID)
+	scheme := "http"
+	if s.cfg.HTTPS {
+		scheme = "https"
+	}
+	uploadURL := fmt.Sprintf("%s://%s:%d/upload/thumbnail/%s/%s", scheme, s.cfg.HostAddress, s.cfg.HTTPPort, deviceID, sourceID)
 	localPath := s.lookupThumbnailLocalPath(deviceID, sourceID)
 	expiry := time.Now().Add(120 * time.Second)
 
@@ -82,7 +98,7 @@ func (s *ThumbnailService) RequestThumbnail(deviceID, sourceID string) error {
 	topic := fmt.Sprintf("cdd/%s/thumbnail/subscription", deviceID)
 	log.Printf("[THUMB] requesting thumbnail for device=%s source=%s localPath=%s remotePath=%s", deviceID, sourceID, localPath, uploadURL)
 	s.subscriptions.Store(deviceID+":"+sourceID, expiry)
-	return s.mqtt.Publish(topic, payload, false)
+	return s.mqtt.Publish(topic, payload, true) // retained — device picks up active subscription on reconnect
 }
 
 // StoreThumbnail saves a thumbnail to the database.

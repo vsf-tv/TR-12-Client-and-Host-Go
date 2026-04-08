@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package models
 
 // This file bridges the generated TR-12 Smithy models (from the shared submodule) into the
@@ -49,5 +61,22 @@ var PtrFloat32 = tr12models.PtrFloat32
 
 // ClaimRequest body for PUT /authorize/{pairingCode}.
 type ClaimRequest struct {
-	ExpirationDays int `json:"expiration_days,omitempty"`
+	ExpirationDays      int    `json:"expiration_days,omitempty"`
+	LocationName        string `json:"location_name,omitempty"`
+	DeviceName          string `json:"device_name,omitempty"`
+	RotationIntervalDays int   `json:"rotation_interval_days,omitempty"`
+}
+
+// UpdateDeviceMetadata contains editable device metadata.
+type UpdateDeviceMetadata struct {
+	Name                 string `json:"name,omitempty"`
+	Location             string `json:"location,omitempty"`
+	RotationIntervalDays int    `json:"rotation_interval_days,omitempty"`
+}
+
+// UpdateDeviceRequest is the body for PUT /device/{deviceId}.
+// Both fields are optional — omit either to leave it unchanged.
+type UpdateDeviceRequest struct {
+	Metadata            *UpdateDeviceMetadata `json:"metadata,omitempty"`
+	DeviceConfiguration interface{}           `json:"deviceConfiguration,omitempty"`
 }

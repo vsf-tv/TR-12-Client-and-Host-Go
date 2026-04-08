@@ -1,5 +1,14 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // CDDLogger implements JSON-formatted rotating log files with optional upload callback,
 // mirroring the Python SDK's CDDLogHandler and CustomRotatingFileHandler.
@@ -41,17 +50,24 @@ type CDDLogger struct {
 	mu             sync.Mutex
 	deviceID       string
 	logPath        string
+	logFileName    string
 	logFile        *os.File
 	currentSize    int64
 	uploadCallback UploadCallback
 	stdLogger      *log.Logger
 }
 
-// New creates a new CDDLogger.
+// New creates a new CDDLogger writing to <logPath>/cdd_sdk.log.
 func New(logPath string, deviceID string, callback UploadCallback) (*CDDLogger, error) {
+	return NewWithName(logPath, "cdd_sdk.log", deviceID, callback)
+}
+
+// NewWithName creates a CDDLogger writing to <logPath>/<filename>.
+func NewWithName(logPath, filename, deviceID string, callback UploadCallback) (*CDDLogger, error) {
 	l := &CDDLogger{
 		deviceID:       deviceID,
 		logPath:        logPath,
+		logFileName:    filename,
 		uploadCallback: callback,
 		stdLogger:      log.New(os.Stdout, "", 0),
 	}
@@ -65,7 +81,11 @@ func New(logPath string, deviceID string, callback UploadCallback) (*CDDLogger, 
 }
 
 func (l *CDDLogger) openLogFile() error {
-	logFile := filepath.Join(l.logPath, "cdd_sdk.log")
+	name := l.logFileName
+	if name == "" {
+		name = "cdd_sdk.log"
+	}
+	logFile := filepath.Join(l.logPath, name)
 	f, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return fmt.Errorf("cannot open log file %s: %w", logFile, err)
@@ -85,11 +105,14 @@ func (l *CDDLogger) UpdateDeviceID(deviceID string) {
 	l.deviceID = deviceID
 }
 
-// Dump forces a log rotation and triggers the upload callback.
+// Dump flushes the current log file to disk.
+// Rotation only happens automatically when the file reaches LogFileMaxBytes.
 func (l *CDDLogger) Dump() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.doRotation()
+	if l.logFile != nil {
+		l.logFile.Sync()
+	}
 }
 
 func (l *CDDLogger) writeRecord(level, message string, exception string) {
@@ -128,7 +151,12 @@ func (l *CDDLogger) doRotation() {
 		return
 	}
 	l.logFile.Close()
-	logFile := filepath.Join(l.logPath, "cdd_sdk.log")
+	logFile := filepath.Join(l.logPath, func() string {
+		if l.logFileName != "" {
+			return l.logFileName
+		}
+		return "cdd_sdk.log"
+	}())
 
 	// Rotate files: .3 -> .4, .2 -> .3, .1 -> .2, current -> .1
 	for i := LogFileRotateCount; i > 0; i-- {

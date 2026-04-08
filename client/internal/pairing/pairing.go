@@ -1,11 +1,21 @@
-// Copyright 2025 Amazon.com Inc
-// Licensed under the Apache License, Version 2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // Pairing manages the TR-12 pairing and authentication flow with the host service.
 package pairing
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,6 +45,15 @@ type Pairing struct {
 
 // New creates a new Pairing instance.
 func New(certs *credentials.Store, deviceType, hostID, pairingURL, authURL string) *Pairing {
+	// Skip TLS verification for pairing/auth — the CA cert is received as part of
+	// the auth response, so we can't verify it beforehand. The device cert received
+	// is then used for all subsequent MQTT connections which DO verify against the CA.
+	httpClient := &http.Client{
+		Timeout: maxTimeoutSec * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 	return &Pairing{
 		Certs:      certs,
 		DeviceType: deviceType,
@@ -42,7 +61,7 @@ func New(certs *credentials.Store, deviceType, hostID, pairingURL, authURL strin
 		PairingURL: pairingURL,
 		AuthURL:    authURL,
 		StartTime:  time.Now().Unix(),
-		httpClient: &http.Client{Timeout: maxTimeoutSec * time.Second},
+		httpClient: httpClient,
 	}
 }
 

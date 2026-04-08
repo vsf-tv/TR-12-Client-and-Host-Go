@@ -1,3 +1,15 @@
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 package service
 
 import (
@@ -139,7 +151,7 @@ func (s *DeviceService) Authenticate(req models.AuthenticateRequestContent) (*mo
 }
 
 // Claim associates a device with an account.
-func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays int) error {
+func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays int, locationName, deviceName string, rotationIntervalDays int) error {
 	device, err := s.store.GetDeviceByPairingCode(pairingCode)
 	if err != nil {
 		return err
@@ -160,8 +172,21 @@ func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays int)
 	if expirationDays <= 0 {
 		expirationDays = 730
 	}
+	if rotationIntervalDays < 30 {
+		rotationIntervalDays = 365
+	}
+	if rotationIntervalDays > 5*365 {
+		rotationIntervalDays = 5 * 365
+	}
+	// Truncate strings to max 40 chars
+	if len(locationName) > 40 {
+		locationName = locationName[:40]
+	}
+	if len(deviceName) > 40 {
+		deviceName = deviceName[:40]
+	}
 	regExpires := time.Now().UTC().Add(time.Duration(expirationDays) * 24 * time.Hour).Format(time.RFC3339)
-	return s.store.ClaimDevice(device.DeviceID, accountID, regExpires)
+	return s.store.ClaimDevice(device.DeviceID, accountID, regExpires, locationName, deviceName, rotationIntervalDays)
 }
 
 // ListDevices returns all devices for an account.
@@ -178,6 +203,8 @@ func (s *DeviceService) ListDevices(accountID string) ([]models.DeviceSummary, e
 			Errors:        []string{},
 			OnlineDetails: formatOnlineDetails(d),
 			Online:        d.Online,
+			LocationName:  d.LocationName,
+			DeviceName:    d.DeviceName,
 		})
 	}
 	return summaries, nil
@@ -216,8 +243,40 @@ func (s *DeviceService) DescribeDevice(deviceID, accountID string) (*models.Devi
 			DeviceType:     device.DeviceType,
 			AccountID:      device.AccountID,
 			PairedAt:       device.PairedAt,
+			LocationName:   device.LocationName,
+			DeviceName:     device.DeviceName,
 		},
 	}, nil
+}
+
+// UpdateDeviceMetadata updates editable device metadata fields.
+func (s *DeviceService) UpdateDeviceMetadata(deviceID, accountID string, meta *models.UpdateDeviceMetadata) error {
+	device, err := s.store.GetDevice(deviceID)
+	if err != nil {
+		return err
+	}
+	if device == nil {
+		return ErrNotFound
+	}
+	if device.AccountID != accountID {
+		return ErrForbidden
+	}
+	name := meta.Name
+	location := meta.Location
+	rotInterval := meta.RotationIntervalDays
+	if len(name) > 40 {
+		name = name[:40]
+	}
+	if len(location) > 40 {
+		location = location[:40]
+	}
+	if rotInterval < 30 {
+		rotInterval = 30
+	}
+	if rotInterval > 5*365 {
+		rotInterval = 5 * 365
+	}
+	return s.store.UpdateDeviceMetadata(deviceID, name, location, rotInterval)
 }
 
 // UpdateConfiguration validates and pushes desired config to a device.
@@ -258,7 +317,7 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	log.Printf("[HOST UpdateConfig] deviceID=%s state=%s online=%v topic=%s updateID=%d payloadLen=%d",
 		deviceID, device.State, device.Online, topic, updateID, len(payload))
 
-	if err := s.mqtt.Publish(topic, payload, false); err != nil {
+	if err := s.mqtt.Publish(topic, payload, true); err != nil { // retained — device picks up latest config on reconnect
 		log.Printf("[HOST UpdateConfig] MQTT publish FAILED: %v", err)
 		return err
 	}
@@ -291,16 +350,27 @@ func (s *DeviceService) Deprovision(deviceID, accountID string) error {
 	msg := models.DeprovisionDeviceRequestContent{Reason: &reason, Time: &t}
 	payload, _ := json.Marshal(msg)
 	topic := fmt.Sprintf("cdd/%s/deprovision", deviceID)
-	return s.mqtt.Publish(topic, payload, false)
+	return s.mqtt.Publish(topic, payload, true) // retained — offline device deprovisions itself on reconnect
 }
 
 // FullCleanup removes a device and all associated data (Phase 2 or device-initiated).
+// Also clears any retained MQTT messages for the device's topics.
 func (s *DeviceService) FullCleanup(deviceID string) error {
 	if err := s.store.DeleteThumbnailsByDevice(deviceID); err != nil {
 		return err
 	}
 	if err := s.store.DeleteLogsByDevice(deviceID); err != nil {
 		return err
+	}
+	// Clear retained messages by publishing empty payloads (MQTT standard)
+	for _, topic := range []string{
+		fmt.Sprintf("cdd/%s/deprovision", deviceID),
+		fmt.Sprintf("cdd/%s/config/update", deviceID),
+		fmt.Sprintf("cdd/%s/certs/update", deviceID),
+		fmt.Sprintf("cdd/%s/thumbnail/subscription", deviceID),
+		fmt.Sprintf("cdd/%s/log/subscription", deviceID),
+	} {
+		_ = s.mqtt.Publish(topic, []byte{}, true)
 	}
 	return s.store.DeleteDevice(deviceID)
 }
@@ -380,8 +450,8 @@ func buildHostSettings(deviceID string, pairingTimeout int) *models.HostSettings
 		fmt.Sprintf("cdd/%s/status/report", deviceID),
 		fmt.Sprintf("cdd/%s/config/actual/report", deviceID),
 		fmt.Sprintf("cdd/%s/certs/update", deviceID),
-		fmt.Sprintf("cdd/%s/deprovision", deviceID),
-		fmt.Sprintf("cdd/%s/deprovision", deviceID),
+		fmt.Sprintf("cdd/%s/deprovision/ack", deviceID), // PubDeprovisionTopic (device publishes ack here)
+		fmt.Sprintf("cdd/%s/deprovision", deviceID),      // SubDeprovisionTopic (device subscribes — host publishes command here)
 		fmt.Sprintf("cdd/%s/log/subscription", deviceID),
 	)
 	log.Printf("[HOST buildHostSettings] deviceID=%s subUpdateTopic=%q", deviceID, hs.SubUpdateTopic)

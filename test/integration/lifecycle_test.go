@@ -1,5 +1,18 @@
 //go:build integration
 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 package integration_test
 
 import (
@@ -362,4 +375,89 @@ func removeIfExists(path string) error {
 		return nil
 	}
 	return err
+}
+
+// TestOfflineConfigDelivery verifies that a configuration update pushed while
+// the SDK is offline is delivered when the SDK reconnects (retained MQTT).
+func TestOfflineConfigDelivery(t *testing.T) {
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-offline-001")
+
+	registration := loadRegistration(t)
+
+	// Setup: register account, pair, claim, connect
+	acct := env.hostRegisterAccount("offlineuser", "testpass123", "Offline Test")
+	token := acct.Token
+
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+	t.Logf("Device paired and connected: %s", deviceID)
+
+	// Stop the SDK — device goes offline
+	t.Log("Stopping SDK (device goes offline)...")
+	env.sdkProc.stop(t)
+	env.sdkProc = nil
+	time.Sleep(1 * time.Second)
+
+	// Push a config update while device is offline
+	t.Log("Pushing config update while device is offline...")
+	offlineConfig := json.RawMessage(`{
+		"simpleSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"channels": [{
+			"id": "CH01",
+			"state": "IDLE",
+			"settings": {
+				"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"},
+					{"key": "FR01", "value": "60"},
+					{"key": "MB01", "value": "5000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]
+			}
+		}]
+	}`)
+	code, body := env.hostUpdateConfig(deviceID, token, offlineConfig)
+	if code != 200 {
+		t.Fatalf("hostUpdateConfig while offline: expected 200, got %d: %s", code, body)
+	}
+	t.Log("Config update pushed while offline — OK")
+
+	// Restart the SDK
+	t.Log("Restarting SDK...")
+	env.startSDK("integ-offline-001")
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+	t.Log("SDK reconnected")
+
+	// Give the SDK time to receive the retained config message and process it
+	time.Sleep(4 * time.Second)
+
+	// Verify the SDK received the config update
+	sdkCfg := env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("SDK returned nil configuration after reconnect")
+	}
+	cfgJSON, _ := json.Marshal(sdkCfg.Configuration)
+	cfgStr := string(cfgJSON)
+
+	if !strings.Contains(cfgStr, `"FR01"`) || !strings.Contains(cfgStr, `"60"`) {
+		t.Fatalf("SDK config missing FR01=60 after offline update: %s", cfgStr)
+	}
+	if !strings.Contains(cfgStr, `"MB01"`) || !strings.Contains(cfgStr, `"5000"`) {
+		t.Fatalf("SDK config missing MB01=5000 after offline update: %s", cfgStr)
+	}
+	if !strings.Contains(cfgStr, "PTP") {
+		t.Fatalf("SDK config missing sync_clock_source=PTP after offline update: %s", cfgStr)
+	}
+	t.Log("TestOfflineConfigDelivery: OK — SDK received config update after reconnect")
 }
