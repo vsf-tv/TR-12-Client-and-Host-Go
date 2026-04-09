@@ -12,6 +12,12 @@ TR-12 defines a secure, NAT-friendly pairing and communication protocol for prof
 | [`host/`](host/) | TR-12 Host Service (REST API + embedded MQTT broker + SQLite) | [host/README.md](host/README.md) |
 | [`models/TR-12-Models/`](https://github.com/vsf-tv/TR-12-Models) | Smithy-generated TR-12 protocol types (git submodule) | — |
 
+## Dependency Versions
+
+| Dependency | Version |
+|---|---|
+| [TR-12-Models](https://github.com/vsf-tv/TR-12-Models) | v1.0.0 |
+
 The **client** runs on the device. It exposes a local REST API that a device application (or the included ARD simulator) calls to connect, report status, receive configuration, and handle thumbnails/logs. Under the hood it manages pairing, mTLS credential storage, and an MQTT connection to the host.
 
 The **host** runs wherever you want your control plane. It handles device pairing, account management, configuration push, thumbnail retrieval, log collection, and automatic certificate rotation. Everything persists in a single SQLite file — no cloud services, no external databases.
