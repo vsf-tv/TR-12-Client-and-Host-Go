@@ -55,15 +55,15 @@ func (s *CddSdk) Connect(registration map[string]interface{}, hostID string) cdd
 		}
 	case models.StateConnected:
 		resp = cddsdkgo.ConnectResponseContent{
-			Success:  true, State: s.state, Message: "Connected",
-			DeviceId: tr12models.PtrString(s.certs.GetDeviceID()),
-			Region:   tr12models.PtrString(s.certs.GetRegion()),
+			Success:    true, State: s.state, Message: "Connected",
+			DeviceId:   tr12models.PtrString(s.certs.GetDeviceID()),
+			RegionName: tr12models.PtrString(s.certs.GetRegion()),
 		}
 	case models.StateReconnecting:
 		resp = cddsdkgo.ConnectResponseContent{
-			Success:  true, State: s.state, Message: "Reconnecting...",
-			DeviceId: tr12models.PtrString(s.certs.GetDeviceID()),
-			Region:   tr12models.PtrString(s.certs.GetRegion()),
+			Success:    true, State: s.state, Message: "Reconnecting...",
+			DeviceId:   tr12models.PtrString(s.certs.GetDeviceID()),
+			RegionName: tr12models.PtrString(s.certs.GetRegion()),
 		}
 	case models.StatePairing:
 		resp, err = s.handlePairingState()
@@ -120,12 +120,12 @@ func (s *CddSdk) handlePairingState() (cddsdkgo.ConnectResponseContent, error) {
 		return cddsdkgo.ConnectResponseContent{}, fmt.Errorf("device was authenticated, but couldn't load certs")
 	}
 	// Still waiting
-	expires := tr12models.PtrFloat32(float32(s.pairer.ExpiresIn()))
+	expiresSeconds := tr12models.PtrFloat32(float32(s.pairer.ExpiresIn()))
 	return cddsdkgo.ConnectResponseContent{
-		Success:     true, State: models.StatePairing,
-		Message:     "Waiting for device to be claimed",
-		PairingCode: tr12models.PtrString(s.pairer.GetPairingCode()),
-		Expires:     expires,
+		Success:        true, State: models.StatePairing,
+		Message:        "Waiting for device to be claimed",
+		PairingCode:    tr12models.PtrString(s.pairer.GetPairingCode()),
+		ExpiresSeconds: expiresSeconds,
 	}, nil
 }
 
@@ -146,12 +146,12 @@ func (s *CddSdk) handleDisconnectedState() (cddsdkgo.ConnectResponseContent, err
 		return cddsdkgo.ConnectResponseContent{}, err
 	}
 	s.transition(models.StatePairing)
-	expires := tr12models.PtrFloat32(float32(s.pairer.ExpiresIn()))
+	expiresSeconds := tr12models.PtrFloat32(float32(s.pairer.ExpiresIn()))
 	return cddsdkgo.ConnectResponseContent{
-		Success:     true, State: models.StatePairing,
-		Message:     "Connecting pending. Waiting for device to be claimed",
-		PairingCode: tr12models.PtrString(s.pairer.GetPairingCode()),
-		Expires:     expires,
+		Success:        true, State: models.StatePairing,
+		Message:        "Connecting pending. Waiting for device to be claimed",
+		PairingCode:    tr12models.PtrString(s.pairer.GetPairingCode()),
+		ExpiresSeconds: expiresSeconds,
 	}, nil
 }
 
@@ -200,18 +200,14 @@ func (s *CddSdk) Deprovision(hostID string, force bool) cddsdkgo.DeprovisionResp
 }
 
 // GetConfiguration returns the latest cached configuration.
-// GetConfiguration returns the latest cached configuration.
 func (s *CddSdk) GetConfiguration() cddsdkgo.GetConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Get Configuration")
 	var configData *cddsdkgo.ConfigurationData
-	if s.configPayload != nil || s.configUpdateID != "" {
+	if s.configPayload != nil {
 		configData = cddsdkgo.NewConfigurationData()
 		configData.Payload = s.configPayload
-		if s.configUpdateID != "" {
-			configData.UpdateId = &s.configUpdateID
-		}
 	}
 	resp := cddsdkgo.NewGetConfigurationResponseContent(true, s.state, "Latest configuration provided")
 	resp.Configuration = configData
@@ -296,7 +292,7 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 	}
 	reason := tr12models.DEPROVISIONED
 	t := tr12models.PtrFloat32(float32(time.Now().Unix()))
-	msg := models.DeprovisionDeviceRequestContent{
+	msg := models.DeprovisionRequest{
 		Reason: &reason,
 		Time:   t,
 	}

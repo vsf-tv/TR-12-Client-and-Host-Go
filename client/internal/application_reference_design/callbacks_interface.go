@@ -62,6 +62,14 @@ type DeviceCallbacks interface {
 	// GetChannelState returns the current channel state.
 	GetChannelState(channelID string) cddsdkgo.ChannelState
 
+	// GetChannelHealth returns the health of a channel, or nil if unknown.
+	// HEALTHY = all native API calls succeeded.
+	// DEGRADED/CRITICAL = one or more native API calls failed.
+	GetChannelHealth(channelID string) *cddsdkgo.Health
+
+	// GetDeviceHealth returns the overall device health, or nil if unknown.
+	GetDeviceHealth() *cddsdkgo.Health
+
 	// GetDeviceStatus returns device-level status values (CPU, temp, model, serial, etc.)
 	GetDeviceStatus() []cddsdkgo.StatusValue
 

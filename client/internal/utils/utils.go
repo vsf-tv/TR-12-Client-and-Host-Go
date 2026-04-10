@@ -151,8 +151,9 @@ func SSLContext(caCertFile, deviceCertFile, privateKeyFile, iotProtocolName stri
 	}, nil
 }
 
-// UploadFile uploads a local file to a pre-signed PUT URL.
-func UploadFile(localPath, remotePath string, timeout int, fileType string) error {
+// UploadFile uploads a local file to a PUT URL with optional HTTP headers.
+// headers may be nil for no additional headers.
+func UploadFile(localPath, remotePath string, timeout int, fileType string, headers map[string]string) error {
 	data, err := os.ReadFile(localPath)
 	if err != nil {
 		return fmt.Errorf("failed to read %s file %s: %w", fileType, localPath, err)
@@ -166,6 +167,9 @@ func UploadFile(localPath, remotePath string, timeout int, fileType string) erro
 	req, err := http.NewRequest(http.MethodPut, remotePath, bytes.NewReader(data))
 	if err != nil {
 		return fmt.Errorf("failed to create upload request: %w", err)
+	}
+	for k, v := range headers {
+		req.Header.Set(k, v)
 	}
 	resp, err := client.Do(req)
 	if err != nil {

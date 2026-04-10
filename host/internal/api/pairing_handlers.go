@@ -34,7 +34,7 @@ func NewPairingHandlers(deviceSvc *service.DeviceService) *PairingHandlers {
 
 // Pair handles POST /pair.
 func (h *PairingHandlers) Pair(c *gin.Context) {
-	var req models.PairRequestContent
+	var req models.CreatePairingCodeRequestContent
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "code": 400})
 		return
@@ -53,7 +53,7 @@ func (h *PairingHandlers) Pair(c *gin.Context) {
 
 // Authenticate handles POST /authenticate.
 func (h *PairingHandlers) Authenticate(c *gin.Context) {
-	var req models.AuthenticateRequestContent
+	var req models.AuthenticatePairingCodeRequestContent
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "code": 400})
 		return

@@ -66,7 +66,7 @@ func TestGetHostConfiguration(t *testing.T) {
 	dir := t.TempDir()
 	hostCfgDir := filepath.Join(dir, "host_configuration")
 	os.MkdirAll(hostCfgDir, 0755)
-	cfg := `{"serviceId":"test-host","serviceName":"Test","deviceTypes":["SOURCE"],"pairingUrl":"http://localhost:8080","authUrl":"http://localhost:8080","thumbnailMaxSizeKB":100,"logFileMaxSizeKB":500}`
+	cfg := `{"serviceId":"test-host","serviceName":"Test","deviceTypes":["SOURCE"],"createPairingCodeUrl":"http://localhost:8080","authenticatePairingCodeUrl":"http://localhost:8080","thumbnailMaxSizeKB":100,"logFileMaxSizeKB":500}`
 	os.WriteFile(filepath.Join(hostCfgDir, "test-host.json"), []byte(cfg), 0644)
 
 	config, err := GetHostConfiguration("test-host", dir)

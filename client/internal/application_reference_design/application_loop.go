@@ -11,12 +11,10 @@
 // limitations under the License.
 //
 // ApplicationLoop — the reusable TR-12 connect/status/config run loop.
-// Mirrors the original ARD RunLoop logic exactly.
 package application_reference_design
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -30,21 +28,32 @@ type ApplicationLoop struct {
 	shim           *Tr12Shim
 	sdk            *SDKClient
 	registration   *cddsdkgo.DeviceRegistration
-	latestConfigID string
-	log            *cddlogger.CDDLogger
+
+	// latestDeviceConfigId tracks the last applied DeviceConfiguration.configurationId.
+	// This ID only bumps when device-level simpleSettings change.
+	latestDeviceConfigId string
+
+	// latestChannelConfigIds tracks the last applied ChannelConfiguration.configurationId per channel.
+	// Each channel's ID bumps independently when that channel's state/settings/connection change.
+	latestChannelConfigIds map[string]string
+
+	log *cddlogger.CDDLogger
+
 	// StateCallback is called after each connect response with the current state details.
 	StateCallback func(state, pairingCode, deviceID string)
-	// ConfigAppliedCallback is called after a configuration update is successfully applied.
-	ConfigAppliedCallback func(configID string)
+
+	// ConfigAppliedCallback is called after any configuration update is applied.
+	ConfigAppliedCallback func(deviceConfigId string)
 }
 
 // NewApplicationLoop creates a loop with the given callbacks and registration.
 func NewApplicationLoop(sdkURL string, callbacks DeviceCallbacks, registration *cddsdkgo.DeviceRegistration) *ApplicationLoop {
 	return &ApplicationLoop{
-		callbacks:    callbacks,
-		shim:         NewTr12ShimWithCallbacks(callbacks),
-		sdk:          NewSDKClient(sdkURL),
-		registration: registration,
+		callbacks:              callbacks,
+		shim:                   NewTr12ShimWithCallbacks(callbacks),
+		sdk:                    NewSDKClient(sdkURL),
+		registration:           registration,
+		latestChannelConfigIds: make(map[string]string),
 	}
 }
 
@@ -63,11 +72,6 @@ func (l *ApplicationLoop) logf(format string, args ...interface{}) {
 }
 
 // Run executes the loop until ctx is cancelled.
-// Each iteration:
-//  1. Call connect — get connection state
-//  2. If CONNECTED: get configuration
-//     - If updateId changed: apply config to device, read back actual, report actual
-//  3. If CONNECTED: report status
 func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 	for {
 		select {
@@ -76,7 +80,6 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		default:
 		}
 
-		// 1. Connect
 		resp, err := l.sdk.Connect(hostID, l.registration)
 		if err != nil {
 			l.logf("[LOOP] connect error: %v", err)
@@ -91,7 +94,7 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		l.logf("[LOOP] state=%s deviceId=%s", resp.State, resp.GetDeviceId())
 
 		if resp.State == "PAIRING" {
-			l.logf("[LOOP] pairing code: %s (expires in %ds)", resp.GetPairingCode(), int(resp.GetExpires()))
+			l.logf("[LOOP] pairing code: %s (expires in %ds)", resp.GetPairingCode(), int(resp.GetExpiresSeconds()))
 		}
 
 		if l.StateCallback != nil {
@@ -99,10 +102,7 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		}
 
 		if resp.State == "CONNECTED" {
-			// 2. Get configuration — apply only if updateId changed
 			l.processConfiguration()
-
-			// 3. Report status
 			l.reportStatus()
 		}
 
@@ -121,67 +121,68 @@ func (l *ApplicationLoop) Disconnect() {
 	}
 }
 
-// processConfiguration gets the current configuration from the SDK.
-// If the updateId has changed since last processed, applies it to the device
-// via the shim callbacks, reads back actual state, and reports it.
-// Does NOT report actual configuration if nothing changed.
+// processConfiguration checks DeviceConfiguration and each ChannelConfiguration independently
+// using their configurationId fields to determine what needs to be applied.
+//
+// DeviceConfiguration.configurationId — bumped by host when device-level simpleSettings change.
+// ChannelConfiguration.configurationId — bumped by host when that channel's state/settings/connection change.
+// Each is tracked and applied independently.
 func (l *ApplicationLoop) processConfiguration() {
 	resp, err := l.sdk.GetConfiguration()
 	if err != nil {
 		l.logf("[LOOP] get_configuration error: %v", err)
 		return
 	}
-	if resp.Configuration == nil {
+	if resp.Configuration == nil || resp.Configuration.Payload == nil {
 		l.logf("[LOOP] get_configuration: no configuration yet")
 		return
 	}
 
-	updateID := resp.Configuration.GetUpdateId()
-	l.logf("[LOOP] get_configuration updateId=%s latestId=%s", updateID, l.latestConfigID)
+	cfg := resp.Configuration.Payload
 
-	// Skip if no update or already processed
-	if updateID == "" || updateID == l.latestConfigID {
+	anyApplied := false
+
+	// --- Per-channel: apply if ChannelConfiguration.configurationId changed ---
+	for _, ch := range cfg.Channels {
+		lastId, seen := l.latestChannelConfigIds[ch.Id]
+		if seen && ch.ConfigurationId == lastId {
+			continue
+		}
+		l.logf("[LOOP] applying channel %s configurationId=%s (was %s)", ch.Id, ch.ConfigurationId, lastId)
+		l.shim.applyChannel(ch)
+		l.latestChannelConfigIds[ch.Id] = ch.ConfigurationId
+		anyApplied = true
+	}
+
+	// --- Device-level: apply simpleSettings if DeviceConfiguration.configurationId changed ---
+	if cfg.ConfigurationId != l.latestDeviceConfigId && len(cfg.SimpleSettings) > 0 {
+		l.logf("[LOOP] applying device simpleSettings (configurationId %s → %s)",
+			l.latestDeviceConfigId, cfg.ConfigurationId)
+		for _, kv := range cfg.SimpleSettings {
+			l.callbacks.UpdateDeviceKeyValue(kv.Key, kv.Value)
+		}
+		anyApplied = true
+	}
+
+	if !anyApplied {
 		return
 	}
 
-	payload := resp.Configuration.Payload
-	if payload == nil {
-		l.logf("[LOOP] configuration payload is nil")
-		return
-	}
-
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		l.logf("[LOOP] marshal payload error: %v", err)
-		return
-	}
-	l.logf("[LOOP] new configuration update_id=%s payload=%s", updateID, string(payloadBytes))
-
-	var deviceConfig cddsdkgo.DeviceConfiguration
-	if err := json.Unmarshal(payloadBytes, &deviceConfig); err != nil {
-		l.logf("[LOOP] parse DeviceConfiguration error: %v", err)
-		return
-	}
-
-	l.logf("[LOOP] applying configuration: channels=%d", len(deviceConfig.Channels))
-
-	// Apply desired configuration to the device via callbacks
-	if !l.shim.ApplyDesiredConfiguration(&deviceConfig) {
-		l.logf("[LOOP] ApplyDesiredConfiguration returned false")
-		return
-	}
-
-	// Mark this updateId as processed
-	l.latestConfigID = updateID
+	l.latestDeviceConfigId = cfg.ConfigurationId
 
 	if l.ConfigAppliedCallback != nil {
-		l.ConfigAppliedCallback(updateID)
+		// Build a composite ID from all applied configurationIds so the callback
+		// fires whenever any entity (device or channel) was updated.
+		composite := cfg.ConfigurationId
+		for _, ch := range cfg.Channels {
+			composite += ":" + ch.ConfigurationId
+		}
+		l.ConfigAppliedCallback(composite)
 	}
 
-	// Read back actual state from the device and report it
-	actual := l.shim.GetActualConfiguration(l.registration)
-	actualBytes, _ := json.Marshal(actual)
-	l.logf("[LOOP] reporting actual configuration: %s", string(actualBytes))
+	// Report actual configuration, echoing the configurationIds the ARD actually applied
+	actual := l.shim.GetActualConfiguration(l.registration, cfg, l.latestChannelConfigIds)
+	l.logf("[LOOP] reporting actual configuration")
 
 	reportResp, err := l.sdk.ReportActualConfiguration(actual)
 	if err != nil {
@@ -192,7 +193,7 @@ func (l *ApplicationLoop) processConfiguration() {
 }
 
 func (l *ApplicationLoop) reportStatus() {
-	status := l.shim.GetDeviceStatus()
+	status := l.shim.GetDeviceStatus(l.registration)
 	resp, err := l.sdk.ReportStatus(status)
 	if err != nil {
 		l.logf("[LOOP] report_status error: %v", err)

@@ -84,14 +84,7 @@ func (cb *ArdCallbacks) GetChannelState(channelID string) cddsdkgo.ChannelState 
 }
 
 func (cb *ArdCallbacks) GetDeviceStatus() []cddsdkgo.StatusValue {
-	if cb.Encoder.Running() {
-		return []cddsdkgo.StatusValue{
-			{Name: "cpu", Value: "61", Info: "Current CPU % utilization."},
-			{Name: "temp", Value: "84", Info: "CPU in degrees C."},
-			{Name: "model", Value: "Talon", Info: "Hardware device model identifier."},
-			{Name: "serial", Value: "123456789", Info: "Device serial number."},
-		}
-	}
+	// Device status doesn't depend on any specific channel
 	return []cddsdkgo.StatusValue{
 		{Name: "cpu", Value: "31", Info: "Current CPU % utilization."},
 		{Name: "temp", Value: "76", Info: "CPU in degrees C."},
@@ -101,7 +94,7 @@ func (cb *ArdCallbacks) GetDeviceStatus() []cddsdkgo.StatusValue {
 }
 
 func (cb *ArdCallbacks) GetChannelStatus(channelID string) []cddsdkgo.StatusValue {
-	if cb.Encoder.Running() {
+	if cb.Encoder.RunningChannel(channelID) {
 		return []cddsdkgo.StatusValue{
 			{Name: "bitrate", Value: GetSimulatedBitrate(), Info: "Bitrate Mbps configured on the video encoder."},
 		}
@@ -109,4 +102,13 @@ func (cb *ArdCallbacks) GetChannelStatus(channelID string) []cddsdkgo.StatusValu
 	return []cddsdkgo.StatusValue{
 		{Name: "bitrate", Value: "0", Info: "Bitrate Mbps configured on the video encoder."},
 	}
+}
+
+func (cb *ArdCallbacks) GetChannelHealth(channelID string) *cddsdkgo.Health {
+	return cb.Encoder.GetChannelHealth(channelID)
+}
+
+func (cb *ArdCallbacks) GetDeviceHealth() *cddsdkgo.Health {
+	h := cddsdkgo.HealthyAsHealth(cddsdkgo.NewHealthy(map[string]interface{}{}))
+	return &h
 }

@@ -162,17 +162,17 @@ func (s *Store) ReadFromFilesystem() (bool, error) {
 }
 
 // WriteToFilesystem saves certs and settings after successful authentication.
-func (s *Store) WriteToFilesystem(deviceID string, auth *tr12models.AuthenticateResponseContent) error {
+func (s *Store) WriteToFilesystem(deviceID string, auth *tr12models.AuthenticatePairingCodeResponseContent) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if err := os.MkdirAll(s.Dir, 0755); err != nil {
 		return fmt.Errorf("unable to create certs directory: %w", err)
 	}
-	if err := os.WriteFile(s.CACertFile, []byte(auth.GetCaCert()), 0600); err != nil {
+	if err := os.WriteFile(s.CACertFile, []byte(auth.GetCaCertificate()), 0600); err != nil {
 		return fmt.Errorf("unable to write ca_cert: %w", err)
 	}
-	if err := os.WriteFile(s.DeviceCertFile, []byte(auth.GetDeviceCert()), 0600); err != nil {
+	if err := os.WriteFile(s.DeviceCertFile, []byte(auth.GetDeviceCertificate()), 0600); err != nil {
 		return fmt.Errorf("unable to write device_cert: %w", err)
 	}
 	if err := os.WriteFile(s.PrivKeyFile, []byte(s.PrivKey), 0600); err != nil {
@@ -181,10 +181,10 @@ func (s *Store) WriteToFilesystem(deviceID string, auth *tr12models.Authenticate
 	s.ConnSettings = &ConnectionSettings{
 		DeviceID: deviceID,
 		URI:      auth.GetMqttUri(),
-		Region:   auth.GetRegion(),
+		Region:   auth.GetRegionName(),
 	}
-	log.Printf("[CREDS] Writing connection_settings to %s: deviceId=%s uri=%q region=%s",
-		s.ConnSettingsFile, deviceID, auth.GetMqttUri(), auth.GetRegion())
+	log.Printf("[CREDS] Writing connection_settings to %s: deviceId=%s uri=%q regionName=%s",
+		s.ConnSettingsFile, deviceID, auth.GetMqttUri(), auth.GetRegionName())
 	csData, _ := json.Marshal(s.ConnSettings)
 	if err := os.WriteFile(s.ConnSettingsFile, csData, 0600); err != nil {
 		return fmt.Errorf("unable to write connection_settings: %w", err)
@@ -204,15 +204,15 @@ func (s *Store) RotateCerts(rotate *tr12models.RotateCertificatesRequestContent)
 
 	needUpdate := false
 	currentCert, _ := os.ReadFile(s.DeviceCertFile)
-	if rotate.DeviceCert != string(currentCert) {
-		if err := os.WriteFile(s.DeviceCertFile, []byte(rotate.DeviceCert), 0600); err != nil {
+	if rotate.DeviceCertificate != string(currentCert) {
+		if err := os.WriteFile(s.DeviceCertFile, []byte(rotate.DeviceCertificate), 0600); err != nil {
 			return false, fmt.Errorf("unable to write rotated device_cert: %w", err)
 		}
 		needUpdate = true
 	}
-	if s.ConnSettings != nil && (rotate.MqttUri != s.ConnSettings.URI || rotate.Region != s.ConnSettings.Region) {
+	if s.ConnSettings != nil && (rotate.MqttUri != s.ConnSettings.URI || rotate.RegionName != s.ConnSettings.Region) {
 		s.ConnSettings.URI = rotate.MqttUri
-		s.ConnSettings.Region = rotate.Region
+		s.ConnSettings.Region = rotate.RegionName
 		csData, _ := json.Marshal(s.ConnSettings)
 		if err := os.WriteFile(s.ConnSettingsFile, csData, 0600); err != nil {
 			return false, fmt.Errorf("unable to write rotated connection_settings: %w", err)

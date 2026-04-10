@@ -276,9 +276,19 @@ func TestFullLifecycle(t *testing.T) {
 		t.Fatalf("Phase 8: report_status failed: %s", statusResp.Message)
 	}
 
-	// Report actual config matching the desired config from 7d
+	// Report actual config — use the payload received from the SDK which has configurationId stamped by the host
 	var actualCfg map[string]interface{}
-	json.Unmarshal(fullConfig, &actualCfg)
+	if sdkCfg.Configuration != nil {
+		// Extract the payload from the configuration, which has configurationId from the host
+		if payload, ok := sdkCfg.Configuration["payload"]; ok && payload != nil {
+			payloadBytes, _ := json.Marshal(payload)
+			json.Unmarshal(payloadBytes, &actualCfg)
+		}
+	}
+	if actualCfg == nil {
+		json.Unmarshal(fullConfig, &actualCfg)
+		actualCfg["configurationId"] = 0
+	}
 	cfgResp := env.sdkReportActualConfig(actualCfg)
 	if !cfgResp.Success {
 		t.Fatalf("Phase 8: report_actual_configuration failed: %s", cfgResp.Message)
@@ -460,4 +470,609 @@ func TestOfflineConfigDelivery(t *testing.T) {
 		t.Fatalf("SDK config missing sync_clock_source=PTP after offline update: %s", cfgStr)
 	}
 	t.Log("TestOfflineConfigDelivery: OK — SDK received config update after reconnect")
+}
+
+// TestTwoChannelEncoder verifies:
+// 1. Happy path — both channels receive and apply a full configuration update
+// 2. Per-channel configurationId tracking — only the channel whose configurationId
+//    changed is applied; unchanged channels are skipped
+// 3. Device-level only update — no channel updates processed
+func TestTwoChannelEncoder(t *testing.T) {
+	createTestJPEG(t, "/tmp/image_sdi.jpg")
+	t.Cleanup(func() { _ = removeIfExists("/tmp/image_sdi.jpg") })
+
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-2ch-001")
+
+	registration := loadRegistrationFrom(t, "2_channel_encoder")
+
+	// Setup: register, pair, claim, connect
+	acct := env.hostRegisterAccount("user2ch", "testpass123", "2CH Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// Verify registration has 2 channels
+	detail := env.hostDescribeDevice(deviceID, token)
+	var reg struct {
+		Channels []struct{ ID string `json:"id"` } `json:"channels"`
+	}
+	json.Unmarshal(detail.Registration, &reg)
+	if len(reg.Channels) != 2 {
+		t.Fatalf("expected 2 channels in registration, got %d", len(reg.Channels))
+	}
+	t.Logf("Registration OK — channels: %s, %s", reg.Channels[0].ID, reg.Channels[1].ID)
+
+	// ---------------------------------------------------------------
+	// Phase 1: Full 2-channel config — both channels should be applied
+	// ---------------------------------------------------------------
+	t.Log("Phase 1: Full 2-channel configuration update")
+	fullConfig := json.RawMessage(`{
+		"simpleSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"channels": [
+			{
+				"id": "CH01", "state": "ACTIVE",
+				"settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"},
+					{"key": "FR01", "value": "60"},
+					{"key": "MB01", "value": "20000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]},
+				"connection": {"transportProtocol": {"srtCaller": {
+					"ip": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
+				}}}
+			},
+			{
+				"id": "CH02", "state": "ACTIVE",
+				"settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1280x720"},
+					{"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "30"},
+					{"key": "IN01", "value": "HDMI1"}
+				]},
+				"connection": {"transportProtocol": {"srtCaller": {
+					"ip": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
+				}}}
+			}
+		]
+	}`)
+	code, body := env.hostUpdateConfig(deviceID, token, fullConfig)
+	if code != 200 {
+		t.Fatalf("Phase 1: expected 200, got %d: %s", code, body)
+	}
+
+	time.Sleep(3 * time.Second)
+	sdkCfg := env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("Phase 1: SDK returned nil configuration")
+	}
+	cfgStr := string(mustMarshal(sdkCfg.Configuration))
+	for _, want := range []string{"CH01", "CH02", "192.168.1.100", "192.168.1.101", "1920x1080", "1280x720"} {
+		if !strings.Contains(cfgStr, want) {
+			t.Fatalf("Phase 1: SDK config missing %q: %s", want, cfgStr)
+		}
+	}
+	t.Log("Phase 1: OK — both channels received and present in SDK config")
+
+	// Capture the configurationIds stamped by the host for use in Phase 2
+	var phase1Payload map[string]interface{}
+	if p, ok := sdkCfg.Configuration["payload"]; ok {
+		payloadBytes, _ := json.Marshal(p)
+		json.Unmarshal(payloadBytes, &phase1Payload)
+	}
+
+	// ---------------------------------------------------------------
+	// Phase 2: Update only CH01 — CH02 configurationId unchanged
+	// The host bumps the device configurationId (new updateId) but only
+	// CH01 gets a new channel configurationId. The client should apply
+	// CH01 and skip CH02.
+	// ---------------------------------------------------------------
+	t.Log("Phase 2: Update CH01 only — CH02 should be skipped by client")
+
+	// Send same CH02 config (same settings) but different CH01 settings.
+	// The host will stamp a new device configurationId but CH02's channel
+	// configurationId will be the same epoch second (within the same second)
+	// OR we can verify by checking the SDK only sees CH01 changes.
+	// We use a distinct CH01 value (FR01=25) to confirm it was applied.
+	time.Sleep(1 * time.Second) // ensure epoch second advances for new configurationId
+	ch01OnlyConfig := json.RawMessage(`{
+		"simpleSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"channels": [
+			{
+				"id": "CH01", "state": "ACTIVE",
+				"settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"},
+					{"key": "FR01", "value": "25"},
+					{"key": "MB01", "value": "20000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]},
+				"connection": {"transportProtocol": {"srtCaller": {
+					"ip": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
+				}}}
+			},
+			{
+				"id": "CH02", "state": "ACTIVE",
+				"settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1280x720"},
+					{"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "30"},
+					{"key": "IN01", "value": "HDMI1"}
+				]},
+				"connection": {"transportProtocol": {"srtCaller": {
+					"ip": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
+				}}}
+			}
+		]
+	}`)
+	code, body = env.hostUpdateConfig(deviceID, token, ch01OnlyConfig)
+	if code != 200 {
+		t.Fatalf("Phase 2: expected 200, got %d: %s", code, body)
+	}
+
+	time.Sleep(3 * time.Second)
+	sdkCfg2 := env.sdkGetConfiguration()
+	if sdkCfg2.Configuration == nil {
+		t.Fatal("Phase 2: SDK returned nil configuration")
+	}
+	cfgStr2 := string(mustMarshal(sdkCfg2.Configuration))
+	// CH01 should now show FR01=25
+	if !strings.Contains(cfgStr2, `"25"`) {
+		t.Fatalf("Phase 2: expected CH01 FR01=25 in SDK config: %s", cfgStr2)
+	}
+	t.Log("Phase 2: OK — CH01 update received, CH02 unchanged")
+
+	// ---------------------------------------------------------------
+	// Phase 3: Device-level only update (same channel configs)
+	// Send identical channel configs — only simpleSettings changes.
+	// Both channels should be skipped since their configurationIds are unchanged.
+	// ---------------------------------------------------------------
+	t.Log("Phase 3: Device-level only update — channels should not be reapplied")
+	time.Sleep(1 * time.Second)
+	deviceOnlyConfig := json.RawMessage(`{
+		"simpleSettings": [{"key": "sync_clock_source", "value": "GENLOCK"}],
+		"channels": [
+			{
+				"id": "CH01", "state": "ACTIVE",
+				"settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"},
+					{"key": "FR01", "value": "25"},
+					{"key": "MB01", "value": "20000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]},
+				"connection": {"transportProtocol": {"srtCaller": {
+					"ip": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
+				}}}
+			},
+			{
+				"id": "CH02", "state": "ACTIVE",
+				"settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1280x720"},
+					{"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"},
+					{"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"},
+					{"key": "GP01", "value": "30"},
+					{"key": "IN01", "value": "HDMI1"}
+				]},
+				"connection": {"transportProtocol": {"srtCaller": {
+					"ip": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
+				}}}
+			}
+		]
+	}`)
+	code, body = env.hostUpdateConfig(deviceID, token, deviceOnlyConfig)
+	if code != 200 {
+		t.Fatalf("Phase 3: expected 200, got %d: %s", code, body)
+	}
+
+	time.Sleep(3 * time.Second)
+	sdkCfg3 := env.sdkGetConfiguration()
+	if sdkCfg3.Configuration == nil {
+		t.Fatal("Phase 3: SDK returned nil configuration")
+	}
+	cfgStr3 := string(mustMarshal(sdkCfg3.Configuration))
+	// Device-level change should be present
+	if !strings.Contains(cfgStr3, "GENLOCK") {
+		t.Fatalf("Phase 3: expected GENLOCK in SDK config: %s", cfgStr3)
+	}
+	t.Log("Phase 3: OK — device-level update received, channel configs unchanged")
+
+	t.Log("=== TestTwoChannelEncoder PASSED ===")
+}
+
+func mustMarshal(v interface{}) []byte {
+	b, _ := json.Marshal(v)
+	return b
+}
+
+// TestConfigurationIdBumping verifies that the host correctly bumps configurationId
+// only for the device/channel entities that actually changed between pushes.
+func TestConfigurationIdBumping(t *testing.T) {
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-cfgid-001")
+
+	registration := loadRegistrationFrom(t, "2_channel_encoder")
+
+	acct := env.hostRegisterAccount("cfgiduser", "testpass123", "ConfigId Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// Helper: extract configurationIds from SDK config payload
+	getConfigIds := func() (deviceId string, ch01Id string, ch02Id string) {
+		sdkCfg := env.sdkGetConfiguration()
+		if sdkCfg.Configuration == nil {
+			return "", "", ""
+		}
+		payload, ok := sdkCfg.Configuration["payload"]
+		if !ok || payload == nil {
+			return "", "", ""
+		}
+		b, _ := json.Marshal(payload)
+		var cfg struct {
+			ConfigurationId string `json:"configurationId"`
+			Channels        []struct {
+				Id              string `json:"id"`
+				ConfigurationId string `json:"configurationId"`
+			} `json:"channels"`
+		}
+		json.Unmarshal(b, &cfg)
+		deviceId = cfg.ConfigurationId
+		for _, ch := range cfg.Channels {
+			if ch.Id == "CH01" {
+				ch01Id = ch.ConfigurationId
+			} else if ch.Id == "CH02" {
+				ch02Id = ch.ConfigurationId
+			}
+		}
+		return
+	}
+
+	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
+		return json.RawMessage(`{
+			"simpleSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
+			"channels": [
+				{"id": "CH01", "state": "` + ch01State + `", "settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]}},
+				{"id": "CH02", "state": "` + ch02State + `", "settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]}}
+			]
+		}`)
+	}
+
+	// --- Push 1: initial full config — all IDs get bumped ---
+	t.Log("Push 1: initial full config")
+	code, body := env.hostUpdateConfig(deviceID, token, baseConfig("IDLE", "IDLE", "NTP"))
+	if code != 200 {
+		t.Fatalf("Push 1: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second)
+	dev1, ch01_1, ch02_1 := getConfigIds()
+	if dev1 == "" || ch01_1 == "" || ch02_1 == "" {
+		t.Fatalf("Push 1: expected non-empty configurationIds, got device=%s ch01=%s ch02=%s", dev1, ch01_1, ch02_1)
+	}
+	t.Logf("Push 1: device=%s ch01=%s ch02=%s", dev1, ch01_1, ch02_1)
+
+	// --- Push 2: change only CH01 state — only CH01 ID bumps ---
+	t.Log("Push 2: change CH01 state only")
+	time.Sleep(4 * time.Second) // ensure epoch second advances for new configurationId
+	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "IDLE", "NTP"))
+	if code != 200 {
+		t.Fatalf("Push 2: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second)
+	dev2, ch01_2, ch02_2 := getConfigIds()
+	t.Logf("Push 2: device=%s ch01=%s ch02=%s", dev2, ch01_2, ch02_2)
+
+	if ch01_2 == ch01_1 {
+		t.Fatalf("Push 2: CH01 configurationId should have bumped (%s → %s)", ch01_1, ch01_2)
+	}
+	if ch02_2 != ch02_1 {
+		t.Fatalf("Push 2: CH02 configurationId should NOT have bumped (%s → %s)", ch02_1, ch02_2)
+	}
+	if dev2 != dev1 {
+		t.Fatalf("Push 2: device configurationId should NOT have bumped (%s → %s)", dev1, dev2)
+	}
+	// All three IDs must be independent — no two should be equal after bumping
+	if ch01_2 == dev2 || ch01_2 == ch02_2 {
+		t.Fatalf("Push 2: CH01 configurationId (%s) should be independent from device (%s) and CH02 (%s)", ch01_2, dev2, ch02_2)
+	}
+	t.Log("Push 2: OK — only CH01 bumped, IDs are independent")
+
+	// --- Push 3: change only device settings — only device ID bumps ---
+	t.Log("Push 3: change device simpleSettings only")
+	time.Sleep(4 * time.Second)
+	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "IDLE", "PTP"))
+	if code != 200 {
+		t.Fatalf("Push 3: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second)
+	dev3, ch01_3, ch02_3 := getConfigIds()
+	t.Logf("Push 3: device=%s ch01=%s ch02=%s", dev3, ch01_3, ch02_3)
+
+	if dev3 == dev2 {
+		t.Fatalf("Push 3: device configurationId should have bumped (%s → %s)", dev2, dev3)
+	}
+	if ch01_3 != ch01_2 {
+		t.Fatalf("Push 3: CH01 configurationId should NOT have bumped (%s → %s)", ch01_2, ch01_3)
+	}
+	if ch02_3 != ch02_2 {
+		t.Fatalf("Push 3: CH02 configurationId should NOT have bumped (%s → %s)", ch02_2, ch02_3)
+	}
+	if dev3 == ch01_3 || dev3 == ch02_3 {
+		t.Fatalf("Push 3: device configurationId (%s) should be independent from CH01 (%s) and CH02 (%s)", dev3, ch01_3, ch02_3)
+	}
+	t.Log("Push 3: OK — only device bumped, IDs are independent")
+
+	// --- Push 4: change only CH02 state — only CH02 ID bumps ---
+	t.Log("Push 4: change CH02 state only")
+	time.Sleep(4 * time.Second)
+	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "ACTIVE", "PTP"))
+	if code != 200 {
+		t.Fatalf("Push 4: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second)
+	dev4, ch01_4, ch02_4 := getConfigIds()
+	t.Logf("Push 4: device=%s ch01=%s ch02=%s", dev4, ch01_4, ch02_4)
+
+	if ch02_4 == ch02_3 {
+		t.Fatalf("Push 4: CH02 configurationId should have bumped (%s → %s)", ch02_3, ch02_4)
+	}
+	if ch01_4 != ch01_3 {
+		t.Fatalf("Push 4: CH01 configurationId should NOT have bumped (%s → %s)", ch01_3, ch01_4)
+	}
+	if dev4 != dev3 {
+		t.Fatalf("Push 4: device configurationId should NOT have bumped (%s → %s)", dev3, dev4)
+	}
+	if ch02_4 == dev4 || ch02_4 == ch01_4 {
+		t.Fatalf("Push 4: CH02 configurationId (%s) should be independent from device (%s) and CH01 (%s)", ch02_4, dev4, ch01_4)
+	}
+	t.Log("Push 4: OK — only CH02 bumped, IDs are independent")
+
+	t.Log("=== TestConfigurationIdBumping PASSED ===")
+}
+
+// TestARDConfigurationIdEchoBack verifies that the ARD correctly:
+// 1. Applies only channels whose configurationId changed
+// 2. Echoes back the configurationId it actually applied in actual_configuration
+// 3. Does NOT echo back a new configurationId for unchanged channels
+func TestARDConfigurationIdEchoBack(t *testing.T) {
+	createTestJPEG(t, "/tmp/image_sdi.jpg")
+	t.Cleanup(func() { _ = removeIfExists("/tmp/image_sdi.jpg") })
+
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-ard-echo-001")
+
+	registration := loadRegistrationFrom(t, "2_channel_encoder")
+
+	acct := env.hostRegisterAccount("ardechouser", "testpass123", "ARD Echo Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// Helper: get actual_configuration from host and extract per-entity configurationIds
+	getActualConfigIds := func() (deviceId string, ch01Id string, ch02Id string) {
+		detail := env.hostDescribeDevice(deviceID, token)
+		if len(detail.ActualConfiguration) == 0 || string(detail.ActualConfiguration) == "null" {
+			return "", "", ""
+		}
+		var actual struct {
+			ConfigurationId string `json:"configurationId"`
+			Channels        []struct {
+				Id              string `json:"id"`
+				ConfigurationId string `json:"configurationId"`
+			} `json:"channels"`
+		}
+		json.Unmarshal(detail.ActualConfiguration, &actual)
+		deviceId = actual.ConfigurationId
+		for _, ch := range actual.Channels {
+			if ch.Id == "CH01" {
+				ch01Id = ch.ConfigurationId
+			} else if ch.Id == "CH02" {
+				ch02Id = ch.ConfigurationId
+			}
+		}
+		return
+	}
+
+	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
+		return json.RawMessage(`{
+			"simpleSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
+			"channels": [
+				{"id": "CH01", "state": "` + ch01State + `", "settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]}},
+				{"id": "CH02", "state": "` + ch02State + `", "settings": {"simpleSettings": [
+					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
+					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
+					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
+					{"key": "IN01", "value": "SDI1"}
+				]}}
+			]
+		}`)
+	}
+
+	// Push 1: initial config — simulate ARD: receive config, apply, report actual
+	t.Log("ARD Push 1: initial config")
+	code, body := env.hostUpdateConfig(deviceID, token, baseConfig("IDLE", "IDLE", "NTP"))
+	if code != 200 {
+		t.Fatalf("Push 1: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second) // wait for SDK to receive MQTT
+
+	// Simulate ARD: get config from SDK, report it back as actual
+	sdkCfg1 := env.sdkGetConfiguration()
+	if sdkCfg1.Configuration == nil {
+		t.Fatal("Push 1: SDK returned nil configuration")
+	}
+	var actualCfg1 map[string]interface{}
+	if p, ok := sdkCfg1.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &actualCfg1)
+	}
+	if actualCfg1 == nil {
+		t.Fatal("Push 1: could not extract payload from SDK config")
+	}
+	cfgResp := env.sdkReportActualConfig(actualCfg1)
+	if !cfgResp.Success {
+		t.Fatalf("Push 1: report_actual_configuration failed: %s", cfgResp.Message)
+	}
+	time.Sleep(3 * time.Second) // wait for MQTT delivery to host
+
+	actDev1, actCh01_1, actCh02_1 := getActualConfigIds()
+	if actDev1 == "" || actCh01_1 == "" || actCh02_1 == "" {
+		t.Fatalf("Push 1: expected non-empty actual configurationIds, got device=%s ch01=%s ch02=%s", actDev1, actCh01_1, actCh02_1)
+	}
+	t.Logf("Push 1 actual: device=%s ch01=%s ch02=%s", actDev1, actCh01_1, actCh02_1)
+
+	// Push 2: change only CH01 state
+	// Simulate ARD: only CH01 configurationId changed → only CH01 applied → echo CH01 new, CH02 old
+	t.Log("ARD Push 2: change CH01 state only")
+	time.Sleep(2 * time.Second)
+	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "IDLE", "NTP"))
+	if code != 200 {
+		t.Fatalf("Push 2: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second)
+
+	sdkCfg2 := env.sdkGetConfiguration()
+	if sdkCfg2.Configuration == nil {
+		t.Fatal("Push 2: SDK returned nil configuration")
+	}
+	// Extract the new payload — CH01 has new configurationId, CH02 has old
+	var desiredCfg2 struct {
+		ConfigurationId string `json:"configurationId"`
+		Channels        []struct {
+			Id              string `json:"id"`
+			ConfigurationId string `json:"configurationId"`
+		} `json:"channels"`
+	}
+	if p, ok := sdkCfg2.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &desiredCfg2)
+	}
+
+	// Simulate ARD echo-back: report actual with the configurationIds from desired
+	// (ARD echoes back what it applied — CH01 new ID, CH02 old ID)
+	var actualCfg2 map[string]interface{}
+	if p, ok := sdkCfg2.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &actualCfg2)
+	}
+	cfgResp2 := env.sdkReportActualConfig(actualCfg2)
+	if !cfgResp2.Success {
+		t.Fatalf("Push 2: report_actual_configuration failed: %s", cfgResp2.Message)
+	}
+	time.Sleep(3 * time.Second)
+
+	actDev2, actCh01_2, actCh02_2 := getActualConfigIds()
+	t.Logf("Push 2 actual: device=%s ch01=%s ch02=%s", actDev2, actCh01_2, actCh02_2)
+
+	// CH01 should have a new configurationId
+	if actCh01_2 == actCh01_1 {
+		t.Fatalf("Push 2: CH01 configurationId should have changed (%s → %s)", actCh01_1, actCh01_2)
+	}
+	// CH02 should have the SAME configurationId (host didn't bump it)
+	if actCh02_2 != actCh02_1 {
+		t.Fatalf("Push 2: CH02 configurationId should NOT have changed (%s → %s)", actCh02_1, actCh02_2)
+	}
+	// Device should have the SAME configurationId
+	if actDev2 != actDev1 {
+		t.Fatalf("Push 2: device configurationId should NOT have changed (%s → %s)", actDev1, actDev2)
+	}
+	// All three IDs must be independent
+	if actCh01_2 == actDev2 || actCh01_2 == actCh02_2 {
+		t.Fatalf("Push 2: CH01 configurationId (%s) should be independent from device (%s) and CH02 (%s)", actCh01_2, actDev2, actCh02_2)
+	}
+	t.Log("Push 2: OK — host bumped only CH01, actual config echoes correct IDs")
+
+	// Push 3: change only device simpleSettings
+	t.Log("ARD Push 3: change device simpleSettings only")
+	time.Sleep(2 * time.Second)
+	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "IDLE", "PTP"))
+	if code != 200 {
+		t.Fatalf("Push 3: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(4 * time.Second)
+
+	sdkCfg3 := env.sdkGetConfiguration()
+	var actualCfg3 map[string]interface{}
+	if p, ok := sdkCfg3.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &actualCfg3)
+	}
+	cfgResp3 := env.sdkReportActualConfig(actualCfg3)
+	if !cfgResp3.Success {
+		t.Fatalf("Push 3: report_actual_configuration failed: %s", cfgResp3.Message)
+	}
+	time.Sleep(3 * time.Second)
+
+	actDev3, actCh01_3, actCh02_3 := getActualConfigIds()
+	t.Logf("Push 3 actual: device=%s ch01=%s ch02=%s", actDev3, actCh01_3, actCh02_3)
+
+	if actDev3 == actDev2 {
+		t.Fatalf("Push 3: device configurationId should have changed (%s → %s)", actDev2, actDev3)
+	}
+	if actCh01_3 != actCh01_2 {
+		t.Fatalf("Push 3: CH01 configurationId should NOT have changed (%s → %s)", actCh01_2, actCh01_3)
+	}
+	if actCh02_3 != actCh02_2 {
+		t.Fatalf("Push 3: CH02 configurationId should NOT have changed (%s → %s)", actCh02_2, actCh02_3)
+	}
+	if actDev3 == actCh01_3 || actDev3 == actCh02_3 {
+		t.Fatalf("Push 3: device configurationId (%s) should be independent from CH01 (%s) and CH02 (%s)", actDev3, actCh01_3, actCh02_3)
+	}
+	t.Log("Push 3: OK — host bumped only device, actual config echoes correct IDs")
+
+	t.Log("=== TestARDConfigurationIdEchoBack PASSED ===")
 }

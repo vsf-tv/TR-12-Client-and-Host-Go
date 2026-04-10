@@ -47,7 +47,6 @@ type CddSdk struct {
 	hostID             string
 	registration       map[string]interface{}
 	configPayload      *cddsdkgo.DeviceConfiguration // deserialized MQTT config payload
-	configUpdateID     string                         // update ID for config
 	updateID           *utils.UpdateID
 	statusThrottle     *utils.Throttle
 	configThrottle     *utils.Throttle
@@ -99,7 +98,6 @@ func (s *CddSdk) reset() {
 	s.hostID = ""
 	s.logger.UpdateDeviceID("")
 	s.configPayload = nil
-	s.configUpdateID = ""
 	s.regDelivered = false
 	s.thumbnailManager.StopAll()
 	if s.mqttClient != nil && s.mqttClient.IsConnected() {
@@ -122,14 +120,14 @@ func (s *CddSdk) initializeHost(registration map[string]interface{}, hostID stri
 		s.logger.Errorf("initializeHost: failed to load host config: %v", err)
 		return err
 	}
-	s.logger.Infof("initializeHost: host config loaded. serviceId=%s pairingUrl=%s authUrl=%s", hostConfig.ServiceId, hostConfig.PairingUrl, hostConfig.AuthUrl)
+	s.logger.Infof("initializeHost: host config loaded. serviceId=%s createPairingCodeUrl=%s authenticatePairingCodeUrl=%s", hostConfig.ServiceId, hostConfig.CreatePairingCodeUrl, hostConfig.AuthenticatePairingCodeUrl)
 	s.certs, err = credentials.NewStore(s.certsPath, s.deviceLocalID, hostID)
 	if err != nil {
 		s.logger.Errorf("initializeHost: failed to create credential store: %v", err)
 		return err
 	}
 	s.logger.Infof("initializeHost: credential store created at %s", s.certs.Dir)
-	s.pairer = pairing.New(s.certs, s.deviceType, hostConfig.ServiceId, hostConfig.PairingUrl, hostConfig.AuthUrl)
+	s.pairer = pairing.New(s.certs, s.deviceType, hostConfig.ServiceId, hostConfig.CreatePairingCodeUrl, hostConfig.AuthenticatePairingCodeUrl)
 	s.hostID = hostID
 	s.logger.Infof("initializeHost: complete for host %s", hostID)
 	return nil

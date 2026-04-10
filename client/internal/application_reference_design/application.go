@@ -35,11 +35,15 @@ type ClientApplication struct {
 }
 
 // NewClientApplication creates a new ARD instance.
-func NewClientApplication(sdkURL, basePath string) (*ClientApplication, error) {
-	regFile := filepath.Join(basePath, "payloads", "1_channel_encoder", "registration.json")
-	data, err := os.ReadFile(regFile)
+// registrationFile is an optional explicit path to the registration JSON.
+// If empty, defaults to payloads/1_channel_encoder/registration.json under basePath.
+func NewClientApplication(sdkURL, basePath, registrationFile string) (*ClientApplication, error) {
+	if registrationFile == "" {
+		registrationFile = filepath.Join(basePath, "payloads", "1_channel_encoder", "registration.json")
+	}
+	data, err := os.ReadFile(registrationFile)
 	if err != nil {
-		return nil, fmt.Errorf("cannot read registration file %s: %w", regFile, err)
+		return nil, fmt.Errorf("cannot read registration file %s: %w", registrationFile, err)
 	}
 	var registration cddsdkgo.DeviceRegistration
 	if err := json.Unmarshal(data, &registration); err != nil {

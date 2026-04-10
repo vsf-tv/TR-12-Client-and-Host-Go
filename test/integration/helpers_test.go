@@ -284,8 +284,8 @@ func newTestEnv(t *testing.T) *testEnv {
   "serviceId": "tr12-host",
   "serviceName": "Integration Test Host",
   "deviceTypes": ["SOURCE", "DESTINATION", "BOTH"],
-  "pairingUrl": "http://127.0.0.1:%d",
-  "authUrl": "http://127.0.0.1:%d",
+  "createPairingCodeUrl": "http://127.0.0.1:%d",
+  "authenticatePairingCodeUrl": "http://127.0.0.1:%d",
   "thumbnailMaxSizeKB": 100,
   "logFileMaxSizeKB": 500
 }`, httpPort, httpPort)
@@ -660,12 +660,21 @@ func (e *testEnv) doPut(url string, body interface{}, out interface{}, expectedS
 // ---------------------------------------------------------------------------
 
 func loadRegistration(t *testing.T) map[string]interface{} {
+	return loadRegistrationFrom(t, "")
+}
+
+func loadRegistrationFrom(t *testing.T, subdir string) map[string]interface{} {
 	t.Helper()
 	_, thisFile, _, _ := runtime.Caller(0)
-	path := filepath.Join(filepath.Dir(thisFile), "testdata", "registration.json")
+	var path string
+	if subdir == "" {
+		path = filepath.Join(filepath.Dir(thisFile), "testdata", "registration.json")
+	} else {
+		path = filepath.Join(filepath.Dir(thisFile), "testdata", subdir, "registration.json")
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
-		t.Fatalf("load registration.json: %v", err)
+		t.Fatalf("load registration.json from %s: %v", path, err)
 	}
 	var reg map[string]interface{}
 	if err := json.Unmarshal(data, &reg); err != nil {

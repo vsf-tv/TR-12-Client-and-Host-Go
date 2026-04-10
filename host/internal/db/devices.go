@@ -224,6 +224,16 @@ func (s *Store) UpdateDeviceDesiredConfig(deviceID string, config json.RawMessag
 	return updateID, err
 }
 
+// StoreDeviceDesiredConfig stores the desired configuration WITHOUT incrementing the update ID.
+// Used to persist the stamped config (with configurationIds) after the update ID has already been assigned.
+func (s *Store) StoreDeviceDesiredConfig(deviceID string, config json.RawMessage) error {
+	_, err := s.DB.Exec(
+		"UPDATE devices SET desired_config = ? WHERE device_id = ?",
+		string(config), deviceID,
+	)
+	return err
+}
+
 // UpdateDeviceOnline sets the online state and last_seen.
 func (s *Store) UpdateDeviceOnline(deviceID string, online bool, sourceIP, lastSeen string) error {
 	_, err := s.DB.Exec(

@@ -50,11 +50,11 @@ func parseBrokerAddress(raw string) string {
 func (s *CddSdk) startConnect() (cddsdkgo.ConnectResponseContent, error) {
 	if s.is(models.StateReconnecting, models.StateConnected) {
 		return cddsdkgo.ConnectResponseContent{
-			Success:  true,
-			State:    s.state,
-			Message:  "Already connected or automatically re-connecting",
-			DeviceId: tr12models.PtrString(s.certs.GetDeviceID()),
-			Region:   tr12models.PtrString(s.certs.GetRegion()),
+			Success:    true,
+			State:      s.state,
+			Message:    "Already connected or automatically re-connecting",
+			DeviceId:   tr12models.PtrString(s.certs.GetDeviceID()),
+			RegionName: tr12models.PtrString(s.certs.GetRegion()),
 		}, nil
 	}
 	if s.mqttClient != nil && s.state == models.StateConnecting {
@@ -90,11 +90,11 @@ func (s *CddSdk) startConnect() (cddsdkgo.ConnectResponseContent, error) {
 	}
 
 	return cddsdkgo.ConnectResponseContent{
-		Success:  true,
-		State:    s.state,
-		Message:  "Connection started",
-		Region:   tr12models.PtrString(s.certs.GetRegion()),
-		DeviceId: tr12models.PtrString(s.certs.GetDeviceID()),
+		Success:    true,
+		State:      s.state,
+		Message:    "Connection started",
+		RegionName: tr12models.PtrString(s.certs.GetRegion()),
+		DeviceId:   tr12models.PtrString(s.certs.GetDeviceID()),
 	}, nil
 }
 
@@ -231,7 +231,7 @@ func (s *CddSdk) reportRegistration() {
 
 func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 	s.logger.Infof("****** CONFIG UPDATE received on topic=%s payloadLen=%d", msg.Topic(), len(msg.Payload()))
-	s.logger.Infof("****** CONFIG UPDATE payload: %s", string(msg.Payload()))
+	s.logger.Info("****** CONFIG UPDATE payload:\n" + string(msg.Payload()))
 
 	// Extract updateId first (it's an envelope field, not part of DeviceConfiguration)
 	var envelope map[string]json.RawMessage
@@ -270,8 +270,7 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 	}
 
 	s.configPayload = &deviceConfig
-	s.configUpdateID = updateID
-	s.logger.Infof("****** CONFIG UPDATE stored, configUpdateID=%s", s.configUpdateID)
+	s.logger.Infof("****** CONFIG UPDATE stored, configurationId=%s", deviceConfig.ConfigurationId)
 }
 
 func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
@@ -281,11 +280,11 @@ func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
 		return
 	}
 	// Log first 80 chars of the incoming cert for comparison
-	certSnip := rotate.DeviceCert
+	certSnip := rotate.DeviceCertificate
 	if len(certSnip) > 80 {
 		certSnip = certSnip[:80]
 	}
-	s.logger.Infof("[CERTS] Got rotate message. mqttUri=%q region=%q certStart=%q", rotate.MqttUri, rotate.Region, certSnip)
+	s.logger.Infof("[CERTS] Got rotate message. mqttUri=%q regionName=%q certStart=%q", rotate.MqttUri, rotate.RegionName, certSnip)
 	updated, err := s.certs.RotateCerts(&rotate)
 	if err != nil {
 		s.logger.Errorf("[CERTS] Could not process credential update: %v", err)
@@ -311,8 +310,8 @@ func (s *CddSdk) updateThumbnailSubscriptionCallback(_ mqtt.Client, msg mqtt.Mes
 		return
 	}
 	for src, req := range sub.Requests {
-		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q period=%.0f expires=%.0f maxSizeKB=%.0f",
-			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriod(), req.GetExpires(), req.GetMaxSizeKilobyte())
+		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q periodSeconds=%.0f expiresAtEpochSeconds=%.0f maxSizeKB=%.0f",
+			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresAtEpochSeconds(), req.GetMaxSizeKilobyte())
 	}
 	if err := s.thumbnailManager.UpdateThumbnail(&sub); err != nil {
 		s.logger.Errorf("Thumbnail subscription error: %v", err)
@@ -356,10 +355,10 @@ func (s *CddSdk) reportLogs(logFilePath string) {
 		s.logSpewDetected = 0
 	}
 	remotePath := s.logRequest.GetRemotePath()
-	expires := s.logRequest.GetExpires()
+	expires := s.logRequest.GetExpiresAtEpochSeconds()
 	if remotePath != "" && float64(expires) > float64(time.Now().Unix()) {
 		s.logger.Info("Pushing Logs")
-		if err := utils.UploadFile(logFilePath, remotePath, 5, "log"); err != nil {
+		if err := utils.UploadFile(logFilePath, remotePath, 5, "log", nil); err != nil {
 			s.logger.Errorf("Can't upload logs: %v", err)
 		}
 	}

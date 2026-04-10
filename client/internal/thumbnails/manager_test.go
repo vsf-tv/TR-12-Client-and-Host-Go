@@ -49,11 +49,11 @@ func writeTempJPEG(t *testing.T, sizeBytes int) string {
 func makeRequest(localPath, remotePath string, period, expires, maxSizeKB float32) tr12models.ThumbnailRequest {
 	p, e, m, lp, rp := period, expires, maxSizeKB, localPath, remotePath
 	return tr12models.ThumbnailRequest{
-		Period:          &p,
-		Expires:         &e,
-		MaxSizeKilobyte: &m,
-		LocalPath:       &lp,
-		RemotePath:      &rp,
+		PeriodSeconds:         &p,
+		ExpiresAtEpochSeconds: &e,
+		MaxSizeKilobyte:       &m,
+		LocalPath:             &lp,
+		RemotePath:            &rp,
 	}
 }
 

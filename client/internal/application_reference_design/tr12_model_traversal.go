@@ -35,24 +35,22 @@ func NewTr12ShimWithCallbacks(cb DeviceCallbacks) *Tr12Shim {
 	return &Tr12Shim{CB: cb}
 }
 
-// ApplyDesiredConfiguration walks a desired DeviceConfiguration and pushes values to the device.
+// ApplyDesiredConfiguration walks a desired DeviceConfiguration and pushes all values to the device.
+// For selective per-channel application, use applyChannel directly from ApplicationLoop.
 func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DeviceConfiguration) bool {
 	if desired == nil {
 		return false
 	}
-
-	// Device-level simple settings
 	for _, kv := range desired.SimpleSettings {
 		s.CB.UpdateDeviceKeyValue(kv.Key, kv.Value)
 	}
-
-	// Per-channel configuration
 	for _, ch := range desired.Channels {
 		s.applyChannel(ch)
 	}
 	return true
 }
 
+// applyChannel applies a single channel's desired configuration to the device.
 func (s *Tr12Shim) applyChannel(chCfg cddsdkgo.ChannelConfiguration) {
 	chID := chCfg.Id
 
@@ -78,8 +76,20 @@ func (s *Tr12Shim) applyChannel(chCfg cddsdkgo.ChannelConfiguration) {
 }
 
 // GetActualConfiguration reads back current values using the registration as a template.
-func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistration) *cddsdkgo.DeviceConfiguration {
+// appliedChannelIds contains the configurationId last applied per channel by the ARD.
+// The device-level configurationId is echoed from desired.
+func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistration, desired *cddsdkgo.DeviceConfiguration, appliedChannelIds map[string]string) *cddsdkgo.DeviceConfiguration {
 	result := &cddsdkgo.DeviceConfiguration{}
+
+	// Echo device-level configurationId from desired
+	if desired != nil {
+		result.ConfigurationId = desired.ConfigurationId
+	}
+
+	// Device-level health
+	if health := s.CB.GetDeviceHealth(); health != nil {
+		result.Health = health
+	}
 
 	// Device-level simple settings
 	var deviceSettings []cddsdkgo.IdAndValue
@@ -94,10 +104,12 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		result.SimpleSettings = deviceSettings
 	}
 
-	// Channels
+	// Channels — echo back the configurationId the ARD actually applied per channel
 	var channels []cddsdkgo.ChannelConfiguration
 	for _, regCh := range registration.Channels {
-		channels = append(channels, s.buildChannelConfig(regCh))
+		chCfg := s.buildChannelConfig(regCh)
+		chCfg.ConfigurationId = appliedChannelIds[regCh.Id]
+		channels = append(channels, chCfg)
 	}
 	result.Channels = channels
 	return result
@@ -108,6 +120,11 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 	chCfg := cddsdkgo.ChannelConfiguration{
 		Id:    chID,
 		State: s.CB.GetChannelState(chID),
+	}
+
+	// Health — report device health for this channel
+	if health := s.CB.GetChannelHealth(chID); health != nil {
+		chCfg.Health = health
 	}
 
 	// Check profiles first
@@ -151,23 +168,24 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 	return chCfg
 }
 
-// GetDeviceStatus builds the typed device status payload.
-func (s *Tr12Shim) GetDeviceStatus() *cddsdkgo.DeviceStatus {
-	channelID := "CH01"
+// GetDeviceStatus builds the typed device status payload using registration channels.
+func (s *Tr12Shim) GetDeviceStatus(registration *cddsdkgo.DeviceRegistration) *cddsdkgo.DeviceStatus {
+	var channelStatuses []cddsdkgo.ChannelStatus
+	for _, regCh := range registration.Channels {
+		channelStatuses = append(channelStatuses, cddsdkgo.ChannelStatus{
+			Id:     regCh.Id,
+			State:  s.CB.GetChannelState(regCh.Id),
+			Status: s.CB.GetChannelStatus(regCh.Id),
+		})
+	}
 	return &cddsdkgo.DeviceStatus{
-		Status: s.CB.GetDeviceStatus(),
-		Channels: []cddsdkgo.ChannelStatus{
-			{
-				Id:     channelID,
-				State:  s.CB.GetChannelState(channelID),
-				Status: s.CB.GetChannelStatus(channelID),
-			},
-		},
+		Status:   s.CB.GetDeviceStatus(),
+		Channels: channelStatuses,
 	}
 }
 
 // PrintActualConfig is a debug helper.
 func (s *Tr12Shim) PrintActualConfig(registration *cddsdkgo.DeviceRegistration) {
-	actual := s.GetActualConfiguration(registration)
+	actual := s.GetActualConfiguration(registration, nil, map[string]string{})
 	fmt.Printf("[SHIM TEST] get_actual_configuration: %+v\n", actual)
 }

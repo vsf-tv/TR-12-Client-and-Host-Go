@@ -11,8 +11,6 @@
 // limitations under the License.
 //
 // TR-12 protocol models — re-exports from the Smithy-generated tr12models package.
-// This file provides type aliases and convenience constants so that consuming code
-// can continue to import "internal/models" while using the generated types underneath.
 package models
 
 import (
@@ -21,27 +19,26 @@ import (
 
 // ---- Type aliases for generated TR-12 models ----
 
-type PairRequestContent = tr12models.PairRequestContent
-type PairResponseContent = tr12models.PairResponseContent
-type PairResult = tr12models.PairResult
-type PairSuccessData = tr12models.PairSuccessData
-type PairFailureData = tr12models.PairFailureData
-type Success = tr12models.Success
-type Failure = tr12models.Failure
-type PairFailureReason = tr12models.PairFailureReason
-type AuthenticateRequestContent = tr12models.AuthenticateRequestContent
-type AuthenticateResponseContent = tr12models.AuthenticateResponseContent
+type CreatePairingCodeRequestContent = tr12models.CreatePairingCodeRequestContent
+type CreatePairingCodeResponseContent = tr12models.CreatePairingCodeResponseContent
+type CreatePairingCodeResult = tr12models.CreatePairingCodeResult
+type CreatePairingCodeSuccessData = tr12models.CreatePairingCodeSuccessData
+type CreatePairingCodeFailureData = tr12models.CreatePairingCodeFailureData
+type CreatePairingCodeFailureReason = tr12models.CreatePairingCodeFailureReason
+type AuthenticatePairingCodeRequestContent = tr12models.AuthenticatePairingCodeRequestContent
+type AuthenticatePairingCodeResponseContent = tr12models.AuthenticatePairingCodeResponseContent
 type AuthStatus = tr12models.AuthStatus
 type HostSettings = tr12models.HostSettings
 type GetHostConfigResponseContent = tr12models.GetHostConfigResponseContent
-type DeprovisionDeviceRequestContent = tr12models.DeprovisionDeviceRequestContent
+type DeprovisionRequest = tr12models.DeprovisionDeviceRequestContent
 type DeprovisionReason = tr12models.DeprovisionReason
 type RequestLogRequestContent = tr12models.RequestLogRequestContent
 type RotateCertificatesRequestContent = tr12models.RotateCertificatesRequestContent
 type ThumbnailRequest = tr12models.ThumbnailRequest
+type Success = tr12models.Success
+type Failure = tr12models.Failure
 
 // RequestThumbnailRequestContent wraps a map of thumbnail subscriptions.
-// This type is not in the generated models (it's a container for the MQTT message).
 type RequestThumbnailRequestContent struct {
 	Requests map[string]ThumbnailRequest `json:"requests"`
 }
@@ -50,7 +47,6 @@ type RequestThumbnailRequestContent struct {
 
 const ProtocolVersion = "1.0.0"
 
-// SDK state machine constants
 const (
 	StateDisconnected = "DISCONNECTED"
 	StatePairing      = "PAIRING"
@@ -59,25 +55,21 @@ const (
 	StateReconnecting = "RECONNECTING"
 )
 
-// Auth status enum values
 var (
 	AuthStatusSTANDBY = tr12models.STANDBY
 	AuthStatusCLAIMED = tr12models.CLAIMED
 )
 
-// Pair failure reason enum values
 var (
-	FailureHostIDMismatch         = tr12models.HOST_ID_MISMATCH
-	FailureVersionNotSupported    = tr12models.VERSION_NOT_SUPPORTED
-	FailureDeviceTypeNotSupported = tr12models.DEVICE_TYPE_NOT_SUPPORTED
+	PairFailureHostIDMismatch         = tr12models.HOST_ID_MISMATCH
+	PairFailureVersionNotSupported    = tr12models.VERSION_NOT_SUPPORTED
+	PairFailureDeviceTypeNotSupported = tr12models.DEVICE_TYPE_NOT_SUPPORTED
 )
 
-// Deprovision reason enum values
 var (
 	DeprovisionReasonDeprovisioned = tr12models.DEPROVISIONED
 )
 
-// Pointer helpers re-exported from generated utils
 var (
 	PtrString  = tr12models.PtrString
 	PtrFloat32 = tr12models.PtrFloat32

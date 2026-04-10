@@ -1,0 +1,512 @@
+export * from '../models/Aes128';
+export * from '../models/Aes256';
+export * from '../models/Channel';
+export * from '../models/ChannelConfiguration';
+export * from '../models/ChannelState';
+export * from '../models/ChannelStatus';
+export * from '../models/ChannelType';
+export * from '../models/ConfigurationData';
+export * from '../models/ConnectRequestContent';
+export * from '../models/ConnectResponseContent';
+export * from '../models/Connection';
+export * from '../models/DeprovisionResponseContent';
+export * from '../models/DeviceConfiguration';
+export * from '../models/DeviceRegistration';
+export * from '../models/DeviceStatus';
+export * from '../models/DisconnectResponseContent';
+export * from '../models/DtlsFingerprint';
+export * from '../models/DtlsSetupRole';
+export * from '../models/EncryptionAes';
+export * from '../models/EncryptionAes128';
+export * from '../models/EncryptionAes256';
+export * from '../models/EnumValues';
+export * from '../models/ErrorDetails';
+export * from '../models/GetConfigurationResponseContent';
+export * from '../models/GetConnectionStatusResponseContent';
+export * from '../models/Health';
+export * from '../models/HealthLevel';
+export * from '../models/IceParameters';
+export * from '../models/IceServer';
+export * from '../models/IdAndValue';
+export * from '../models/Profile';
+export * from '../models/ProfileDefinition';
+export * from '../models/RangeValues';
+export * from '../models/ReportActualConfigurationRequestContent';
+export * from '../models/ReportActualConfigurationResponseContent';
+export * from '../models/ReportStatusRequestContent';
+export * from '../models/ReportStatusResponseContent';
+export * from '../models/RistCaller';
+export * from '../models/RistCallerTransportProtocol';
+export * from '../models/RistListener';
+export * from '../models/RistListenerTransportProtocol';
+export * from '../models/RistStreamIdentifier';
+export * from '../models/Rtp';
+export * from '../models/RtpFecConfiguration';
+export * from '../models/RtpFecStreamConfig';
+export * from '../models/RtpTransportProtocol';
+export * from '../models/Setting';
+export * from '../models/SettingProfile';
+export * from '../models/SettingsChoice';
+export * from '../models/SimpleSettings';
+export * from '../models/SrtCaller';
+export * from '../models/SrtCallerTransportProtocol';
+export * from '../models/SrtListener';
+export * from '../models/SrtListenerTransportProtocol';
+export * from '../models/StatusValue';
+export * from '../models/StreamId';
+export * from '../models/SupportedProtocol';
+export * from '../models/SynchronizationSource';
+export * from '../models/Thumbnail';
+export * from '../models/TransportProtocol';
+export * from '../models/WebRtc';
+export * from '../models/WebRtcFecConfig';
+export * from '../models/WebRtcFecMechanism';
+export * from '../models/WebRtcTransportProtocol';
+export * from '../models/ZixiCaller';
+export * from '../models/ZixiCallerTransportProtocol';
+export * from '../models/ZixiListener';
+export * from '../models/ZixiListenerTransportProtocol';
+
+import { Aes128 } from '../models/Aes128';
+import { Aes256 } from '../models/Aes256';
+import { Channel       } from '../models/Channel';
+import { ChannelConfiguration       } from '../models/ChannelConfiguration';
+import { ChannelState } from '../models/ChannelState';
+import { ChannelStatus    } from '../models/ChannelStatus';
+import { ChannelType } from '../models/ChannelType';
+import { ConfigurationData } from '../models/ConfigurationData';
+import { ConnectRequestContent } from '../models/ConnectRequestContent';
+import { ConnectResponseContent } from '../models/ConnectResponseContent';
+import { Connection } from '../models/Connection';
+import { DeprovisionResponseContent } from '../models/DeprovisionResponseContent';
+import { DeviceConfiguration } from '../models/DeviceConfiguration';
+import { DeviceRegistration } from '../models/DeviceRegistration';
+import { DeviceStatus } from '../models/DeviceStatus';
+import { DisconnectResponseContent } from '../models/DisconnectResponseContent';
+import { DtlsFingerprint } from '../models/DtlsFingerprint';
+import { DtlsSetupRole } from '../models/DtlsSetupRole';
+import { EncryptionAesClass } from '../models/EncryptionAes';
+import { EncryptionAes128 } from '../models/EncryptionAes128';
+import { EncryptionAes256 } from '../models/EncryptionAes256';
+import { EnumValues } from '../models/EnumValues';
+import { ErrorDetails } from '../models/ErrorDetails';
+import { GetConfigurationResponseContent } from '../models/GetConfigurationResponseContent';
+import { GetConnectionStatusResponseContent } from '../models/GetConnectionStatusResponseContent';
+import { Health     } from '../models/Health';
+import { HealthLevel } from '../models/HealthLevel';
+import { IceParameters } from '../models/IceParameters';
+import { IceServer } from '../models/IceServer';
+import { IdAndValue } from '../models/IdAndValue';
+import { Profile } from '../models/Profile';
+import { ProfileDefinition } from '../models/ProfileDefinition';
+import { RangeValues } from '../models/RangeValues';
+import { ReportActualConfigurationRequestContent } from '../models/ReportActualConfigurationRequestContent';
+import { ReportActualConfigurationResponseContent } from '../models/ReportActualConfigurationResponseContent';
+import { ReportStatusRequestContent } from '../models/ReportStatusRequestContent';
+import { ReportStatusResponseContent } from '../models/ReportStatusResponseContent';
+import { RistCaller } from '../models/RistCaller';
+import { RistCallerTransportProtocol } from '../models/RistCallerTransportProtocol';
+import { RistListener } from '../models/RistListener';
+import { RistListenerTransportProtocol } from '../models/RistListenerTransportProtocol';
+import { RistStreamIdentifierClass } from '../models/RistStreamIdentifier';
+import { Rtp } from '../models/Rtp';
+import { RtpFecConfiguration } from '../models/RtpFecConfiguration';
+import { RtpFecStreamConfig } from '../models/RtpFecStreamConfig';
+import { RtpTransportProtocol } from '../models/RtpTransportProtocol';
+import { Setting } from '../models/Setting';
+import { SettingProfile } from '../models/SettingProfile';
+import { SettingsChoiceClass } from '../models/SettingsChoice';
+import { SimpleSettings } from '../models/SimpleSettings';
+import { SrtCaller } from '../models/SrtCaller';
+import { SrtCallerTransportProtocol } from '../models/SrtCallerTransportProtocol';
+import { SrtListener } from '../models/SrtListener';
+import { SrtListenerTransportProtocol } from '../models/SrtListenerTransportProtocol';
+import { StatusValue } from '../models/StatusValue';
+import { StreamId } from '../models/StreamId';
+import { SupportedProtocol } from '../models/SupportedProtocol';
+import { SynchronizationSource } from '../models/SynchronizationSource';
+import { Thumbnail } from '../models/Thumbnail';
+import { TransportProtocolClass } from '../models/TransportProtocol';
+import { WebRtc } from '../models/WebRtc';
+import { WebRtcFecConfig     } from '../models/WebRtcFecConfig';
+import { WebRtcFecMechanism } from '../models/WebRtcFecMechanism';
+import { WebRtcTransportProtocol       } from '../models/WebRtcTransportProtocol';
+import { ZixiCaller } from '../models/ZixiCaller';
+import { ZixiCallerTransportProtocol } from '../models/ZixiCallerTransportProtocol';
+import { ZixiListener } from '../models/ZixiListener';
+import { ZixiListenerTransportProtocol } from '../models/ZixiListenerTransportProtocol';
+
+/* tslint:disable:no-unused-variable */
+let primitives = [
+                    "string",
+                    "boolean",
+                    "double",
+                    "integer",
+                    "long",
+                    "float",
+                    "number",
+                    "any"
+                 ];
+
+let enumsMap: Set<string> = new Set<string>([
+    "ChannelState",
+    "ChannelType",
+    "DtlsSetupRole",
+    "HealthLevel",
+    "SupportedProtocol",
+    "WebRtcFecMechanism",
+]);
+
+let typeMap: {[index: string]: any} = {
+    "Aes128": Aes128,
+    "Aes256": Aes256,
+    "Channel": Channel,
+    "ChannelConfiguration": ChannelConfiguration,
+    "ChannelStatus": ChannelStatus,
+    "ConfigurationData": ConfigurationData,
+    "ConnectRequestContent": ConnectRequestContent,
+    "ConnectResponseContent": ConnectResponseContent,
+    "Connection": Connection,
+    "DeprovisionResponseContent": DeprovisionResponseContent,
+    "DeviceConfiguration": DeviceConfiguration,
+    "DeviceRegistration": DeviceRegistration,
+    "DeviceStatus": DeviceStatus,
+    "DisconnectResponseContent": DisconnectResponseContent,
+    "DtlsFingerprint": DtlsFingerprint,
+    "EncryptionAes": EncryptionAesClass,
+    "EncryptionAes128": EncryptionAes128,
+    "EncryptionAes256": EncryptionAes256,
+    "EnumValues": EnumValues,
+    "ErrorDetails": ErrorDetails,
+    "GetConfigurationResponseContent": GetConfigurationResponseContent,
+    "GetConnectionStatusResponseContent": GetConnectionStatusResponseContent,
+    "Health": Health,
+    "IceParameters": IceParameters,
+    "IceServer": IceServer,
+    "IdAndValue": IdAndValue,
+    "Profile": Profile,
+    "ProfileDefinition": ProfileDefinition,
+    "RangeValues": RangeValues,
+    "ReportActualConfigurationRequestContent": ReportActualConfigurationRequestContent,
+    "ReportActualConfigurationResponseContent": ReportActualConfigurationResponseContent,
+    "ReportStatusRequestContent": ReportStatusRequestContent,
+    "ReportStatusResponseContent": ReportStatusResponseContent,
+    "RistCaller": RistCaller,
+    "RistCallerTransportProtocol": RistCallerTransportProtocol,
+    "RistListener": RistListener,
+    "RistListenerTransportProtocol": RistListenerTransportProtocol,
+    "RistStreamIdentifier": RistStreamIdentifierClass,
+    "Rtp": Rtp,
+    "RtpFecConfiguration": RtpFecConfiguration,
+    "RtpFecStreamConfig": RtpFecStreamConfig,
+    "RtpTransportProtocol": RtpTransportProtocol,
+    "Setting": Setting,
+    "SettingProfile": SettingProfile,
+    "SettingsChoice": SettingsChoiceClass,
+    "SimpleSettings": SimpleSettings,
+    "SrtCaller": SrtCaller,
+    "SrtCallerTransportProtocol": SrtCallerTransportProtocol,
+    "SrtListener": SrtListener,
+    "SrtListenerTransportProtocol": SrtListenerTransportProtocol,
+    "StatusValue": StatusValue,
+    "StreamId": StreamId,
+    "SynchronizationSource": SynchronizationSource,
+    "Thumbnail": Thumbnail,
+    "TransportProtocol": TransportProtocolClass,
+    "WebRtc": WebRtc,
+    "WebRtcFecConfig": WebRtcFecConfig,
+    "WebRtcTransportProtocol": WebRtcTransportProtocol,
+    "ZixiCaller": ZixiCaller,
+    "ZixiCallerTransportProtocol": ZixiCallerTransportProtocol,
+    "ZixiListener": ZixiListener,
+    "ZixiListenerTransportProtocol": ZixiListenerTransportProtocol,
+}
+
+type MimeTypeDescriptor = {
+    type: string;
+    subtype: string;
+    subtypeTokens: string[];
+};
+
+/**
+ * Every mime-type consists of a type, subtype, and optional parameters.
+ * The subtype can be composite, including information about the content format.
+ * For example: `application/json-patch+json`, `application/merge-patch+json`.
+ *
+ * This helper transforms a string mime-type into an internal representation.
+ * This simplifies the implementation of predicates that in turn define common rules for parsing or stringifying
+ * the payload.
+ */
+const parseMimeType = (mimeType: string): MimeTypeDescriptor => {
+    const [type = '', subtype = ''] = mimeType.split('/');
+    return {
+        type,
+        subtype,
+        subtypeTokens: subtype.split('+'),
+    };
+};
+
+type MimeTypePredicate = (mimeType: string) => boolean;
+
+// This factory creates a predicate function that checks a string mime-type against defined rules.
+const mimeTypePredicateFactory = (predicate: (descriptor: MimeTypeDescriptor) => boolean): MimeTypePredicate => (mimeType) => predicate(parseMimeType(mimeType));
+
+// Use this factory when you need to define a simple predicate based only on type and, if applicable, subtype.
+const mimeTypeSimplePredicateFactory = (type: string, subtype?: string): MimeTypePredicate => mimeTypePredicateFactory((descriptor) => {
+    if (descriptor.type !== type) return false;
+    if (subtype != null && descriptor.subtype !== subtype) return false;
+    return true;
+});
+
+// Creating a set of named predicates that will help us determine how to handle different mime-types
+const isTextLikeMimeType = mimeTypeSimplePredicateFactory('text');
+const isJsonMimeType = mimeTypeSimplePredicateFactory('application', 'json');
+const isJsonLikeMimeType = mimeTypePredicateFactory((descriptor) => descriptor.type === 'application' && descriptor.subtypeTokens.some((item) => item === 'json'));
+const isOctetStreamMimeType = mimeTypeSimplePredicateFactory('application', 'octet-stream');
+const isFormUrlencodedMimeType = mimeTypeSimplePredicateFactory('application', 'x-www-form-urlencoded');
+
+// Defining a list of mime-types in the order of prioritization for handling.
+const supportedMimeTypePredicatesWithPriority: MimeTypePredicate[] = [
+    isJsonMimeType,
+    isJsonLikeMimeType,
+    isTextLikeMimeType,
+    isOctetStreamMimeType,
+    isFormUrlencodedMimeType,
+];
+
+const nullableSuffix = " | null";
+const optionalSuffix = " | undefined";
+const arrayPrefix = "Array<";
+const arraySuffix = ">";
+const mapPrefix = "{ [key: string]: ";
+const mapSuffix = "; }";
+
+export class ObjectSerializer {
+    public static findCorrectType(data: any, expectedType: string) {
+        if (data == undefined) {
+            return expectedType;
+        } else if (primitives.indexOf(expectedType.toLowerCase()) !== -1) {
+            return expectedType;
+        } else if (expectedType === "Date") {
+            return expectedType;
+        } else {
+            if (enumsMap.has(expectedType)) {
+                return expectedType;
+            }
+
+            if (!typeMap[expectedType]) {
+                return expectedType; // w/e we don't know the type
+            }
+
+            // Check the discriminator
+            let discriminatorProperty = typeMap[expectedType].discriminator;
+            if (discriminatorProperty == null) {
+                return expectedType; // the type does not have a discriminator. use it.
+            } else {
+                if (data[discriminatorProperty]) {
+                    var discriminatorType = data[discriminatorProperty];
+                    let mapping = typeMap[expectedType].mapping;
+                    if (mapping != undefined && mapping[discriminatorType]) {
+                        return mapping[discriminatorType]; // use the type given in the discriminator
+                    } else if(typeMap[discriminatorType]) {
+                        return discriminatorType;
+                    } else {
+                        return expectedType; // discriminator did not map to a type
+                    }
+                } else {
+                    return expectedType; // discriminator was not present (or an empty string)
+                }
+            }
+        }
+    }
+
+    public static serialize(data: any, type: string, format: string): any {
+        if (data == undefined) {
+            return data;
+        } else if (primitives.indexOf(type.toLowerCase()) !== -1) {
+            return data;
+        } else if (type.endsWith(nullableSuffix)) {
+            let subType: string = type.slice(0, -nullableSuffix.length); // Type | null => Type
+            return ObjectSerializer.serialize(data, subType, format);
+        } else if (type.endsWith(optionalSuffix)) {
+            let subType: string = type.slice(0, -optionalSuffix.length); // Type | undefined => Type
+            return ObjectSerializer.serialize(data, subType, format);
+        } else if (type.startsWith(arrayPrefix)) {
+            let subType: string = type.slice(arrayPrefix.length, -arraySuffix.length); // Array<Type> => Type
+            let transformedData: any[] = [];
+            for (let date of data) {
+                transformedData.push(ObjectSerializer.serialize(date, subType, format));
+            }
+            return transformedData;
+        } else if (type.startsWith(mapPrefix)) {
+            let subType: string = type.slice(mapPrefix.length, -mapSuffix.length); // { [key: string]: Type; } => Type
+            let transformedData: { [key: string]: any } = {};
+            for (let key in data) {
+                transformedData[key] = ObjectSerializer.serialize(
+                    data[key],
+                    subType,
+                    format,
+                );
+            }
+            return transformedData;
+        } else if (type === "Date") {
+            if (!(data instanceof Date)) {
+                return data;
+            }
+            if (format == "date") {
+                let month = data.getMonth()+1
+                let monthStr = month < 10 ? "0" + month.toString() : month.toString()
+                let day = data.getDate();
+                let dayStr = day < 10 ? "0" + day.toString() : day.toString();
+
+                return data.getFullYear() + "-" + monthStr + "-" + dayStr;
+            } else {
+                return data.toISOString();
+            }
+        } else {
+            if (enumsMap.has(type)) {
+                return data;
+            }
+            if (!typeMap[type]) { // in case we dont know the type
+                return data;
+            }
+
+            // Get the actual type of this object
+            type = this.findCorrectType(data, type);
+
+            // get the map for the correct type.
+            let attributeTypes = typeMap[type].getAttributeTypeMap();
+            let instance: {[index: string]: any} = {};
+            for (let attributeType of attributeTypes) {
+                instance[attributeType.baseName] = ObjectSerializer.serialize(data[attributeType.name], attributeType.type, attributeType.format);
+            }
+            return instance;
+        }
+    }
+
+    public static deserialize(data: any, type: string, format: string): any {
+        // polymorphism may change the actual type.
+        type = ObjectSerializer.findCorrectType(data, type);
+        if (data == undefined) {
+            return data;
+        } else if (primitives.indexOf(type.toLowerCase()) !== -1) {
+            return data;
+        } else if (type.endsWith(nullableSuffix)) {
+            let subType: string = type.slice(0, -nullableSuffix.length); // Type | null => Type
+            return ObjectSerializer.deserialize(data, subType, format);
+        } else if (type.endsWith(optionalSuffix)) {
+            let subType: string = type.slice(0, -optionalSuffix.length); // Type | undefined => Type
+            return ObjectSerializer.deserialize(data, subType, format);
+        } else if (type.startsWith(arrayPrefix)) {
+            let subType: string = type.slice(arrayPrefix.length, -arraySuffix.length); // Array<Type> => Type
+            let transformedData: any[] = [];
+            for (let date of data) {
+                transformedData.push(ObjectSerializer.deserialize(date, subType, format));
+            }
+            return transformedData;
+        } else if (type.startsWith(mapPrefix)) {
+            let subType: string = type.slice(mapPrefix.length, -mapSuffix.length); // { [key: string]: Type; } => Type
+            let transformedData: { [key: string]: any } = {};
+            for (let key in data) {
+                transformedData[key] = ObjectSerializer.deserialize(
+                    data[key],
+                    subType,
+                    format,
+                );
+            }
+            return transformedData;
+        } else if (type === "Date") {
+            return new Date(data);
+        } else {
+            if (enumsMap.has(type)) {// is Enum
+                return data;
+            }
+
+            if (!typeMap[type]) { // dont know the type
+                return data;
+            }
+            let instance = new typeMap[type]();
+            let attributeTypes = typeMap[type].getAttributeTypeMap();
+            for (let attributeType of attributeTypes) {
+                let value = ObjectSerializer.deserialize(data[attributeType.baseName], attributeType.type, attributeType.format);
+                if (value !== undefined) {
+                    instance[attributeType.name] = value;
+                }
+            }
+            return instance;
+        }
+    }
+
+
+    /**
+     * Normalize media type
+     *
+     * We currently do not handle any media types attributes, i.e. anything
+     * after a semicolon. All content is assumed to be UTF-8 compatible.
+     */
+    public static normalizeMediaType(mediaType: string | undefined): string | undefined {
+        if (mediaType === undefined) {
+            return undefined;
+        }
+        return (mediaType.split(";")[0] ?? '').trim().toLowerCase();
+    }
+
+    /**
+     * From a list of possible media types, choose the one we can handle best.
+     *
+     * The order of the given media types does not have any impact on the choice
+     * made.
+     */
+    public static getPreferredMediaType(mediaTypes: Array<string>): string {
+        /** According to OAS 3 we should default to json */
+        if (mediaTypes.length === 0) {
+            return "application/json";
+        }
+
+        const normalMediaTypes = mediaTypes.map(ObjectSerializer.normalizeMediaType);
+
+        for (const predicate of supportedMimeTypePredicatesWithPriority) {
+            for (const mediaType of normalMediaTypes) {
+                if (mediaType != null && predicate(mediaType)) {
+                    return mediaType;
+                }
+            }
+        }
+
+        throw new Error("None of the given media types are supported: " + mediaTypes.join(", "));
+    }
+
+    /**
+     * Convert data to a string according the given media type
+     */
+    public static stringify(data: any, mediaType: string): string {
+        if (isTextLikeMimeType(mediaType)) {
+            return String(data);
+        }
+
+        if (isJsonLikeMimeType(mediaType)) {
+            return JSON.stringify(data);
+        }
+
+        throw new Error("The mediaType " + mediaType + " is not supported by ObjectSerializer.stringify.");
+    }
+
+    /**
+     * Parse data from a string according to the given media type
+     */
+    public static parse(rawData: string, mediaType: string | undefined) {
+        if (mediaType === undefined) {
+            throw new Error("Cannot parse content. No Content-Type defined.");
+        }
+
+        if (isTextLikeMimeType(mediaType)) {
+            return rawData;
+        }
+
+        if (isJsonLikeMimeType(mediaType)) {
+            return JSON.parse(rawData);
+        }
+
+        throw new Error("The mediaType " + mediaType + " is not supported by ObjectSerializer.parse.");
+    }
+}

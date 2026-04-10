@@ -121,7 +121,7 @@ func (h *Handlers) handleDeprovision(topic string, payload []byte) {
 		return
 	}
 
-	var msg models.DeprovisionDeviceRequestContent
+	var msg models.DeprovisionRequest
 	json.Unmarshal(payload, &msg)
 
 	if device.State == "DEPROVISIONED" {

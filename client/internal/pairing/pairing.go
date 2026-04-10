@@ -38,8 +38,8 @@ type Pairing struct {
 	PairingURL   string
 	AuthURL      string
 	StartTime    int64
-	PairResponse *models.PairResponseContent
-	AuthResponse *models.AuthenticateResponseContent
+	PairResponse *models.CreatePairingCodeResponseContent
+	AuthResponse *models.AuthenticatePairingCodeResponseContent
 	httpClient   *http.Client
 }
 
@@ -65,8 +65,8 @@ func New(certs *credentials.Store, deviceType, hostID, pairingURL, authURL strin
 	}
 }
 
-// getSuccessData returns the PairSuccessData if available.
-func (p *Pairing) getSuccessData() *tr12models.PairSuccessData {
+// getSuccessData returns the CreatePairingCodeSuccessData if available.
+func (p *Pairing) getSuccessData() *tr12models.CreatePairingCodeSuccessData {
 	if p.PairResponse == nil || p.PairResponse.Result.Success == nil {
 		return nil
 	}
@@ -110,11 +110,11 @@ func (p *Pairing) GetNewPairingCode() error {
 	if err := p.Certs.GenerateKeysAndCSR(); err != nil {
 		return fmt.Errorf("failed to generate keys: %w", err)
 	}
-	reqBody := models.PairRequestContent{
-		DeviceType: p.DeviceType,
-		HostId:     p.HostID,
-		Csr:        p.Certs.CSR,
-		Version:    models.ProtocolVersion,
+	reqBody := models.CreatePairingCodeRequestContent{
+		DeviceType:                p.DeviceType,
+		HostId:                    p.HostID,
+		CertificateSigningRequest: p.Certs.CSR,
+		Version:                   models.ProtocolVersion,
 	}
 	body, _ := json.Marshal(reqBody)
 	log.Printf("[PAIR] POST %s/pair  body=%s", p.PairingURL, string(body))
@@ -128,7 +128,7 @@ func (p *Pairing) GetNewPairingCode() error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("pairing API error - StatusCode: %d - Response: %s", resp.StatusCode, string(respBody))
 	}
-	var pairResp models.PairResponseContent
+	var pairResp models.CreatePairingCodeResponseContent
 	if err := json.Unmarshal(respBody, &pairResp); err != nil {
 		return fmt.Errorf("pairing service response was not valid: %w", err)
 	}
@@ -161,7 +161,7 @@ func (p *Pairing) AuthenticatePairingCode() (bool, error) {
 	if sd == nil {
 		return false, fmt.Errorf("no pairing code to authenticate")
 	}
-	reqBody := models.AuthenticateRequestContent{
+	reqBody := models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    sd.DeviceId,
 		PairingCode: sd.PairingCode,
 		AccessCode:  sd.AccessCode,
@@ -178,14 +178,14 @@ func (p *Pairing) AuthenticatePairingCode() (bool, error) {
 	if resp.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("auth API error - StatusCode: %d - Response: %s", resp.StatusCode, string(respBody))
 	}
-	var authResp models.AuthenticateResponseContent
+	var authResp models.AuthenticatePairingCodeResponseContent
 	if err := json.Unmarshal(respBody, &authResp); err != nil {
 		return false, fmt.Errorf("auth service response was not valid: %w", err)
 	}
 	p.AuthResponse = &authResp
-	log.Printf("[AUTH] Parsed: status=%s mqttUri=%q region=%q hasHostSettings=%v hasCaCert=%v hasDeviceCert=%v",
-		authResp.Status, authResp.GetMqttUri(), authResp.GetRegion(),
-		authResp.HasHostSettings(), authResp.HasCaCert(), authResp.HasDeviceCert())
+	log.Printf("[AUTH] Parsed: status=%s mqttUri=%q regionName=%q hasHostSettings=%v hasCaCertificate=%v hasDeviceCertificate=%v",
+		authResp.Status, authResp.GetMqttUri(), authResp.GetRegionName(),
+		authResp.HasHostSettings(), authResp.HasCaCertificate(), authResp.HasDeviceCertificate())
 
 	switch authResp.Status {
 	case tr12models.STANDBY:

@@ -34,6 +34,7 @@ import (
 func main() {
 	hostID := flag.String("host_id", "", "Host ID to connect to (required)")
 	sdkURL := flag.String("sdk_url", "http://127.0.0.1:8603", "Base URL of the running CDD SDK")
+	registrationFile := flag.String("registration_file", "", "Path to registration JSON file (default: payloads/1_channel_encoder/registration.json)")
 	flag.Parse()
 
 	if *hostID == "" {
@@ -64,7 +65,7 @@ func main() {
 		}
 	}
 
-	app, err := ard.NewClientApplication(*sdkURL, basePath)
+	app, err := ard.NewClientApplication(*sdkURL, basePath, *registrationFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize ARD: %v\n", err)
 		os.Exit(1)

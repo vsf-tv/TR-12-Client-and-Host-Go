@@ -100,9 +100,9 @@ func (s *RotationService) rotateDevice(d *models.Device) error {
 
 	mqttURI := fmt.Sprintf("tls://%s:%d", s.cfg.HostAddress, s.cfg.MQTTPort)
 	rotate := models.RotateCertificatesRequestContent{
-		MqttUri:    mqttURI,
-		DeviceCert: string(newCert),
-		Region:     "local",
+		MqttUri:           mqttURI,
+		DeviceCertificate: string(newCert),
+		RegionName:        "local",
 	}
 	payload, _ := json.Marshal(rotate)
 	topic := fmt.Sprintf("cdd/%s/certs/update", d.DeviceID)

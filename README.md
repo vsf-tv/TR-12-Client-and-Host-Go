@@ -10,7 +10,9 @@ TR-12 defines a secure, NAT-friendly pairing and communication protocol for prof
 |---|---|---|
 | [`client/`](client/) | CDD SDK daemon + Application Reference Design (ARD) | [client/README.md](client/README.md) |
 | [`host/`](host/) | TR-12 Host Service (REST API + embedded MQTT broker + SQLite) | [host/README.md](host/README.md) |
+| [`console/`](console/) | Browser-based management console (React + Cloudscape) | [console/README.md](console/README.md) |
 | [`models/TR-12-Models/`](https://github.com/vsf-tv/TR-12-Models) | Smithy-generated TR-12 protocol types (git submodule) | — |
+| [`models/cdd_sdk/`](models/cdd_sdk/) | CDD SDK Smithy models + Go/TypeScript generation scripts | — |
 
 ## Dependency Versions
 
@@ -51,19 +53,27 @@ Without the submodule, the Go builds will fail because both `client/` and `host/
 
 ## Building
 
-A `go.work` file at the repo root links all three Go modules (client, host, models) so standard `go build` works from each component directory:
+A single `build.sh` at the repo root builds everything:
 
 ```bash
+./build.sh           # build host (mac + linux), client SDK, ARD, console
+./build.sh --regen   # also regenerate Smithy models (requires smithy + openapi-generator)
+```
+
+Or build individual components:
+
+```bash
+# Host Service
+cd host && go build -o bin/tr12-host ./cmd/tr12-host/
+
 # CDD SDK (device-side daemon)
-cd client
-go build -o bin/cdd-sdk ./cmd/cdd-sdk
+cd client && go build -o bin/cdd-sdk ./cmd/cdd-sdk/
 
 # Application Reference Design (simulated encoder)
-go build -o bin/ard ./cmd/application_reference_design
+cd client && go build -o bin/ard ./cmd/application_reference_design/
 
-# Host Service
-cd ../host
-go build -o bin/tr12-host ./cmd/tr12-host
+# Console
+cd console && npm run build
 ```
 
 ## Quick Start — Running Locally
@@ -85,12 +95,12 @@ On first run this auto-generates a CA, server cert, JWT secret, and SQLite datab
 export CERTS=~/TR-12-Certs
 mkdir -p $CERTS
 cd client
-./bin/cdd-sdk --internal_device_id test001 --certs_path $CERTS --log_path /tmp/sdk-logs --ip 127.0.0.1 --port 8603 --device_type SOURCE
+./bin/cdd-sdk --internal_device_id test001 --certs_path $CERTS --log_path /tmp/sdk-logs--ip 127.0.0.1 --port 8603 --device_type SOURCE
 ```
 
 ### Terminal 3 — ARD (simulated device application)
 
-```bash
+```ba sh
 cd client
 ./bin/ard --host_id local_go_host
 ```
@@ -208,10 +218,16 @@ go test ./client/... ./host/... -count=1
 A full end-to-end lifecycle test starts the host service and SDK as real processes and exercises the complete TR-12 protocol — pairing, MQTT, configuration, thumbnails, credential rotation, and deprovision.
 
 ```bash
-go test -tags integration -v -timeout 120s ./test/integration/
+go test -tags integration -v -timeout 300s ./test/integration/
 ```
 
-The `-tags integration` flag is required; without it the tests are skipped. Typical runtime ~24 seconds. See [test/integration/README.md](test/integration/README.md) for details.
+| Test | Description |
+|------|-------------|
+| `TestFullLifecycle` | 11-phase end-to-end lifecycle |
+| `TestOfflineConfigDelivery` | Retained MQTT config delivery to offline device |
+| `TestTwoChannelEncoder` | 2-channel registration and per-channel configurationId tracking |
+| `TestConfigurationIdBumping` | Independent per-entity configurationId bumping |
+| `TestARDConfigurationIdEchoBack` | ARD echoes correct configurationIds in actual_configuration |
 
 ## Repository Structure
 

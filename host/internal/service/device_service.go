@@ -15,6 +15,7 @@ package service
 import (
 	"crypto/rand"
 	"encoding/json"
+	"strconv"
 	"fmt"
 	"log"
 	"math/big"
@@ -52,7 +53,7 @@ func (s *DeviceService) SetMQTT(mqtt MQTTPublisher) {
 }
 
 // Pair handles a device pairing request.
-func (s *DeviceService) Pair(req models.PairRequestContent) (*models.PairResponseContent, error) {
+func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*models.CreatePairingCodeResponseContent, error) {
 	// Validate host ID
 	if req.HostId != s.cfg.ServiceID {
 		return failPair(models.PairFailureHostIDMismatch), nil
@@ -78,7 +79,7 @@ func (s *DeviceService) Pair(req models.PairRequestContent) (*models.PairRespons
 	accessCode := generateAccessCode()
 
 	// Sign CSR
-	certPEM, err := s.ca.SignCSR([]byte(req.Csr), deviceID, s.cfg.CertExpiryDays)
+	certPEM, err := s.ca.SignCSR([]byte(req.CertificateSigningRequest), deviceID, s.cfg.CertExpiryDays)
 	if err != nil {
 		return nil, fmt.Errorf("sign CSR: %w", err)
 	}
@@ -92,7 +93,7 @@ func (s *DeviceService) Pair(req models.PairRequestContent) (*models.PairRespons
 		PairedAt:         now.Format(time.RFC3339),
 		CurrentCertPEM:   string(certPEM),
 		CertExpiresAt:    now.Add(time.Duration(s.cfg.CertExpiryDays) * 24 * time.Hour).Format(time.RFC3339),
-		CSRPEM:           req.Csr,
+		CSRPEM:           req.CertificateSigningRequest,
 		PairingCode:      pairingCode,
 		AccessCode:       accessCode,
 		PairingExpiresAt: now.Add(time.Duration(s.cfg.PairingTimeout) * time.Second).Format(time.RFC3339),
@@ -101,19 +102,19 @@ func (s *DeviceService) Pair(req models.PairRequestContent) (*models.PairRespons
 		return nil, fmt.Errorf("insert device: %w", err)
 	}
 
-	successData := models.PairSuccessData{
+	successData := models.CreatePairingCodeSuccessData{
 		DeviceId:              deviceID,
 		PairingCode:           pairingCode,
 		AccessCode:            accessCode,
 		PairingTimeoutSeconds: float32(s.cfg.PairingTimeout),
 	}
-	return tr12models.NewPairResponseContent(
-		tr12models.SuccessAsPairResult(tr12models.NewSuccess(successData)),
+	return tr12models.NewCreatePairingCodeResponseContent(
+		tr12models.SuccessAsCreatePairingCodeResult(tr12models.NewSuccess(successData)),
 	), nil
 }
 
 // Authenticate handles device authentication polling.
-func (s *DeviceService) Authenticate(req models.AuthenticateRequestContent) (*models.AuthenticateResponseContent, error) {
+func (s *DeviceService) Authenticate(req models.AuthenticatePairingCodeRequestContent) (*models.AuthenticatePairingCodeResponseContent, error) {
 	device, err := s.store.GetDevice(req.DeviceId)
 	if err != nil {
 		return nil, err
@@ -134,18 +135,18 @@ func (s *DeviceService) Authenticate(req models.AuthenticateRequestContent) (*mo
 	}
 
 	if device.State == "PAIRING" {
-		resp := tr12models.NewAuthenticateResponseContent(models.AuthStatusSTANDBY)
+		resp := tr12models.NewAuthenticatePairingCodeResponseContent(models.AuthStatusSTANDBY)
 		return resp, nil
 	}
 
 	// Device is claimed — return full auth response
 	mqttURI := fmt.Sprintf("tls://%s:%d", s.cfg.HostAddress, s.cfg.MQTTPort)
 	hs := buildHostSettings(device.DeviceID, s.cfg.PairingTimeout)
-	resp := tr12models.NewAuthenticateResponseContent(models.AuthStatusCLAIMED)
-	resp.SetCaCert(string(s.ca.CACertPEM))
-	resp.SetDeviceCert(device.CurrentCertPEM)
+	resp := tr12models.NewAuthenticatePairingCodeResponseContent(models.AuthStatusCLAIMED)
+	resp.SetCaCertificate(string(s.ca.CACertPEM))
+	resp.SetDeviceCertificate(device.CurrentCertPEM)
 	resp.SetMqttUri(mqttURI)
-	resp.SetRegion("local")
+	resp.SetRegionName("local")
 	resp.SetHostSettings(*hs)
 	return resp, nil
 }
@@ -189,7 +190,7 @@ func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays int,
 	return s.store.ClaimDevice(device.DeviceID, accountID, regExpires, locationName, deviceName, rotationIntervalDays)
 }
 
-// ListDevices returns all devices for an account.
+// ListDevices returns all non-deprovisioned devices for an account.
 func (s *DeviceService) ListDevices(accountID string) ([]models.DeviceSummary, error) {
 	devices, err := s.store.ListDevicesByAccount(accountID)
 	if err != nil {
@@ -197,6 +198,9 @@ func (s *DeviceService) ListDevices(accountID string) ([]models.DeviceSummary, e
 	}
 	summaries := make([]models.DeviceSummary, 0, len(devices))
 	for _, d := range devices {
+		if d.State == "DEPROVISIONED" {
+			continue // hide deprovisioned devices from the list
+		}
 		summaries = append(summaries, models.DeviceSummary{
 			DeviceID:      d.DeviceID,
 			Message:       "",
@@ -307,12 +311,113 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 		return err
 	}
 
-	// Wrap config with updateId and publish via MQTT
+	// Build the outgoing payload with smart per-entity configurationId stamping.
+	// configurationId is now a STRING (epoch seconds) — no float32 precision issues.
+	// Each entity that changes gets its own independent time.Now().Unix() call.
+
+	type prevChannel struct {
+		ConfigurationId string
+		State           string
+		Settings        string
+		Connection      string
+	}
+	prevDeviceConfigId := ""
+	prevDeviceSettings := ""
+	prevChannels := map[string]prevChannel{}
+
+	if len(device.DesiredConfig) > 0 {
+		var prev struct {
+			ConfigurationId string          `json:"configurationId"`
+			SimpleSettings  json.RawMessage `json:"simpleSettings"`
+			Channels        []struct {
+				Id              string          `json:"id"`
+				ConfigurationId string          `json:"configurationId"`
+				State           string          `json:"state"`
+				Settings        json.RawMessage `json:"settings"`
+				Connection      json.RawMessage `json:"connection"`
+			} `json:"channels"`
+		}
+		if json.Unmarshal(device.DesiredConfig, &prev) == nil {
+			prevDeviceConfigId = prev.ConfigurationId
+			prevDeviceSettings = canonicalJSON(prev.SimpleSettings)
+			for _, ch := range prev.Channels {
+				if ch.Id != "" {
+					prevChannels[ch.Id] = prevChannel{
+						ConfigurationId: ch.ConfigurationId,
+						State:           ch.State,
+						Settings:        canonicalJSON(ch.Settings),
+						Connection:      canonicalJSON(ch.Connection),
+					}
+				}
+			}
+		}
+	}
+
+	var newCfg struct {
+		SimpleSettings json.RawMessage `json:"simpleSettings"`
+		Channels       []struct {
+			Id         string          `json:"id"`
+			State      string          `json:"state"`
+			Settings   json.RawMessage `json:"settings"`
+			Connection json.RawMessage `json:"connection"`
+		} `json:"channels"`
+	}
+	json.Unmarshal(cfgJSON, &newCfg)
+
+	newDeviceSettings := canonicalJSON(newCfg.SimpleSettings)
+	deviceConfigId := prevDeviceConfigId
+	if prevDeviceConfigId == "" || newDeviceSettings != prevDeviceSettings {
+		deviceConfigId = strconv.FormatInt(time.Now().UnixNano(), 10)
+		log.Printf("[HOST UpdateConfig] device simpleSettings changed → configurationId=%s", deviceConfigId)
+	} else {
+		log.Printf("[HOST UpdateConfig] device simpleSettings unchanged → configurationId=%s", deviceConfigId)
+	}
+
 	wrapped := map[string]interface{}{}
 	json.Unmarshal(cfgJSON, &wrapped)
 	wrapped["updateId"] = updateID
+	wrapped["configurationId"] = deviceConfigId
+
+	if channels, ok := wrapped["channels"].([]interface{}); ok {
+		for _, ch := range channels {
+			chMap, ok := ch.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			chID, _ := chMap["id"].(string)
+			newChConfigId := strconv.FormatInt(time.Now().UnixNano(), 10) // default: first push
+			for _, newCh := range newCfg.Channels {
+				if newCh.Id != chID {
+					continue
+				}
+				prev, hasPrev := prevChannels[chID]
+				if hasPrev &&
+					newCh.State == prev.State &&
+					canonicalJSON(newCh.Settings) == prev.Settings &&
+					canonicalJSON(newCh.Connection) == prev.Connection {
+					newChConfigId = prev.ConfigurationId
+					log.Printf("[HOST UpdateConfig] channel %s unchanged → configurationId=%s", chID, newChConfigId)
+				} else {
+					newChConfigId = strconv.FormatInt(time.Now().UnixNano(), 10)
+					log.Printf("[HOST UpdateConfig] channel %s changed (state:%s→%s settings_changed=%v connection_changed=%v) → configurationId=%s",
+						chID, prev.State, newCh.State,
+						canonicalJSON(newCh.Settings) != prev.Settings,
+						canonicalJSON(newCh.Connection) != prev.Connection,
+						newChConfigId)
+				}
+				break
+			}
+			chMap["configurationId"] = newChConfigId
+		}
+	}
+
 	payload, _ := json.Marshal(wrapped)
 	topic := fmt.Sprintf("cdd/%s/config/update", deviceID)
+
+	// Store the stamped config so future pushes can compare correctly (no counter bump).
+	if err := s.store.StoreDeviceDesiredConfig(deviceID, payload); err != nil {
+		log.Printf("[HOST UpdateConfig] failed to store stamped config: %v", err)
+	}
 
 	log.Printf("[HOST UpdateConfig] deviceID=%s state=%s online=%v topic=%s updateID=%d payloadLen=%d",
 		deviceID, device.State, device.Online, topic, updateID, len(payload))
@@ -347,7 +452,7 @@ func (s *DeviceService) Deprovision(deviceID, accountID string) error {
 
 	reason := tr12models.DEPROVISIONED
 	t := float32(time.Now().Unix())
-	msg := models.DeprovisionDeviceRequestContent{Reason: &reason, Time: &t}
+	msg := models.DeprovisionRequest{Reason: &reason, Time: &t}
 	payload, _ := json.Marshal(msg)
 	topic := fmt.Sprintf("cdd/%s/deprovision", deviceID)
 	return s.mqtt.Publish(topic, payload, true) // retained — offline device deprovisions itself on reconnect
@@ -417,9 +522,9 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 
 	mqttURI := fmt.Sprintf("tls://%s:%d", s.cfg.HostAddress, s.cfg.MQTTPort)
 	rotate := tr12models.RotateCertificatesRequestContent{
-		MqttUri:    mqttURI,
-		DeviceCert: string(newCert),
-		Region:     "local",
+		MqttUri:           mqttURI,
+		DeviceCertificate: string(newCert),
+		RegionName:        "local",
 	}
 	payload, _ := json.Marshal(rotate)
 	topic := fmt.Sprintf("cdd/%s/certs/update", deviceID)
@@ -429,10 +534,10 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 
 // --- Helpers ---
 
-func failPair(reason models.PairFailureReason) *models.PairResponseContent {
-	return tr12models.NewPairResponseContent(
-		tr12models.FailureAsPairResult(tr12models.NewFailure(
-			models.PairFailureData{Reason: reason},
+func failPair(reason models.CreatePairingCodeFailureReason) *models.CreatePairingCodeResponseContent {
+	return tr12models.NewCreatePairingCodeResponseContent(
+		tr12models.FailureAsCreatePairingCodeResult(tr12models.NewFailure(
+			models.CreatePairingCodeFailureData{Reason: reason},
 		)),
 	)
 }
@@ -773,4 +878,22 @@ func validateConnection(connJSON json.RawMessage, registeredProtocols []string, 
 	}
 
 	return nil
+}
+
+// canonicalJSON normalizes a JSON value by round-tripping through interface{}.
+// This ensures consistent key ordering and number representation for comparison.
+// Returns "" for nil or invalid input.
+func canonicalJSON(raw json.RawMessage) string {
+	if len(raw) == 0 || string(raw) == "null" {
+		return ""
+	}
+	var v interface{}
+	if err := json.Unmarshal(raw, &v); err != nil {
+		return string(raw)
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		return string(raw)
+	}
+	return string(b)
 }
