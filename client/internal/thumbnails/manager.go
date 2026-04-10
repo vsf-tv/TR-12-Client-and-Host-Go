@@ -58,8 +58,9 @@ func (u *Uploader) run() {
 	u.logger.Infof("Thumbnails: Starting uploader for source: %s", u.source)
 	period := int(u.request.GetPeriodSeconds())
 	for {
-		now := time.Now().Unix()
-		if now >= int64(u.request.GetExpiresAtEpochSeconds()) {
+		now := time.Now()
+		expires := u.request.GetExpiresTimestamp()
+		if u.request.HasExpiresTimestamp() && !now.Before(expires) {
 			u.logger.Info("Thumbnails: Subscription Expired.")
 			return
 		}
@@ -80,7 +81,7 @@ func (u *Uploader) run() {
 }
 
 func validateRequestParams(req *tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) bool {
-	if time.Now().Unix() >= int64(req.GetExpiresAtEpochSeconds()) {
+	if req.HasExpiresTimestamp() && !time.Now().Before(req.GetExpiresTimestamp()) {
 		logger.Info("Thumbnail: Request expired.")
 		return false
 	}

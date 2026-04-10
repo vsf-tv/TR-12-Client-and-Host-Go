@@ -46,9 +46,9 @@ func (s *LogService) RequestLog(deviceID string) error {
 		scheme = "https"
 	}
 	uploadURL := fmt.Sprintf("%s://%s:%d/upload/log/%s", scheme, s.cfg.HostAddress, s.cfg.HTTPPort, deviceID)
-	expires := float32(time.Now().Add(5 * time.Minute).Unix())
+	expires := time.Now().Add(5 * time.Minute)
 	req := models.RequestLogRequestContent{
-		ExpiresAtEpochSeconds: &expires,
+		ExpiresTimestamp: &expires,
 		RemotePath:            &uploadURL,
 	}
 	payload, _ := json.Marshal(req)

@@ -91,11 +91,11 @@ func generateTestCSR(t *testing.T) string {
 func doPair(t *testing.T, svc *DeviceService) (deviceID, pairingCode, accessCode string) {
 	t.Helper()
 	csr := generateTestCSR(t)
-	resp, err := svc.Pair(models.PairRequestContent{
+	resp, err := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
 		Version:    "1.0",
 		DeviceType: "SOURCE",
-		Csr:        csr,
+		CertificateSigningRequest: csr,
 	})
 	if err != nil {
 		t.Fatalf("Pair: %v", err)
@@ -127,11 +127,11 @@ func TestPair_Success(t *testing.T) {
 
 func TestPair_HostIDMismatch(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	resp, err := svc.Pair(models.PairRequestContent{
+	resp, err := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "wrong-host",
 		Version:    "1.0",
 		DeviceType: "SOURCE",
-		Csr:        generateTestCSR(t),
+		CertificateSigningRequest: generateTestCSR(t),
 	})
 	if err != nil {
 		t.Fatalf("Pair: %v", err)
@@ -144,11 +144,11 @@ func TestPair_HostIDMismatch(t *testing.T) {
 
 func TestPair_BadDeviceType(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	resp, _ := svc.Pair(models.PairRequestContent{
+	resp, _ := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
 		Version:    "1.0",
 		DeviceType: "INVALID",
-		Csr:        generateTestCSR(t),
+		CertificateSigningRequest: generateTestCSR(t),
 	})
 	result := resp.GetResult()
 	if result.Failure == nil {
@@ -158,11 +158,11 @@ func TestPair_BadDeviceType(t *testing.T) {
 
 func TestPair_EmptyVersion(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	resp, _ := svc.Pair(models.PairRequestContent{
+	resp, _ := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
 		Version:    "",
 		DeviceType: "SOURCE",
-		Csr:        generateTestCSR(t),
+		CertificateSigningRequest: generateTestCSR(t),
 	})
 	result := resp.GetResult()
 	if result.Failure == nil {
@@ -176,7 +176,7 @@ func TestAuthenticate_Standby(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pairingCode, accessCode := doPair(t, svc)
 
-	resp, err := svc.Authenticate(models.AuthenticateRequestContent{
+	resp, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    deviceID,
 		PairingCode: pairingCode,
 		AccessCode:  accessCode,
@@ -194,11 +194,11 @@ func TestAuthenticate_Claimed(t *testing.T) {
 	deviceID, pairingCode, accessCode := doPair(t, svc)
 
 	// Claim the device
-	if err := svc.Claim(pairingCode, "acc-1", 730); err != nil {
+	if err := svc.Claim(pairingCode, "acc-1", 730, "", "", 365); err != nil {
 		t.Fatalf("Claim: %v", err)
 	}
 
-	resp, err := svc.Authenticate(models.AuthenticateRequestContent{
+	resp, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    deviceID,
 		PairingCode: pairingCode,
 		AccessCode:  accessCode,
@@ -209,7 +209,7 @@ func TestAuthenticate_Claimed(t *testing.T) {
 	if resp.GetStatus() != models.AuthStatusCLAIMED {
 		t.Fatalf("expected CLAIMED, got %v", resp.GetStatus())
 	}
-	if resp.GetCaCert() == "" {
+	if resp.GetCaCertificate() == "" {
 		t.Fatal("expected CA cert in claimed response")
 	}
 	if resp.GetMqttUri() == "" {
@@ -221,7 +221,7 @@ func TestAuthenticate_WrongCredentials(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, _, _ := doPair(t, svc)
 
-	_, err := svc.Authenticate(models.AuthenticateRequestContent{
+	_, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    deviceID,
 		PairingCode: "WRONG1",
 		AccessCode:  "wrong",
@@ -233,7 +233,7 @@ func TestAuthenticate_WrongCredentials(t *testing.T) {
 
 func TestAuthenticate_NotFound(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	_, err := svc.Authenticate(models.AuthenticateRequestContent{
+	_, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    "nonexistent",
 		PairingCode: "ABC123",
 		AccessCode:  "secret",
@@ -249,7 +249,7 @@ func TestClaim_Success(t *testing.T) {
 	svc, _, store := newTestDeviceService(t)
 	_, pairingCode, _ := doPair(t, svc)
 
-	if err := svc.Claim(pairingCode, "acc-1", 730); err != nil {
+	if err := svc.Claim(pairingCode, "acc-1", 730, "", "", 365); err != nil {
 		t.Fatalf("Claim: %v", err)
 	}
 
@@ -265,7 +265,7 @@ func TestClaim_Success(t *testing.T) {
 
 func TestClaim_NotFound(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	err := svc.Claim("NOPE00", "acc-1", 730)
+	err := svc.Claim("NOPE00", "acc-1", 730, "", "", 365)
 	if err != ErrNotFound {
 		t.Fatalf("expected ErrNotFound, got %v", err)
 	}
@@ -274,9 +274,9 @@ func TestClaim_NotFound(t *testing.T) {
 func TestClaim_AlreadyClaimed(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	_, pairingCode, _ := doPair(t, svc)
-	svc.Claim(pairingCode, "acc-1", 730)
+	svc.Claim(pairingCode, "acc-1", 730, "", "", 365)
 
-	err := svc.Claim(pairingCode, "acc-2", 730)
+	err := svc.Claim(pairingCode, "acc-2", 730, "", "", 365)
 	if err != ErrConflict {
 		t.Fatalf("expected ErrConflict, got %v", err)
 	}
@@ -288,8 +288,8 @@ func TestListDevices(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	_, pc1, _ := doPair(t, svc)
 	_, pc2, _ := doPair(t, svc)
-	svc.Claim(pc1, "acc-1", 730)
-	svc.Claim(pc2, "acc-1", 730)
+	svc.Claim(pc1, "acc-1", 730, "", "", 365)
+	svc.Claim(pc2, "acc-1", 730, "", "", 365)
 
 	summaries, err := svc.ListDevices("acc-1")
 	if err != nil {
@@ -305,7 +305,7 @@ func TestListDevices(t *testing.T) {
 func TestDescribeDevice_Success(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	detail, err := svc.DescribeDevice(deviceID, "acc-1")
 	if err != nil {
@@ -327,7 +327,7 @@ func TestDescribeDevice_NotFound(t *testing.T) {
 func TestDescribeDevice_Forbidden(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	_, err := svc.DescribeDevice(deviceID, "acc-other")
 	if err != ErrForbidden {
@@ -340,7 +340,7 @@ func TestDescribeDevice_Forbidden(t *testing.T) {
 func TestUpdateConfiguration_Success(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	// Set registration so validation passes
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1","simpleSettings":[{"id":"brightness"}],"profiles":[{"id":"prof1"}]}]}`)
@@ -364,7 +364,7 @@ func TestUpdateConfiguration_Success(t *testing.T) {
 func TestUpdateConfiguration_ValidationError(t *testing.T) {
 	svc, _, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1"}]}`)
 	store.UpdateDeviceRegistration(deviceID, reg)
@@ -382,7 +382,7 @@ func TestUpdateConfiguration_ValidationError(t *testing.T) {
 func TestDeprovision(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	if err := svc.Deprovision(deviceID, "acc-1"); err != nil {
 		t.Fatalf("Deprovision: %v", err)
@@ -414,7 +414,7 @@ func TestDeprovision(t *testing.T) {
 func TestDeprovision_Forbidden(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	err := svc.Deprovision(deviceID, "acc-other")
 	if err != ErrForbidden {
@@ -427,7 +427,7 @@ func TestDeprovision_Forbidden(t *testing.T) {
 func TestFullCleanup(t *testing.T) {
 	svc, _, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	// Add thumbnail and log
 	store.UpsertThumbnail(&db.Thumbnail{DeviceID: deviceID, SourceID: "ch1", ImageData: []byte{1}, Timestamp: "now", ImageType: "jpeg", ImageSizeKB: 1})
@@ -456,7 +456,7 @@ func TestFullCleanup(t *testing.T) {
 func TestRotateCredentials(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730)
+	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	if err := svc.RotateCredentials(deviceID, "acc-1"); err != nil {
 		t.Fatalf("RotateCredentials: %v", err)

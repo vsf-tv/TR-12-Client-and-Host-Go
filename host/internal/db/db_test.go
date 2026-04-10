@@ -161,7 +161,7 @@ func TestClaimDevice(t *testing.T) {
 	s.InsertDevice(d)
 
 	regExpires := time.Now().Add(730 * 24 * time.Hour).UTC().Format(time.RFC3339)
-	if err := s.ClaimDevice("d1", "acc-1", regExpires); err != nil {
+	if err := s.ClaimDevice("d1", "acc-1", regExpires, "", "", 365); err != nil {
 		t.Fatalf("ClaimDevice: %v", err)
 	}
 

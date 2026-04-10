@@ -138,11 +138,11 @@ func TestWriteAndReadFromFilesystem(t *testing.T) {
 		"pub/status", "pub/config", "sub/certs", "sub/deprov",
 		"pub/deprov", "sub/log",
 	)
-	auth := tr12models.NewAuthenticateResponseContent(tr12models.CLAIMED)
-	auth.SetCaCert("fake-ca-cert")
-	auth.SetDeviceCert("fake-device-cert")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth.SetCaCertificate("fake-ca-cert")
+	auth.SetDeviceCertificate("fake-device-cert")
 	auth.SetMqttUri("tls://localhost:8883")
-	auth.SetRegion("local")
+	auth.SetRegionName("local")
 	auth.SetHostSettings(*hs)
 
 	if err := s.WriteToFilesystem("device-abc", auth); err != nil {
@@ -182,18 +182,18 @@ func TestRotateCerts_Changed(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
-	auth := tr12models.NewAuthenticateResponseContent(tr12models.CLAIMED)
-	auth.SetCaCert("ca")
-	auth.SetDeviceCert("old-cert")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth.SetCaCertificate("ca")
+	auth.SetDeviceCertificate("old-cert")
 	auth.SetMqttUri("tls://old:8883")
-	auth.SetRegion("old-region")
+	auth.SetRegionName("old-region")
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
 	rotate := &tr12models.RotateCertificatesRequestContent{
-		MqttUri:    "tls://new:8883",
-		DeviceCert: "new-cert",
-		Region:     "new-region",
+		MqttUri:           "tls://new:8883",
+		DeviceCertificate: "new-cert",
+		RegionName:        "new-region",
 	}
 	updated, err := s.RotateCerts(rotate)
 	if err != nil {
@@ -224,18 +224,18 @@ func TestRotateCerts_NothingChanged(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
-	auth := tr12models.NewAuthenticateResponseContent(tr12models.CLAIMED)
-	auth.SetCaCert("ca")
-	auth.SetDeviceCert("same-cert")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth.SetCaCertificate("ca")
+	auth.SetDeviceCertificate("same-cert")
 	auth.SetMqttUri("tls://same:8883")
-	auth.SetRegion("same-region")
+	auth.SetRegionName("same-region")
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
 	rotate := &tr12models.RotateCertificatesRequestContent{
-		MqttUri:    "tls://same:8883",
-		DeviceCert: "same-cert",
-		Region:     "same-region",
+		MqttUri:           "tls://same:8883",
+		DeviceCertificate: "same-cert",
+		RegionName:        "same-region",
 	}
 	updated, err := s.RotateCerts(rotate)
 	if err != nil {
@@ -252,11 +252,11 @@ func TestDeprovision(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
-	auth := tr12models.NewAuthenticateResponseContent(tr12models.CLAIMED)
-	auth.SetCaCert("ca")
-	auth.SetDeviceCert("cert")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth.SetCaCertificate("ca")
+	auth.SetDeviceCertificate("cert")
 	auth.SetMqttUri("tls://x:8883")
-	auth.SetRegion("local")
+	auth.SetRegionName("local")
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
@@ -276,18 +276,18 @@ func TestRotateCerts_SameCertNewURI(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
-	auth := tr12models.NewAuthenticateResponseContent(tr12models.CLAIMED)
-	auth.SetCaCert("ca")
-	auth.SetDeviceCert("same-cert")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth.SetCaCertificate("ca")
+	auth.SetDeviceCertificate("same-cert")
 	auth.SetMqttUri("tls://old:8883")
-	auth.SetRegion("local")
+	auth.SetRegionName("local")
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
 	rotate := &tr12models.RotateCertificatesRequestContent{
-		MqttUri:    "tls://new:8883", // URI changed
-		DeviceCert: "same-cert",      // cert unchanged
-		Region:     "local",
+		MqttUri:           "tls://new:8883",
+		DeviceCertificate: "same-cert",
+		RegionName:        "local",
 	}
 	updated, err := s.RotateCerts(rotate)
 	if err != nil {
@@ -322,9 +322,9 @@ func TestRotateCerts_NilConnSettings_URINotUpdated(t *testing.T) {
 	os.WriteFile(s.DeviceCertFile, []byte("old-cert"), 0600)
 
 	rotate := &tr12models.RotateCertificatesRequestContent{
-		MqttUri:    "tls://new:8883",
-		DeviceCert: "new-cert",
-		Region:     "local",
+		MqttUri:           "tls://new:8883",
+		DeviceCertificate: "new-cert",
+		RegionName:        "local",
 	}
 	updated, err := s.RotateCerts(rotate)
 	if err != nil {

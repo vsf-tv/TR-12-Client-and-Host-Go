@@ -46,14 +46,14 @@ func writeTempJPEG(t *testing.T, sizeBytes int) string {
 	return f.Name()
 }
 
-func makeRequest(localPath, remotePath string, period, expires, maxSizeKB float32) tr12models.ThumbnailRequest {
-	p, e, m, lp, rp := period, expires, maxSizeKB, localPath, remotePath
+func makeRequest(localPath, remotePath string, period float32, expires time.Time, maxSizeKB float32) tr12models.ThumbnailRequest {
+	p, m, lp, rp := period, maxSizeKB, localPath, remotePath
 	return tr12models.ThumbnailRequest{
-		PeriodSeconds:         &p,
-		ExpiresAtEpochSeconds: &e,
-		MaxSizeKilobyte:       &m,
-		LocalPath:             &lp,
-		RemotePath:            &rp,
+		PeriodSeconds:    &p,
+		ExpiresTimestamp: &expires,
+		MaxSizeKilobyte:  &m,
+		LocalPath:        &lp,
+		RemotePath:       &rp,
 	}
 }
 
@@ -73,7 +73,7 @@ func TestUploadHappyPath(t *testing.T) {
 	defer srv.Close()
 
 	imgPath := writeTempJPEG(t, 1024) // 1KB
-	expires := float32(time.Now().Add(10 * time.Second).Unix())
+	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
@@ -105,7 +105,7 @@ func TestExpiredSubscriptionNotUploaded(t *testing.T) {
 	defer srv.Close()
 
 	imgPath := writeTempJPEG(t, 1024)
-	expires := float32(time.Now().Add(-5 * time.Second).Unix()) // already expired
+	expires := time.Now().Add(-5 * time.Second) // already expired
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
@@ -130,7 +130,7 @@ func TestOversizedImageNotUploaded(t *testing.T) {
 	defer srv.Close()
 
 	imgPath := writeTempJPEG(t, 600*1024) // 600KB
-	expires := float32(time.Now().Add(10 * time.Second).Unix())
+	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
@@ -154,7 +154,7 @@ func TestMissingFileNotUploaded(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	expires := float32(time.Now().Add(10 * time.Second).Unix())
+	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
@@ -182,7 +182,7 @@ func TestSubscriptionReplacement(t *testing.T) {
 	defer srv.Close()
 
 	imgPath := writeTempJPEG(t, 1024)
-	expires := float32(time.Now().Add(30 * time.Second).Unix())
+	expires := time.Now().Add(30 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	// Start first subscription with period=1s
@@ -227,7 +227,7 @@ func TestMultipleSources(t *testing.T) {
 	defer srv.Close()
 
 	imgPath := writeTempJPEG(t, 1024)
-	expires := float32(time.Now().Add(10 * time.Second).Unix())
+	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
@@ -262,7 +262,7 @@ func TestStopAll(t *testing.T) {
 	defer srv.Close()
 
 	imgPath := writeTempJPEG(t, 1024)
-	expires := float32(time.Now().Add(60 * time.Second).Unix())
+	expires := time.Now().Add(60 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{

@@ -81,19 +81,18 @@ func (s *ThumbnailService) RequestThumbnail(deviceID, sourceID string) error {
 	expiry := time.Now().Add(120 * time.Second)
 
 	period := float32(5)
-	exp := float32(expiry.Unix())
 	maxSize := float32(500)
 	// Include Content-Type header required by S3 pre-signed PUT URLs
 	headers := map[string]string{"Content-Type": "image/jpeg"}
 	sub := models.RequestThumbnailRequestContent{
 		Requests: map[string]models.ThumbnailRequest{
 			sourceID: {
-				PeriodSeconds:         &period,
-				ExpiresAtEpochSeconds: &exp,
-				MaxSizeKilobyte:       &maxSize,
-				LocalPath:             &localPath,
-				RemotePath:            &uploadURL,
-				Headers:               &headers,
+				PeriodSeconds:    &period,
+				ExpiresTimestamp: &expiry,
+				MaxSizeKilobyte:  &maxSize,
+				LocalPath:        &localPath,
+				RemotePath:       &uploadURL,
+				Headers:          &headers,
 			},
 		},
 	}

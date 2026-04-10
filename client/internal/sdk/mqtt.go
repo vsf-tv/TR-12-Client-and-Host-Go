@@ -310,8 +310,8 @@ func (s *CddSdk) updateThumbnailSubscriptionCallback(_ mqtt.Client, msg mqtt.Mes
 		return
 	}
 	for src, req := range sub.Requests {
-		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q periodSeconds=%.0f expiresAtEpochSeconds=%.0f maxSizeKB=%.0f",
-			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresAtEpochSeconds(), req.GetMaxSizeKilobyte())
+		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q periodSeconds=%.0f expiresTimestamp=%v maxSizeKB=%.0f",
+			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresTimestamp(), req.GetMaxSizeKilobyte())
 	}
 	if err := s.thumbnailManager.UpdateThumbnail(&sub); err != nil {
 		s.logger.Errorf("Thumbnail subscription error: %v", err)
@@ -355,8 +355,8 @@ func (s *CddSdk) reportLogs(logFilePath string) {
 		s.logSpewDetected = 0
 	}
 	remotePath := s.logRequest.GetRemotePath()
-	expires := s.logRequest.GetExpiresAtEpochSeconds()
-	if remotePath != "" && float64(expires) > float64(time.Now().Unix()) {
+	expires := s.logRequest.GetExpiresTimestamp()
+	if remotePath != "" && s.logRequest.HasExpiresTimestamp() && time.Now().Before(expires) {
 		s.logger.Info("Pushing Logs")
 		if err := utils.UploadFile(logFilePath, remotePath, 5, "log", nil); err != nil {
 			s.logger.Errorf("Can't upload logs: %v", err)
