@@ -18,7 +18,7 @@ TR-12 defines a secure, NAT-friendly pairing and communication protocol for prof
 
 | Dependency | Version |
 |---|---|
-| [TR-12-Models](https://github.com/vsf-tv/TR-12-Models) | v1.0.0 |
+| [TR-12-Models](https://github.com/vsf-tv/TR-12-Models) | v1.0.1 |
 
 The **client** runs on the device. It exposes a local REST API that a device application (or the included ARD simulator) calls to connect, report status, receive configuration, and handle thumbnails/logs. Under the hood it manages pairing, mTLS credential storage, and an MQTT connection to the host.
 

@@ -291,10 +291,10 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 		return
 	}
 	reason := tr12models.DEPROVISIONED
-	t := tr12models.PtrFloat32(float32(time.Now().Unix()))
+	t := time.Now().UTC()
 	msg := models.DeprovisionRequest{
-		Reason: &reason,
-		Time:   t,
+		Reason:    &reason,
+		Timestamp: &t,
 	}
 	data, _ := json.Marshal(msg)
 	if s.mqttClient != nil {

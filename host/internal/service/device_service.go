@@ -451,8 +451,8 @@ func (s *DeviceService) Deprovision(deviceID, accountID string) error {
 	}
 
 	reason := tr12models.DEPROVISIONED
-	t := float32(time.Now().Unix())
-	msg := models.DeprovisionRequest{Reason: &reason, Time: &t}
+	t := time.Now().UTC()
+	msg := models.DeprovisionRequest{Reason: &reason, Timestamp: &t}
 	payload, _ := json.Marshal(msg)
 	topic := fmt.Sprintf("cdd/%s/deprovision", deviceID)
 	return s.mqtt.Publish(topic, payload, true) // retained — offline device deprovisions itself on reconnect

@@ -323,7 +323,7 @@ func (s *CddSdk) deprovisionDeviceCallback(_ mqtt.Client, msg mqtt.Message) {
 	if err := json.Unmarshal(msg.Payload(), &deprov); err != nil {
 		s.logger.Errorf("Could not parse deprovision update. Deprovisioning anyway: %v", err)
 	} else {
-		s.logger.Infof("Service deprovisioned client at: %.0f. Reason: %s", deprov.GetTime(), deprov.GetReason())
+		s.logger.Infof("Service deprovisioned client at: %s. Reason: %s", deprov.GetTimestamp(), deprov.GetReason())
 	}
 	if err := s.handleDeprovision(s.hostID); err != nil {
 		s.logger.Errorf("Could not process deprovision update: %v", err)
