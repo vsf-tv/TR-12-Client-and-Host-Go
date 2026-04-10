@@ -10,7 +10,6 @@ TR-12 defines a secure, NAT-friendly pairing and communication protocol for prof
 |---|---|---|
 | [`client/`](client/) | CDD SDK daemon + Application Reference Design (ARD) | [client/README.md](client/README.md) |
 | [`host/`](host/) | TR-12 Host Service (REST API + embedded MQTT broker + SQLite) | [host/README.md](host/README.md) |
-| [`console/`](console/) | Browser-based management console (React + Cloudscape) | [console/README.md](console/README.md) |
 | [`models/TR-12-Models/`](https://github.com/vsf-tv/TR-12-Models) | Smithy-generated TR-12 protocol types (git submodule) | — |
 | [`models/cdd_sdk/`](models/cdd_sdk/) | CDD SDK Smithy models + Go/TypeScript generation scripts | — |
 
@@ -53,14 +52,12 @@ Without the submodule, the Go builds will fail because both `client/` and `host/
 
 ## Building
 
-A single `build.sh` at the repo root builds everything:
+The generated Go model code is committed to the repo — no code generation step needed. Just build:
 
-```bash
-./build.sh           # build host (mac + linux), client SDK, ARD, console
-./build.sh --regen   # also regenerate Smithy models (requires smithy + openapi-generator)
-```
-
-Or build individual components:
+> **Important:** The TR-12 protocol models live in a git submodule. You must initialize it before building:
+> ```bash
+> git submodule update --init --recursive
+> ```
 
 ```bash
 # Host Service
@@ -71,9 +68,18 @@ cd client && go build -o bin/cdd-sdk ./cmd/cdd-sdk/
 
 # Application Reference Design (simulated encoder)
 cd client && go build -o bin/ard ./cmd/application_reference_design/
+```
 
-# Console
-cd console && npm run build
+Cross-compile for Linux (EC2/embedded):
+```bash
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/tr12-host-linux-ec2 ./cmd/tr12-host/
+CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/cdd-sdk-arm64 ./cmd/cdd-sdk/
+```
+
+To regenerate models from Smithy (requires `smithy` CLI and `openapi-generator`):
+```bash
+./models/TR-12-Models/generate-tr12-models.sh go
+./models/cdd_sdk/generate-client-sdk-models.sh go
 ```
 
 ## Quick Start — Running Locally
