@@ -11,7 +11,7 @@
  */
 
 import { Profile } from '../models/Profile';
-import { SimpleSettings } from '../models/SimpleSettings';
+import { StandardSettings } from '../models/StandardSettings';
 import { HttpFile } from '../http/http';
 
 /**
@@ -19,7 +19,7 @@ import { HttpFile } from '../http/http';
  * Type
  * @export
  */
-export type SettingsChoice = Profile | SimpleSettings;
+export type SettingsChoice = Profile | StandardSettings;
 
 /**
 * @type SettingsChoiceClass

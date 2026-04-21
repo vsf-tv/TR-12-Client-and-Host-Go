@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Healthy** | **map[string]interface{}** | Healthy state — only the state indicator, no additional fields needed. | 
+**Healthy** | **map[string]interface{}** | Healthy state — no additional fields needed. | 
 
 ## Methods
 

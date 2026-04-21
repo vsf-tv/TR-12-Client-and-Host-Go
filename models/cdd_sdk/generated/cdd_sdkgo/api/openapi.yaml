@@ -112,41 +112,41 @@ components:
   schemas:
     Channel:
       example:
+        standardSettings:
+        - enums:
+            defaultValue: defaultValue
+            values:
+            - values
+            - values
+          ranges:
+            defaultValue: 1.4658129
+            maximum: 6.0274563
+            minimum: 0.8008282
+          name: name
+          description: description
+          id: id
+        - enums:
+            defaultValue: defaultValue
+            values:
+            - values
+            - values
+          ranges:
+            defaultValue: 1.4658129
+            maximum: 6.0274563
+            minimum: 0.8008282
+          name: name
+          description: description
+          id: id
         name: name
         profiles:
         - name: name
+          description: description
           id: id
-          info: info
         - name: name
+          description: description
           id: id
-          info: info
         channelType: SOURCE
         id: id
-        simpleSettings:
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            min: 0.8008282
-            max: 6.0274563
-            defaultValue: 1.4658129
-          name: name
-          id: id
-          info: info
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            min: 0.8008282
-            max: 6.0274563
-            defaultValue: 1.4658129
-          name: name
-          id: id
-          info: info
         connectionProtocols:
         - SRT_LISTENER
         - SRT_LISTENER
@@ -157,7 +157,7 @@ components:
           type: string
         channelType:
           $ref: "#/components/schemas/ChannelType"
-        simpleSettings:
+        standardSettings:
           items:
             $ref: "#/components/schemas/Setting"
           type: array
@@ -167,7 +167,7 @@ components:
           type: array
         connectionProtocols:
           items:
-            $ref: "#/components/schemas/SupportedProtocol"
+            $ref: "#/components/schemas/TransportProtocolName"
           type: array
       required:
       - id
@@ -176,7 +176,7 @@ components:
     ChannelConfiguration:
       example:
         settings:
-          simpleSettings:
+          standardSettings:
           - value: value
             key: key
           - value: value
@@ -190,7 +190,7 @@ components:
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
                 aes128:
-                  passcode: passcode
+                  passphrase: passphrase
               port: 6190.222739483032
               interface: interface
         id: id
@@ -213,6 +213,13 @@ components:
       - configurationId
       - id
       - state
+      type: object
+    ChannelProfile:
+      properties:
+        id:
+          type: string
+      required:
+      - id
       type: object
     ChannelState:
       enum:
@@ -253,9 +260,14 @@ components:
       example:
         updateId: updateId
         payload:
+          standardSettings:
+          - value: value
+            key: key
+          - value: value
+            key: key
           channels:
           - settings:
-              simpleSettings:
+              standardSettings:
               - value: value
                 key: key
               - value: value
@@ -269,14 +281,14 @@ components:
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
                     aes128:
-                      passcode: passcode
+                      passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
             id: id
             configurationId: configurationId
             state: ACTIVE
           - settings:
-              simpleSettings:
+              standardSettings:
               - value: value
                 key: key
               - value: value
@@ -290,7 +302,7 @@ components:
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
                     aes128:
-                      passcode: passcode
+                      passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
             id: id
@@ -298,11 +310,6 @@ components:
             state: ACTIVE
           health: null
           configurationId: configurationId
-          simpleSettings:
-          - value: value
-            key: key
-          - value: value
-            key: key
       properties:
         updateId:
           type: string
@@ -313,108 +320,108 @@ components:
       example:
         hostId: hostId
         registration:
+          standardSettings:
+          - enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+            ranges:
+              defaultValue: 1.4658129
+              maximum: 6.0274563
+              minimum: 0.8008282
+            name: name
+            description: description
+            id: id
+          - enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+            ranges:
+              defaultValue: 1.4658129
+              maximum: 6.0274563
+              minimum: 0.8008282
+            name: name
+            description: description
+            id: id
           channels:
-          - name: name
+          - standardSettings:
+            - enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+              ranges:
+                defaultValue: 1.4658129
+                maximum: 6.0274563
+                minimum: 0.8008282
+              name: name
+              description: description
+              id: id
+            - enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+              ranges:
+                defaultValue: 1.4658129
+                maximum: 6.0274563
+                minimum: 0.8008282
+              name: name
+              description: description
+              id: id
+            name: name
             profiles:
             - name: name
+              description: description
               id: id
-              info: info
             - name: name
+              description: description
               id: id
-              info: info
             channelType: SOURCE
             id: id
-            simpleSettings:
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                min: 0.8008282
-                max: 6.0274563
-                defaultValue: 1.4658129
-              name: name
-              id: id
-              info: info
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                min: 0.8008282
-                max: 6.0274563
-                defaultValue: 1.4658129
-              name: name
-              id: id
-              info: info
             connectionProtocols:
             - SRT_LISTENER
             - SRT_LISTENER
-          - name: name
+          - standardSettings:
+            - enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+              ranges:
+                defaultValue: 1.4658129
+                maximum: 6.0274563
+                minimum: 0.8008282
+              name: name
+              description: description
+              id: id
+            - enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+              ranges:
+                defaultValue: 1.4658129
+                maximum: 6.0274563
+                minimum: 0.8008282
+              name: name
+              description: description
+              id: id
+            name: name
             profiles:
             - name: name
+              description: description
               id: id
-              info: info
             - name: name
+              description: description
               id: id
-              info: info
             channelType: SOURCE
             id: id
-            simpleSettings:
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                min: 0.8008282
-                max: 6.0274563
-                defaultValue: 1.4658129
-              name: name
-              id: id
-              info: info
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                min: 0.8008282
-                max: 6.0274563
-                defaultValue: 1.4658129
-              name: name
-              id: id
-              info: info
             connectionProtocols:
             - SRT_LISTENER
             - SRT_LISTENER
-          simpleSettings:
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              min: 0.8008282
-              max: 6.0274563
-              defaultValue: 1.4658129
-            name: name
-            id: id
-            info: info
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              min: 0.8008282
-              max: 6.0274563
-              defaultValue: 1.4658129
-            name: name
-            id: id
-            info: info
           thumbnails:
           - name: name
             localPath: localPath
@@ -474,45 +481,12 @@ components:
             minimumLatencyMilliseconds: 6.027456183070403
             encryption:
               aes128:
-                passcode: passcode
+                passphrase: passphrase
             port: 6190.222739483032
             interface: interface
       properties:
         transportProtocol:
           $ref: "#/components/schemas/TransportProtocol"
-      type: object
-    CriticalState:
-      properties:
-        messages:
-          items:
-            type: string
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        componentName:
-          type: string
-      required:
-      - componentName
-      - messages
-      - timestamp
-      type: object
-    DegradedState:
-      description: Degraded or critical state — all diagnostic fields required.
-      properties:
-        messages:
-          items:
-            type: string
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        componentName:
-          type: string
-      required:
-      - componentName
-      - messages
-      - timestamp
       type: object
     DeprovisionResponseContent:
       example:
@@ -539,9 +513,14 @@ components:
       type: object
     DeviceConfiguration:
       example:
+        standardSettings:
+        - value: value
+          key: key
+        - value: value
+          key: key
         channels:
         - settings:
-            simpleSettings:
+            standardSettings:
             - value: value
               key: key
             - value: value
@@ -555,14 +534,14 @@ components:
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
                   aes128:
-                    passcode: passcode
+                    passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
           id: id
           configurationId: configurationId
           state: ACTIVE
         - settings:
-            simpleSettings:
+            standardSettings:
             - value: value
               key: key
             - value: value
@@ -576,7 +555,7 @@ components:
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
                   aes128:
-                    passcode: passcode
+                    passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
           id: id
@@ -584,11 +563,6 @@ components:
           state: ACTIVE
         health: null
         configurationId: configurationId
-        simpleSettings:
-        - value: value
-          key: key
-        - value: value
-          key: key
       properties:
         configurationId:
           type: string
@@ -596,7 +570,7 @@ components:
           items:
             $ref: "#/components/schemas/ChannelConfiguration"
           type: array
-        simpleSettings:
+        standardSettings:
           items:
             $ref: "#/components/schemas/IdAndValue"
           type: array
@@ -608,108 +582,108 @@ components:
       type: object
     DeviceRegistration:
       example:
+        standardSettings:
+        - enums:
+            defaultValue: defaultValue
+            values:
+            - values
+            - values
+          ranges:
+            defaultValue: 1.4658129
+            maximum: 6.0274563
+            minimum: 0.8008282
+          name: name
+          description: description
+          id: id
+        - enums:
+            defaultValue: defaultValue
+            values:
+            - values
+            - values
+          ranges:
+            defaultValue: 1.4658129
+            maximum: 6.0274563
+            minimum: 0.8008282
+          name: name
+          description: description
+          id: id
         channels:
-        - name: name
+        - standardSettings:
+          - enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+            ranges:
+              defaultValue: 1.4658129
+              maximum: 6.0274563
+              minimum: 0.8008282
+            name: name
+            description: description
+            id: id
+          - enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+            ranges:
+              defaultValue: 1.4658129
+              maximum: 6.0274563
+              minimum: 0.8008282
+            name: name
+            description: description
+            id: id
+          name: name
           profiles:
           - name: name
+            description: description
             id: id
-            info: info
           - name: name
+            description: description
             id: id
-            info: info
           channelType: SOURCE
           id: id
-          simpleSettings:
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              min: 0.8008282
-              max: 6.0274563
-              defaultValue: 1.4658129
-            name: name
-            id: id
-            info: info
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              min: 0.8008282
-              max: 6.0274563
-              defaultValue: 1.4658129
-            name: name
-            id: id
-            info: info
           connectionProtocols:
           - SRT_LISTENER
           - SRT_LISTENER
-        - name: name
+        - standardSettings:
+          - enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+            ranges:
+              defaultValue: 1.4658129
+              maximum: 6.0274563
+              minimum: 0.8008282
+            name: name
+            description: description
+            id: id
+          - enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+            ranges:
+              defaultValue: 1.4658129
+              maximum: 6.0274563
+              minimum: 0.8008282
+            name: name
+            description: description
+            id: id
+          name: name
           profiles:
           - name: name
+            description: description
             id: id
-            info: info
           - name: name
+            description: description
             id: id
-            info: info
           channelType: SOURCE
           id: id
-          simpleSettings:
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              min: 0.8008282
-              max: 6.0274563
-              defaultValue: 1.4658129
-            name: name
-            id: id
-            info: info
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              min: 0.8008282
-              max: 6.0274563
-              defaultValue: 1.4658129
-            name: name
-            id: id
-            info: info
           connectionProtocols:
           - SRT_LISTENER
           - SRT_LISTENER
-        simpleSettings:
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            min: 0.8008282
-            max: 6.0274563
-            defaultValue: 1.4658129
-          name: name
-          id: id
-          info: info
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            min: 0.8008282
-            max: 6.0274563
-            defaultValue: 1.4658129
-          name: name
-          id: id
-          info: info
         thumbnails:
         - name: name
           localPath: localPath
@@ -722,7 +696,7 @@ components:
           items:
             $ref: "#/components/schemas/Channel"
           type: array
-        simpleSettings:
+        standardSettings:
           items:
             $ref: "#/components/schemas/Setting"
           type: array
@@ -796,49 +770,27 @@ components:
       - state
       - success
       type: object
-    DtlsFingerprint:
-      properties:
-        algorithm:
-          type: string
-        value:
-          type: string
-      required:
-      - algorithm
-      - value
-      type: object
-    DtlsSetupRole:
-      enum:
-      - ACTPASS
-      - DTLS_ACTIVE
-      - DTLS_PASSIVE
-      type: string
     EncryptionAes:
       oneOf:
       - $ref: "#/components/schemas/aes128"
       - $ref: "#/components/schemas/aes256"
     EncryptionAes128:
       example:
-        passcode: passcode
+        passphrase: passphrase
       properties:
-        passcode:
-          description: A 32-character hexadecimal string.
-          maxLength: 32
-          minLength: 32
-          pattern: "^[a-fA-F0-9]+$"
+        passphrase:
+          format: password
           type: string
       required:
-      - passcode
+      - passphrase
       type: object
     EncryptionAes256:
       properties:
-        passcode:
-          description: A 64-character hexadecimal string.
-          maxLength: 64
-          minLength: 64
-          pattern: "^[a-fA-F0-9]+$"
+        passphrase:
+          format: password
           type: string
       required:
-      - passcode
+      - passphrase
       type: object
     EnumValues:
       example:
@@ -879,9 +831,14 @@ components:
         configuration:
           updateId: updateId
           payload:
+            standardSettings:
+            - value: value
+              key: key
+            - value: value
+              key: key
             channels:
             - settings:
-                simpleSettings:
+                standardSettings:
                 - value: value
                   key: key
                 - value: value
@@ -895,14 +852,14 @@ components:
                     minimumLatencyMilliseconds: 6.027456183070403
                     encryption:
                       aes128:
-                        passcode: passcode
+                        passphrase: passphrase
                     port: 6190.222739483032
                     interface: interface
               id: id
               configurationId: configurationId
               state: ACTIVE
             - settings:
-                simpleSettings:
+                standardSettings:
                 - value: value
                   key: key
                 - value: value
@@ -916,7 +873,7 @@ components:
                     minimumLatencyMilliseconds: 6.027456183070403
                     encryption:
                       aes128:
-                        passcode: passcode
+                        passphrase: passphrase
                     port: 6190.222739483032
                     interface: interface
               id: id
@@ -924,11 +881,6 @@ components:
               state: ACTIVE
             health: null
             configurationId: configurationId
-            simpleSettings:
-            - value: value
-              key: key
-            - value: value
-              key: key
         success: true
         state: state
         message: message
@@ -981,31 +933,7 @@ components:
       - $ref: "#/components/schemas/degraded"
       - $ref: "#/components/schemas/critical"
     HealthyState:
-      description: "Healthy state — only the state indicator, no additional fields\
-        \ needed."
-      type: object
-    IceParameters:
-      properties:
-        usernameFragment:
-          type: string
-        password:
-          type: string
-      required:
-      - password
-      - usernameFragment
-      type: object
-    IceServer:
-      properties:
-        urls:
-          items:
-            type: string
-          type: array
-        username:
-          type: string
-        credential:
-          type: string
-      required:
-      - urls
+      description: Healthy state — no additional fields needed.
       type: object
     IdAndValue:
       example:
@@ -1023,30 +951,30 @@ components:
     ProfileDefinition:
       example:
         name: name
+        description: description
         id: id
-        info: info
       properties:
         name:
           type: string
         id:
           type: string
-        info:
+        description:
           type: string
       required:
+      - description
       - id
-      - info
       - name
       type: object
     RangeValues:
       example:
-        min: 0.8008282
-        max: 6.0274563
         defaultValue: 1.4658129
+        maximum: 6.0274563
+        minimum: 0.8008282
       properties:
-        min:
+        minimum:
           format: float
           type: number
-        max:
+        maximum:
           format: float
           type: number
         defaultValue:
@@ -1054,15 +982,20 @@ components:
           type: number
       required:
       - defaultValue
-      - max
-      - min
+      - maximum
+      - minimum
       type: object
     ReportActualConfigurationRequestContent:
       example:
         configuration:
+          standardSettings:
+          - value: value
+            key: key
+          - value: value
+            key: key
           channels:
           - settings:
-              simpleSettings:
+              standardSettings:
               - value: value
                 key: key
               - value: value
@@ -1076,14 +1009,14 @@ components:
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
                     aes128:
-                      passcode: passcode
+                      passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
             id: id
             configurationId: configurationId
             state: ACTIVE
           - settings:
-              simpleSettings:
+              standardSettings:
               - value: value
                 key: key
               - value: value
@@ -1097,7 +1030,7 @@ components:
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
                     aes128:
-                      passcode: passcode
+                      passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
             id: id
@@ -1105,11 +1038,6 @@ components:
             state: ACTIVE
           health: null
           configurationId: configurationId
-          simpleSettings:
-          - value: value
-            key: key
-          - value: value
-            key: key
       properties:
         configuration:
           $ref: "#/components/schemas/DeviceConfiguration"
@@ -1201,18 +1129,19 @@ components:
       properties:
         streamId:
           $ref: "#/components/schemas/RistStreamIdentifier"
-        ip:
+        address:
           type: string
         port:
+          maximum: 65535
+          minimum: 1
           type: number
         minimumLatencyMilliseconds:
-          default: 3000
+          default: 1000
           type: number
         encryption:
           $ref: "#/components/schemas/EncryptionAes"
       required:
-      - ip
-      - minimumLatencyMilliseconds
+      - address
       - port
       type: object
     RistListenerTransportProtocol:
@@ -1220,16 +1149,17 @@ components:
         streamId:
           $ref: "#/components/schemas/RistStreamIdentifier"
         port:
+          maximum: 65535
+          minimum: 1024
           type: number
         minimumLatencyMilliseconds:
-          default: 3000
+          default: 1000
           type: number
         encryption:
           $ref: "#/components/schemas/EncryptionAes"
         interface:
           type: string
       required:
-      - minimumLatencyMilliseconds
       - port
       type: object
     RistStreamIdentifier:
@@ -1251,7 +1181,7 @@ components:
       type: object
     RtpFecStreamConfig:
       properties:
-        ip:
+        address:
           type: string
         port:
           type: number
@@ -1260,18 +1190,18 @@ components:
       type: object
     RtpTransportProtocol:
       properties:
-        ip:
+        address:
           type: string
         port:
           type: number
-        sourceIpFilter:
+        sourceAddressFilter:
           type: string
         rtpPayloadType:
           type: number
         fecConfig:
           $ref: "#/components/schemas/RtpFecConfiguration"
       required:
-      - ip
+      - address
       - port
       type: object
     Setting:
@@ -1282,57 +1212,49 @@ components:
           - values
           - values
         ranges:
-          min: 0.8008282
-          max: 6.0274563
           defaultValue: 1.4658129
+          maximum: 6.0274563
+          minimum: 0.8008282
         name: name
+        description: description
         id: id
-        info: info
       properties:
         id:
           type: string
         name:
           type: string
-        info:
+        description:
           type: string
         enums:
           $ref: "#/components/schemas/EnumValues"
         ranges:
           $ref: "#/components/schemas/RangeValues"
       required:
+      - description
       - id
-      - info
       - name
-      type: object
-    SettingProfile:
-      properties:
-        id:
-          type: string
-      required:
-      - id
       type: object
     SettingsChoice:
       oneOf:
-      - $ref: "#/components/schemas/simpleSettings"
+      - $ref: "#/components/schemas/standardSettings"
       - $ref: "#/components/schemas/profile"
     SrtCallerTransportProtocol:
       properties:
         streamId:
           type: string
-        ip:
+        address:
           type: string
         port:
           maximum: 65535
           minimum: 1
           type: number
         minimumLatencyMilliseconds:
-          default: 3000
+          default: 1000
           type: number
         encryption:
           $ref: "#/components/schemas/EncryptionAes"
       required:
-      - ip
-      - minimumLatencyMilliseconds
+      - address
       - port
       type: object
     SrtListenerTransportProtocol:
@@ -1341,7 +1263,7 @@ components:
         minimumLatencyMilliseconds: 6.027456183070403
         encryption:
           aes128:
-            passcode: passcode
+            passphrase: passphrase
         port: 6190.222739483032
         interface: interface
       properties:
@@ -1352,14 +1274,13 @@ components:
           minimum: 1024
           type: number
         minimumLatencyMilliseconds:
-          default: 3000
+          default: 1000
           type: number
         encryption:
           $ref: "#/components/schemas/EncryptionAes"
         interface:
           type: string
       required:
-      - minimumLatencyMilliseconds
       - port
       type: object
     StatusValue:
@@ -1379,17 +1300,6 @@ components:
       - name
       - value
       type: object
-    SupportedProtocol:
-      enum:
-      - SRT_LISTENER
-      - SRT_CALLER
-      - ZIXI_LISTENER
-      - ZIXI_CALLER
-      - RIST_CALLER
-      - RIST_LISTENER
-      - RTP
-      - WEBRTC
-      type: string
     Thumbnail:
       example:
         name: name
@@ -1413,95 +1323,78 @@ components:
       - $ref: "#/components/schemas/srtCaller"
       - $ref: "#/components/schemas/ristListener"
       - $ref: "#/components/schemas/ristCaller"
-      - $ref: "#/components/schemas/zixiListener"
-      - $ref: "#/components/schemas/zixiCaller"
+      - $ref: "#/components/schemas/zixiPush"
+      - $ref: "#/components/schemas/zixiPull"
       - $ref: "#/components/schemas/rtp"
-      - $ref: "#/components/schemas/webRtc"
-    WebRtcFecConfig:
-      properties:
-        fecMechanism:
-          $ref: "#/components/schemas/WebRtcFecMechanism"
-        redPayloadType:
-          type: number
-        ulpfecPayloadType:
-          type: number
-        targetOverheadPercentage:
-          type: number
-      required:
-      - fecMechanism
-      type: object
-    WebRtcFecMechanism:
+    TransportProtocolName:
       enum:
-      - ULPFEC
-      - RED
-      - FLEXFEC
+      - SRT_LISTENER
+      - SRT_CALLER
+      - ZIXI_PUSH
+      - ZIXI_PULL
+      - RIST_CALLER
+      - RIST_LISTENER
+      - RTP
       type: string
-    WebRtcTransportProtocol:
+    UnhealthyStateDescription:
+      description: Shared description for degraded and critical states.
       properties:
-        dtlsSetupRole:
-          $ref: "#/components/schemas/DtlsSetupRole"
-        iceParameters:
-          $ref: "#/components/schemas/IceParameters"
-        dtlsFingerprints:
+        messages:
           items:
-            $ref: "#/components/schemas/DtlsFingerprint"
+            type: string
           type: array
-        iceServers:
-          items:
-            $ref: "#/components/schemas/IceServer"
-          type: array
-        fecConfig:
-          $ref: "#/components/schemas/WebRtcFecConfig"
-        simpleSettings:
-          items:
-            $ref: "#/components/schemas/IdAndValue"
-          type: array
+        timestamp:
+          format: date-time
+          type: string
+        componentName:
+          type: string
       required:
-      - dtlsFingerprints
-      - dtlsSetupRole
-      - iceParameters
+      - componentName
+      - messages
+      - timestamp
       type: object
-    ZixiCallerTransportProtocol:
+    ZixiPullTransportProtocol:
       properties:
         streamId:
           type: string
-        ip:
+        address:
           type: string
         port:
+          default: 2088
+          maximum: 65535
+          minimum: 1024
           type: number
         minimumLatencyMilliseconds:
-          default: 3000
+          default: 1000
           type: number
         encryption:
           $ref: "#/components/schemas/EncryptionAes"
       required:
-      - ip
-      - minimumLatencyMilliseconds
-      - port
-      - streamId
+      - address
       type: object
-    ZixiListenerTransportProtocol:
+    ZixiPushTransportProtocol:
       properties:
         streamId:
           type: string
+        address:
+          type: string
         port:
+          default: 2088
+          maximum: 65535
+          minimum: 1
           type: number
         minimumLatencyMilliseconds:
-          default: 3000
+          default: 1000
           type: number
         encryption:
           $ref: "#/components/schemas/EncryptionAes"
-        interface:
-          type: string
       required:
-      - minimumLatencyMilliseconds
-      - port
-      - streamId
+      - address
       type: object
     aes128:
       example:
         aes128:
-          passcode: passcode
+          passphrase: passphrase
       properties:
         aes128:
           $ref: "#/components/schemas/EncryptionAes128"
@@ -1522,8 +1415,7 @@ components:
         healthy: "{}"
       properties:
         healthy:
-          description: "Healthy state — only the state indicator, no additional fields\
-            \ needed."
+          description: Healthy state — no additional fields needed.
           type: object
       required:
       - healthy
@@ -1532,7 +1424,7 @@ components:
     degraded:
       properties:
         degraded:
-          $ref: "#/components/schemas/DegradedState"
+          $ref: "#/components/schemas/UnhealthyStateDescription"
       required:
       - degraded
       title: degraded
@@ -1540,7 +1432,7 @@ components:
     critical:
       properties:
         critical:
-          $ref: "#/components/schemas/CriticalState"
+          $ref: "#/components/schemas/UnhealthyStateDescription"
       required:
       - critical
       title: critical
@@ -1561,26 +1453,26 @@ components:
       - streamId
       title: streamId
       type: object
-    simpleSettings:
+    standardSettings:
       example:
-        simpleSettings:
+        standardSettings:
         - value: value
           key: key
         - value: value
           key: key
       properties:
-        simpleSettings:
+        standardSettings:
           items:
             $ref: "#/components/schemas/IdAndValue"
           type: array
       required:
-      - simpleSettings
-      title: simpleSettings
+      - standardSettings
+      title: standardSettings
       type: object
     profile:
       properties:
         profile:
-          $ref: "#/components/schemas/SettingProfile"
+          $ref: "#/components/schemas/ChannelProfile"
       required:
       - profile
       title: profile
@@ -1592,7 +1484,7 @@ components:
           minimumLatencyMilliseconds: 6.027456183070403
           encryption:
             aes128:
-              passcode: passcode
+              passphrase: passphrase
           port: 6190.222739483032
           interface: interface
       properties:
@@ -1626,21 +1518,21 @@ components:
       - ristCaller
       title: ristCaller
       type: object
-    zixiListener:
+    zixiPush:
       properties:
-        zixiListener:
-          $ref: "#/components/schemas/ZixiListenerTransportProtocol"
+        zixiPush:
+          $ref: "#/components/schemas/ZixiPushTransportProtocol"
       required:
-      - zixiListener
-      title: zixiListener
+      - zixiPush
+      title: zixiPush
       type: object
-    zixiCaller:
+    zixiPull:
       properties:
-        zixiCaller:
-          $ref: "#/components/schemas/ZixiCallerTransportProtocol"
+        zixiPull:
+          $ref: "#/components/schemas/ZixiPullTransportProtocol"
       required:
-      - zixiCaller
-      title: zixiCaller
+      - zixiPull
+      title: zixiPull
       type: object
     rtp:
       properties:
@@ -1649,12 +1541,4 @@ components:
       required:
       - rtp
       title: rtp
-      type: object
-    webRtc:
-      properties:
-        webRtc:
-          $ref: "#/components/schemas/WebRtcTransportProtocol"
-      required:
-      - webRtc
-      title: webRtc
       type: object

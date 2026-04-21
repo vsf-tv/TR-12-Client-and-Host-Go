@@ -21,7 +21,7 @@ var _ MappedNullable = &Profile{}
 
 // Profile struct for Profile
 type Profile struct {
-	Profile SettingProfile `json:"profile"`
+	Profile ChannelProfile `json:"profile"`
 }
 
 type _Profile Profile
@@ -30,7 +30,7 @@ type _Profile Profile
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewProfile(profile SettingProfile) *Profile {
+func NewProfile(profile ChannelProfile) *Profile {
 	this := Profile{}
 	this.Profile = profile
 	return &this
@@ -45,9 +45,9 @@ func NewProfileWithDefaults() *Profile {
 }
 
 // GetProfile returns the Profile field value
-func (o *Profile) GetProfile() SettingProfile {
+func (o *Profile) GetProfile() ChannelProfile {
 	if o == nil {
-		var ret SettingProfile
+		var ret ChannelProfile
 		return ret
 	}
 
@@ -56,7 +56,7 @@ func (o *Profile) GetProfile() SettingProfile {
 
 // GetProfileOk returns a tuple with the Profile field value
 // and a boolean to check if the value has been set.
-func (o *Profile) GetProfileOk() (*SettingProfile, bool) {
+func (o *Profile) GetProfileOk() (*ChannelProfile, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -64,7 +64,7 @@ func (o *Profile) GetProfileOk() (*SettingProfile, bool) {
 }
 
 // SetProfile sets field value
-func (o *Profile) SetProfile(v SettingProfile) {
+func (o *Profile) SetProfile(v ChannelProfile) {
 	o.Profile = v
 }
 

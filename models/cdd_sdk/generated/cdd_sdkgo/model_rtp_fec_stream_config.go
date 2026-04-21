@@ -19,7 +19,7 @@ var _ MappedNullable = &RtpFecStreamConfig{}
 
 // RtpFecStreamConfig struct for RtpFecStreamConfig
 type RtpFecStreamConfig struct {
-	Ip *string `json:"ip,omitempty"`
+	Address *string `json:"address,omitempty"`
 	Port *float32 `json:"port,omitempty"`
 	RtpPayloadType *float32 `json:"rtpPayloadType,omitempty"`
 }
@@ -41,36 +41,36 @@ func NewRtpFecStreamConfigWithDefaults() *RtpFecStreamConfig {
 	return &this
 }
 
-// GetIp returns the Ip field value if set, zero value otherwise.
-func (o *RtpFecStreamConfig) GetIp() string {
-	if o == nil || IsNil(o.Ip) {
+// GetAddress returns the Address field value if set, zero value otherwise.
+func (o *RtpFecStreamConfig) GetAddress() string {
+	if o == nil || IsNil(o.Address) {
 		var ret string
 		return ret
 	}
-	return *o.Ip
+	return *o.Address
 }
 
-// GetIpOk returns a tuple with the Ip field value if set, nil otherwise
+// GetAddressOk returns a tuple with the Address field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RtpFecStreamConfig) GetIpOk() (*string, bool) {
-	if o == nil || IsNil(o.Ip) {
+func (o *RtpFecStreamConfig) GetAddressOk() (*string, bool) {
+	if o == nil || IsNil(o.Address) {
 		return nil, false
 	}
-	return o.Ip, true
+	return o.Address, true
 }
 
-// HasIp returns a boolean if a field has been set.
-func (o *RtpFecStreamConfig) HasIp() bool {
-	if o != nil && !IsNil(o.Ip) {
+// HasAddress returns a boolean if a field has been set.
+func (o *RtpFecStreamConfig) HasAddress() bool {
+	if o != nil && !IsNil(o.Address) {
 		return true
 	}
 
 	return false
 }
 
-// SetIp gets a reference to the given string and assigns it to the Ip field.
-func (o *RtpFecStreamConfig) SetIp(v string) {
-	o.Ip = &v
+// SetAddress gets a reference to the given string and assigns it to the Address field.
+func (o *RtpFecStreamConfig) SetAddress(v string) {
+	o.Address = &v
 }
 
 // GetPort returns the Port field value if set, zero value otherwise.
@@ -147,8 +147,8 @@ func (o RtpFecStreamConfig) MarshalJSON() ([]byte, error) {
 
 func (o RtpFecStreamConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Ip) {
-		toSerialize["ip"] = o.Ip
+	if !IsNil(o.Address) {
+		toSerialize["address"] = o.Address
 	}
 	if !IsNil(o.Port) {
 		toSerialize["port"] = o.Port

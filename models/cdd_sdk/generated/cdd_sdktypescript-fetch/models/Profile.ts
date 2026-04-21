@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { SettingProfile } from './SettingProfile';
+import type { ChannelProfile } from './ChannelProfile';
 import {
-    SettingProfileFromJSON,
-    SettingProfileFromJSONTyped,
-    SettingProfileToJSON,
-    SettingProfileToJSONTyped,
-} from './SettingProfile';
+    ChannelProfileFromJSON,
+    ChannelProfileFromJSONTyped,
+    ChannelProfileToJSON,
+    ChannelProfileToJSONTyped,
+} from './ChannelProfile';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface Profile {
     /**
      * 
-     * @type {SettingProfile}
+     * @type {ChannelProfile}
      * @memberof Profile
      */
-    profile: SettingProfile;
+    profile: ChannelProfile;
 }
 
 /**
@@ -53,7 +53,7 @@ export function ProfileFromJSONTyped(json: any, ignoreDiscriminator: boolean): P
     }
     return {
         
-        'profile': SettingProfileFromJSON(json['profile']),
+        'profile': ChannelProfileFromJSON(json['profile']),
     };
 }
 
@@ -68,7 +68,7 @@ export function ProfileToJSONTyped(value?: Profile | null, ignoreDiscriminator: 
 
     return {
         
-        'profile': SettingProfileToJSON(value['profile']),
+        'profile': ChannelProfileToJSON(value['profile']),
     };
 }
 

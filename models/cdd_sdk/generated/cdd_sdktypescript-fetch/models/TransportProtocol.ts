@@ -47,34 +47,27 @@ import {
     SrtListenerFromJSONTyped,
     SrtListenerToJSON,
 } from './SrtListener';
-import type { WebRtc } from './WebRtc';
+import type { ZixiPull } from './ZixiPull';
 import {
-    instanceOfWebRtc,
-    WebRtcFromJSON,
-    WebRtcFromJSONTyped,
-    WebRtcToJSON,
-} from './WebRtc';
-import type { ZixiCaller } from './ZixiCaller';
+    instanceOfZixiPull,
+    ZixiPullFromJSON,
+    ZixiPullFromJSONTyped,
+    ZixiPullToJSON,
+} from './ZixiPull';
+import type { ZixiPush } from './ZixiPush';
 import {
-    instanceOfZixiCaller,
-    ZixiCallerFromJSON,
-    ZixiCallerFromJSONTyped,
-    ZixiCallerToJSON,
-} from './ZixiCaller';
-import type { ZixiListener } from './ZixiListener';
-import {
-    instanceOfZixiListener,
-    ZixiListenerFromJSON,
-    ZixiListenerFromJSONTyped,
-    ZixiListenerToJSON,
-} from './ZixiListener';
+    instanceOfZixiPush,
+    ZixiPushFromJSON,
+    ZixiPushFromJSONTyped,
+    ZixiPushToJSON,
+} from './ZixiPush';
 
 /**
  * @type TransportProtocol
  * 
  * @export
  */
-export type TransportProtocol = RistCaller | RistListener | Rtp | SrtCaller | SrtListener | WebRtc | ZixiCaller | ZixiListener;
+export type TransportProtocol = RistCaller | RistListener | Rtp | SrtCaller | SrtListener | ZixiPull | ZixiPush;
 
 export function TransportProtocolFromJSON(json: any): TransportProtocol {
     return TransportProtocolFromJSONTyped(json, false);
@@ -102,14 +95,11 @@ export function TransportProtocolFromJSONTyped(json: any, ignoreDiscriminator: b
     if (instanceOfSrtListener(json)) {
         return SrtListenerFromJSONTyped(json, true);
     }
-    if (instanceOfWebRtc(json)) {
-        return WebRtcFromJSONTyped(json, true);
+    if (instanceOfZixiPull(json)) {
+        return ZixiPullFromJSONTyped(json, true);
     }
-    if (instanceOfZixiCaller(json)) {
-        return ZixiCallerFromJSONTyped(json, true);
-    }
-    if (instanceOfZixiListener(json)) {
-        return ZixiListenerFromJSONTyped(json, true);
+    if (instanceOfZixiPush(json)) {
+        return ZixiPushFromJSONTyped(json, true);
     }
     return {} as any;
 }
@@ -140,14 +130,11 @@ export function TransportProtocolToJSONTyped(value?: TransportProtocol | null, i
     if (instanceOfSrtListener(value)) {
         return SrtListenerToJSON(value as SrtListener);
     }
-    if (instanceOfWebRtc(value)) {
-        return WebRtcToJSON(value as WebRtc);
+    if (instanceOfZixiPull(value)) {
+        return ZixiPullToJSON(value as ZixiPull);
     }
-    if (instanceOfZixiCaller(value)) {
-        return ZixiCallerToJSON(value as ZixiCaller);
-    }
-    if (instanceOfZixiListener(value)) {
-        return ZixiListenerToJSON(value as ZixiListener);
+    if (instanceOfZixiPush(value)) {
+        return ZixiPushToJSON(value as ZixiPush);
     }
     return {};
 }

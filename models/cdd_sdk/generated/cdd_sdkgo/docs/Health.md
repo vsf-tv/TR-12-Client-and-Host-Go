@@ -4,15 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Healthy** | **map[string]interface{}** | Healthy state — only the state indicator, no additional fields needed. | 
-**Degraded** | [**DegradedState**](DegradedState.md) |  | 
-**Critical** | [**CriticalState**](CriticalState.md) |  | 
+**Healthy** | **map[string]interface{}** | Healthy state — no additional fields needed. | 
+**Degraded** | [**UnhealthyStateDescription**](UnhealthyStateDescription.md) |  | 
+**Critical** | [**UnhealthyStateDescription**](UnhealthyStateDescription.md) |  | 
 
 ## Methods
 
 ### NewHealth
 
-`func NewHealth(healthy map[string]interface{}, degraded DegradedState, critical CriticalState, ) *Health`
+`func NewHealth(healthy map[string]interface{}, degraded UnhealthyStateDescription, critical UnhealthyStateDescription, ) *Health`
 
 NewHealth instantiates a new Health object
 This constructor will assign default values to properties that have it defined,
@@ -49,40 +49,40 @@ SetHealthy sets Healthy field to given value.
 
 ### GetDegraded
 
-`func (o *Health) GetDegraded() DegradedState`
+`func (o *Health) GetDegraded() UnhealthyStateDescription`
 
 GetDegraded returns the Degraded field if non-nil, zero value otherwise.
 
 ### GetDegradedOk
 
-`func (o *Health) GetDegradedOk() (*DegradedState, bool)`
+`func (o *Health) GetDegradedOk() (*UnhealthyStateDescription, bool)`
 
 GetDegradedOk returns a tuple with the Degraded field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDegraded
 
-`func (o *Health) SetDegraded(v DegradedState)`
+`func (o *Health) SetDegraded(v UnhealthyStateDescription)`
 
 SetDegraded sets Degraded field to given value.
 
 
 ### GetCritical
 
-`func (o *Health) GetCritical() CriticalState`
+`func (o *Health) GetCritical() UnhealthyStateDescription`
 
 GetCritical returns the Critical field if non-nil, zero value otherwise.
 
 ### GetCriticalOk
 
-`func (o *Health) GetCriticalOk() (*CriticalState, bool)`
+`func (o *Health) GetCriticalOk() (*UnhealthyStateDescription, bool)`
 
 GetCriticalOk returns a tuple with the Critical field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCritical
 
-`func (o *Health) SetCritical(v CriticalState)`
+`func (o *Health) SetCritical(v UnhealthyStateDescription)`
 
 SetCritical sets Critical field to given value.
 

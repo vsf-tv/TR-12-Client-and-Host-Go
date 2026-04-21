@@ -51,7 +51,7 @@ export interface RistListenerTransportProtocol {
      * @type {number}
      * @memberof RistListenerTransportProtocol
      */
-    minimumLatencyMilliseconds: number;
+    minimumLatencyMilliseconds?: number;
     /**
      * 
      * @type {EncryptionAes}
@@ -71,7 +71,6 @@ export interface RistListenerTransportProtocol {
  */
 export function instanceOfRistListenerTransportProtocol(value: object): value is RistListenerTransportProtocol {
     if (!('port' in value) || value['port'] === undefined) return false;
-    if (!('minimumLatencyMilliseconds' in value) || value['minimumLatencyMilliseconds'] === undefined) return false;
     return true;
 }
 
@@ -87,7 +86,7 @@ export function RistListenerTransportProtocolFromJSONTyped(json: any, ignoreDisc
         
         'streamId': json['streamId'] == null ? undefined : RistStreamIdentifierFromJSON(json['streamId']),
         'port': json['port'],
-        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'],
+        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
         'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
         '_interface': json['interface'] == null ? undefined : json['interface'],
     };

@@ -65,14 +65,14 @@ CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/tr12-host-linux-arm64 ./cm
 
 ```bash
 # Start the service (first run auto-generates CA, server cert, and JWT secret)
-./tr12-host --host-address 192.168.1.100
+./bin/tr12-host --host-address 192.168.1.100
 
 # With MQTT on port 443 (firewall-friendly, requires cap_net_bind_service or root)
-sudo setcap 'cap_net_bind_service=+ep' ./tr12-host
-./tr12-host --host-address 192.168.1.100 --mqtt-port 443
+sudo setcap 'cap_net_bind_service=+ep' ./bin/tr12-host
+./bin/tr12-host --host-address 192.168.1.100 --mqtt-port 443
 
 # With HTTPS using a Let's Encrypt certificate
-./tr12-host \
+./bin/tr12-host \
   --host-address mydomain.example.com \
   --mqtt-port 443 \
   --https \
@@ -80,7 +80,7 @@ sudo setcap 'cap_net_bind_service=+ep' ./tr12-host
   --tls-key /etc/letsencrypt/live/mydomain.example.com/privkey.pem
 
 # All options
-./tr12-host \
+./bin/tr12-host \
   --host-address 192.168.1.100 \
   --http-port 8080 \
   --mqtt-port 8883 \
@@ -233,13 +233,13 @@ Response (claimed):
   "mqttUri": "tls://192.168.1.100:8883",
   "region": "local",
   "hostSettings": {
-    "iotProtocolName": "mqtt",
+    "mqttAlpnProtocol": "x-amzn-mqtt-ca",
     "pairingTimeoutSeconds": 1800,
-    "minIntervalPubSeconds": 1,
+    "minimumIntervalPublishSeconds": 1,
     "mqttKeepaliveSeconds": 30,
     "subUpdateTopic": "cdd/001XI02IJ2FtSIirk01/config/update",
-    "pubReportRegistrationTopic": "cdd/001XI02IJ2FtSIirk01/registration/report",
-    "pubReportStatusTopic": "cdd/001XI02IJ2FtSIirk01/status/report",
+    "publishReportRegistrationTopic": "cdd/001XI02IJ2FtSIirk01/registration/report",
+    "publishReportStatusTopic": "cdd/001XI02IJ2FtSIirk01/status/report",
     "..."
   }
 }
@@ -340,7 +340,7 @@ curl -X PUT http://localhost:8080/device/001XI02IJ2FtSIirk01 \
       "rotation_interval_days": 365
     },
     "deviceConfiguration": {
-      "simpleSettings": [
+      "standardSettings": [
         {"key": "sync_clock_source", "value": "NTP"}
       ],
       "channels": [
@@ -348,7 +348,7 @@ curl -X PUT http://localhost:8080/device/001XI02IJ2FtSIirk01 \
           "id": "CH01",
           "state": "ACTIVE",
           "settings": {
-            "simpleSettings": [
+            "standardSettings": [
               {"key": "RS01", "value": "1920x1080"},
               {"key": "MB01", "value": "10000"}
             ]
@@ -356,9 +356,9 @@ curl -X PUT http://localhost:8080/device/001XI02IJ2FtSIirk01 \
           "connection": {
             "transportProtocol": {
               "srtCaller": {
-                "ip": "10.0.0.50",
+                "address": "10.0.0.50",
                 "port": 9000,
-                "minimumLatencyMilliseconds": 3000
+                "minimumLatencyMilliseconds": 1000
               }
             }
           }
@@ -422,7 +422,7 @@ Here's the full flow from starting the service to having a connected device:
 
 ```bash
 # 1. Start the host service
-./tr12-host --host-address 127.0.0.1
+./bin/tr12-host --host-address 127.0.0.1
 
 # 2. Register an account
 curl -s -X POST http://127.0.0.1:8080/account/register \

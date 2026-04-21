@@ -19,20 +19,20 @@ import {
     ProfileFromJSONTyped,
     ProfileToJSON,
 } from './Profile';
-import type { SimpleSettings } from './SimpleSettings';
+import type { StandardSettings } from './StandardSettings';
 import {
-    instanceOfSimpleSettings,
-    SimpleSettingsFromJSON,
-    SimpleSettingsFromJSONTyped,
-    SimpleSettingsToJSON,
-} from './SimpleSettings';
+    instanceOfStandardSettings,
+    StandardSettingsFromJSON,
+    StandardSettingsFromJSONTyped,
+    StandardSettingsToJSON,
+} from './StandardSettings';
 
 /**
  * @type SettingsChoice
  * 
  * @export
  */
-export type SettingsChoice = Profile | SimpleSettings;
+export type SettingsChoice = Profile | StandardSettings;
 
 export function SettingsChoiceFromJSON(json: any): SettingsChoice {
     return SettingsChoiceFromJSONTyped(json, false);
@@ -48,8 +48,8 @@ export function SettingsChoiceFromJSONTyped(json: any, ignoreDiscriminator: bool
     if (instanceOfProfile(json)) {
         return ProfileFromJSONTyped(json, true);
     }
-    if (instanceOfSimpleSettings(json)) {
-        return SimpleSettingsFromJSONTyped(json, true);
+    if (instanceOfStandardSettings(json)) {
+        return StandardSettingsFromJSONTyped(json, true);
     }
     return {} as any;
 }
@@ -68,8 +68,8 @@ export function SettingsChoiceToJSONTyped(value?: SettingsChoice | null, ignoreD
     if (instanceOfProfile(value)) {
         return ProfileToJSON(value as Profile);
     }
-    if (instanceOfSimpleSettings(value)) {
-        return SimpleSettingsToJSON(value as SimpleSettings);
+    if (instanceOfStandardSettings(value)) {
+        return StandardSettingsToJSON(value as StandardSettings);
     }
     return {};
 }

@@ -87,12 +87,12 @@ func (s *ThumbnailService) RequestThumbnail(deviceID, sourceID string) error {
 	sub := models.RequestThumbnailRequestContent{
 		Requests: map[string]models.ThumbnailRequest{
 			sourceID: {
-				PeriodSeconds:    &period,
-				ExpiresTimestamp: &expiry,
-				MaxSizeKilobyte:  &maxSize,
-				LocalPath:        &localPath,
-				RemotePath:       &uploadURL,
-				Headers:          &headers,
+				PeriodSeconds: &period,
+				ExpiresAt:     &expiry,
+				MaxSizeKB:     &maxSize,
+				LocalPath:     &localPath,
+				RemotePath:    &uploadURL,
+				Headers:       &headers,
 			},
 		},
 	}

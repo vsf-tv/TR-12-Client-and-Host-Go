@@ -36,7 +36,7 @@ export interface ProfileDefinition {
      * @type {string}
      * @memberof ProfileDefinition
      */
-    info: string;
+    description: string;
 }
 
 /**
@@ -45,7 +45,7 @@ export interface ProfileDefinition {
 export function instanceOfProfileDefinition(value: object): value is ProfileDefinition {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
-    if (!('info' in value) || value['info'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     return true;
 }
 
@@ -61,7 +61,7 @@ export function ProfileDefinitionFromJSONTyped(json: any, ignoreDiscriminator: b
         
         'name': json['name'],
         'id': json['id'],
-        'info': json['info'],
+        'description': json['description'],
     };
 }
 
@@ -78,7 +78,7 @@ export function ProfileDefinitionToJSONTyped(value?: ProfileDefinition | null, i
         
         'name': value['name'],
         'id': value['id'],
-        'info': value['info'],
+        'description': value['description'],
     };
 }
 

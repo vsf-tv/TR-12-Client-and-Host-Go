@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **string** |  | 
 **Name** | **string** |  | 
-**Info** | **string** |  | 
+**Description** | **string** |  | 
 **Enums** | Pointer to [**EnumValues**](EnumValues.md) |  | [optional] 
 **Ranges** | Pointer to [**RangeValues**](RangeValues.md) |  | [optional] 
 
@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 
 ### NewSetting
 
-`func NewSetting(id string, name string, info string, ) *Setting`
+`func NewSetting(id string, name string, description string, ) *Setting`
 
 NewSetting instantiates a new Setting object
 This constructor will assign default values to properties that have it defined,
@@ -69,24 +69,24 @@ and a boolean to check if the value has been set.
 SetName sets Name field to given value.
 
 
-### GetInfo
+### GetDescription
 
-`func (o *Setting) GetInfo() string`
+`func (o *Setting) GetDescription() string`
 
-GetInfo returns the Info field if non-nil, zero value otherwise.
+GetDescription returns the Description field if non-nil, zero value otherwise.
 
-### GetInfoOk
+### GetDescriptionOk
 
-`func (o *Setting) GetInfoOk() (*string, bool)`
+`func (o *Setting) GetDescriptionOk() (*string, bool)`
 
-GetInfoOk returns a tuple with the Info field if it's non-nil, zero value otherwise
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetInfo
+### SetDescription
 
-`func (o *Setting) SetInfo(v string)`
+`func (o *Setting) SetDescription(v string)`
 
-SetInfo sets Info field to given value.
+SetDescription sets Description field to given value.
 
 
 ### GetEnums

@@ -69,7 +69,7 @@ func (s *CddSdk) startConnect() (cddsdkgo.ConnectResponseContent, error) {
 		s.certs.CACertFile,
 		s.certs.DeviceCertFile,
 		s.certs.PrivKeyFile,
-		s.certs.HostSettings.IotProtocolName,
+		s.certs.HostSettings.MqttAlpnProtocol,
 	)
 	if err != nil {
 		s.reset()
@@ -219,7 +219,7 @@ func (s *CddSdk) reportRegistration() {
 		return
 	}
 	s.logger.Info("Reporting Registration")
-	token := s.mqttClient.Publish(hs.PubReportRegistrationTopic, 1, false, data)
+	token := s.mqttClient.Publish(hs.PublishReportRegistrationTopic, 1, false, data)
 	if token.WaitTimeout(5*time.Second) && token.Error() != nil {
 		s.logger.Errorf("Failed to publish registration: %v", token.Error())
 		return
@@ -310,8 +310,8 @@ func (s *CddSdk) updateThumbnailSubscriptionCallback(_ mqtt.Client, msg mqtt.Mes
 		return
 	}
 	for src, req := range sub.Requests {
-		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q periodSeconds=%.0f expiresTimestamp=%v maxSizeKB=%.0f",
-			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresTimestamp(), req.GetMaxSizeKilobyte())
+		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q periodSeconds=%.0f expiresAt=%v maxSizeKB=%.0f",
+			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresAt(), req.GetMaxSizeKB())
 	}
 	if err := s.thumbnailManager.UpdateThumbnail(&sub); err != nil {
 		s.logger.Errorf("Thumbnail subscription error: %v", err)
@@ -355,8 +355,8 @@ func (s *CddSdk) reportLogs(logFilePath string) {
 		s.logSpewDetected = 0
 	}
 	remotePath := s.logRequest.GetRemotePath()
-	expires := s.logRequest.GetExpiresTimestamp()
-	if remotePath != "" && s.logRequest.HasExpiresTimestamp() && time.Now().Before(expires) {
+	expires := s.logRequest.GetExpiresAt()
+	if remotePath != "" && s.logRequest.HasExpiresAt() && time.Now().Before(expires) {
 		s.logger.Info("Pushing Logs")
 		if err := utils.UploadFile(logFilePath, remotePath, 5, "log", nil); err != nil {
 			s.logger.Errorf("Can't upload logs: %v", err)

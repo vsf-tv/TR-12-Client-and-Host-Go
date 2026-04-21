@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Profile** | [**SettingProfile**](SettingProfile.md) |  | 
+**Profile** | [**ChannelProfile**](ChannelProfile.md) |  | 
 
 ## Methods
 
 ### NewProfile
 
-`func NewProfile(profile SettingProfile, ) *Profile`
+`func NewProfile(profile ChannelProfile, ) *Profile`
 
 NewProfile instantiates a new Profile object
 This constructor will assign default values to properties that have it defined,
@@ -27,20 +27,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetProfile
 
-`func (o *Profile) GetProfile() SettingProfile`
+`func (o *Profile) GetProfile() ChannelProfile`
 
 GetProfile returns the Profile field if non-nil, zero value otherwise.
 
 ### GetProfileOk
 
-`func (o *Profile) GetProfileOk() (*SettingProfile, bool)`
+`func (o *Profile) GetProfileOk() (*ChannelProfile, bool)`
 
 GetProfileOk returns a tuple with the Profile field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetProfile
 
-`func (o *Profile) SetProfile(v SettingProfile)`
+`func (o *Profile) SetProfile(v ChannelProfile)`
 
 SetProfile sets Profile field to given value.
 

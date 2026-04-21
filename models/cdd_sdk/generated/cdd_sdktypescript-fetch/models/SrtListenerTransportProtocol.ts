@@ -44,7 +44,7 @@ export interface SrtListenerTransportProtocol {
      * @type {number}
      * @memberof SrtListenerTransportProtocol
      */
-    minimumLatencyMilliseconds: number;
+    minimumLatencyMilliseconds?: number;
     /**
      * 
      * @type {EncryptionAes}
@@ -64,7 +64,6 @@ export interface SrtListenerTransportProtocol {
  */
 export function instanceOfSrtListenerTransportProtocol(value: object): value is SrtListenerTransportProtocol {
     if (!('port' in value) || value['port'] === undefined) return false;
-    if (!('minimumLatencyMilliseconds' in value) || value['minimumLatencyMilliseconds'] === undefined) return false;
     return true;
 }
 
@@ -80,7 +79,7 @@ export function SrtListenerTransportProtocolFromJSONTyped(json: any, ignoreDiscr
         
         'streamId': json['streamId'] == null ? undefined : json['streamId'],
         'port': json['port'],
-        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'],
+        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
         'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
         '_interface': json['interface'] == null ? undefined : json['interface'],
     };

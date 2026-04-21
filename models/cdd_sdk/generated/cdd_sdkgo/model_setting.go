@@ -23,7 +23,7 @@ var _ MappedNullable = &Setting{}
 type Setting struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
-	Info string `json:"info"`
+	Description string `json:"description"`
 	Enums *EnumValues `json:"enums,omitempty"`
 	Ranges *RangeValues `json:"ranges,omitempty"`
 }
@@ -34,11 +34,11 @@ type _Setting Setting
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewSetting(id string, name string, info string) *Setting {
+func NewSetting(id string, name string, description string) *Setting {
 	this := Setting{}
 	this.Id = id
 	this.Name = name
-	this.Info = info
+	this.Description = description
 	return &this
 }
 
@@ -98,28 +98,28 @@ func (o *Setting) SetName(v string) {
 	o.Name = v
 }
 
-// GetInfo returns the Info field value
-func (o *Setting) GetInfo() string {
+// GetDescription returns the Description field value
+func (o *Setting) GetDescription() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Info
+	return o.Description
 }
 
-// GetInfoOk returns a tuple with the Info field value
+// GetDescriptionOk returns a tuple with the Description field value
 // and a boolean to check if the value has been set.
-func (o *Setting) GetInfoOk() (*string, bool) {
+func (o *Setting) GetDescriptionOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Info, true
+	return &o.Description, true
 }
 
-// SetInfo sets field value
-func (o *Setting) SetInfo(v string) {
-	o.Info = v
+// SetDescription sets field value
+func (o *Setting) SetDescription(v string) {
+	o.Description = v
 }
 
 // GetEnums returns the Enums field value if set, zero value otherwise.
@@ -198,7 +198,7 @@ func (o Setting) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["id"] = o.Id
 	toSerialize["name"] = o.Name
-	toSerialize["info"] = o.Info
+	toSerialize["description"] = o.Description
 	if !IsNil(o.Enums) {
 		toSerialize["enums"] = o.Enums
 	}
@@ -215,7 +215,7 @@ func (o *Setting) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"id",
 		"name",
-		"info",
+		"description",
 	}
 
 	allProperties := make(map[string]interface{})

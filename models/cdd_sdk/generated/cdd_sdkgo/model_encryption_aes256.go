@@ -21,8 +21,7 @@ var _ MappedNullable = &EncryptionAes256{}
 
 // EncryptionAes256 struct for EncryptionAes256
 type EncryptionAes256 struct {
-	// A 64-character hexadecimal string.
-	Passcode string `json:"passcode" validate:"regexp=^[a-fA-F0-9]+$"`
+	Passphrase string `json:"passphrase"`
 }
 
 type _EncryptionAes256 EncryptionAes256
@@ -31,9 +30,9 @@ type _EncryptionAes256 EncryptionAes256
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewEncryptionAes256(passcode string) *EncryptionAes256 {
+func NewEncryptionAes256(passphrase string) *EncryptionAes256 {
 	this := EncryptionAes256{}
-	this.Passcode = passcode
+	this.Passphrase = passphrase
 	return &this
 }
 
@@ -45,28 +44,28 @@ func NewEncryptionAes256WithDefaults() *EncryptionAes256 {
 	return &this
 }
 
-// GetPasscode returns the Passcode field value
-func (o *EncryptionAes256) GetPasscode() string {
+// GetPassphrase returns the Passphrase field value
+func (o *EncryptionAes256) GetPassphrase() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Passcode
+	return o.Passphrase
 }
 
-// GetPasscodeOk returns a tuple with the Passcode field value
+// GetPassphraseOk returns a tuple with the Passphrase field value
 // and a boolean to check if the value has been set.
-func (o *EncryptionAes256) GetPasscodeOk() (*string, bool) {
+func (o *EncryptionAes256) GetPassphraseOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Passcode, true
+	return &o.Passphrase, true
 }
 
-// SetPasscode sets field value
-func (o *EncryptionAes256) SetPasscode(v string) {
-	o.Passcode = v
+// SetPassphrase sets field value
+func (o *EncryptionAes256) SetPassphrase(v string) {
+	o.Passphrase = v
 }
 
 func (o EncryptionAes256) MarshalJSON() ([]byte, error) {
@@ -79,7 +78,7 @@ func (o EncryptionAes256) MarshalJSON() ([]byte, error) {
 
 func (o EncryptionAes256) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["passcode"] = o.Passcode
+	toSerialize["passphrase"] = o.Passphrase
 	return toSerialize, nil
 }
 
@@ -88,7 +87,7 @@ func (o *EncryptionAes256) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"passcode",
+		"passphrase",
 	}
 
 	allProperties := make(map[string]interface{})

@@ -10,10 +10,9 @@ Name | Type
 `srtCaller` | [SrtCallerTransportProtocol](SrtCallerTransportProtocol.md)
 `ristListener` | [RistListenerTransportProtocol](RistListenerTransportProtocol.md)
 `ristCaller` | [RistCallerTransportProtocol](RistCallerTransportProtocol.md)
-`zixiListener` | [ZixiListenerTransportProtocol](ZixiListenerTransportProtocol.md)
-`zixiCaller` | [ZixiCallerTransportProtocol](ZixiCallerTransportProtocol.md)
+`zixiPush` | [ZixiPushTransportProtocol](ZixiPushTransportProtocol.md)
+`zixiPull` | [ZixiPullTransportProtocol](ZixiPullTransportProtocol.md)
 `rtp` | [RtpTransportProtocol](RtpTransportProtocol.md)
-`webRtc` | [WebRtcTransportProtocol](WebRtcTransportProtocol.md)
 
 ## Example
 
@@ -26,10 +25,9 @@ const example = {
   "srtCaller": null,
   "ristListener": null,
   "ristCaller": null,
-  "zixiListener": null,
-  "zixiCaller": null,
+  "zixiPush": null,
+  "zixiPull": null,
   "rtp": null,
-  "webRtc": null,
 } satisfies TransportProtocol
 
 console.log(example)

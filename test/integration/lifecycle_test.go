@@ -113,7 +113,7 @@ func TestFullLifecycle(t *testing.T) {
 	var reg struct {
 		Channels []struct {
 			ID             string        `json:"id"`
-			SimpleSettings []interface{} `json:"simpleSettings"`
+			SimpleSettings []interface{} `json:"standardSettings"`
 		} `json:"channels"`
 		Thumbnails []struct {
 			ID string `json:"id"`
@@ -126,7 +126,7 @@ func TestFullLifecycle(t *testing.T) {
 		t.Fatalf("Phase 6: expected 1 channel with id=CH01, got %+v", reg.Channels)
 	}
 	if len(reg.Channels[0].SimpleSettings) != 7 {
-		t.Fatalf("Phase 6: expected 7 simpleSettings, got %d", len(reg.Channels[0].SimpleSettings))
+		t.Fatalf("Phase 6: expected 7 standardSettings, got %d", len(reg.Channels[0].SimpleSettings))
 	}
 	if len(reg.Thumbnails) != 2 {
 		t.Fatalf("Phase 6: expected 2 thumbnails, got %d", len(reg.Thumbnails))
@@ -171,7 +171,7 @@ func TestFullLifecycle(t *testing.T) {
 
 	// 7b: Negative — Unknown Setting Key
 	t.Log("Phase 7b: Negative — Unknown Setting Key")
-	badSettingCfg := json.RawMessage(`{"channels":[{"id":"CH01","state":"ACTIVE","settings":{"simpleSettings":[{"key":"NONEXISTENT_SETTING","value":"foo"}]}}]}`)
+	badSettingCfg := json.RawMessage(`{"channels":[{"id":"CH01","state":"ACTIVE","settings":{"standardSettings":[{"key":"NONEXISTENT_SETTING","value":"foo"}]}}]}`)
 	code, body = env.hostUpdateConfig(deviceID, token, badSettingCfg)
 	if code != 400 {
 		t.Fatalf("Phase 7b: expected 400, got %d: %s", code, body)
@@ -196,7 +196,7 @@ func TestFullLifecycle(t *testing.T) {
 	// 7d: Positive — Full Configuration
 	t.Log("Phase 7d: Positive — Full Configuration")
 	fullConfig := json.RawMessage(`{
-		"simpleSettings": [
+		"standardSettings": [
 			{"key": "sync_clock_source", "value": "PTP"}
 		],
 		"channels": [
@@ -204,7 +204,7 @@ func TestFullLifecycle(t *testing.T) {
 				"id": "CH01",
 				"state": "ACTIVE",
 				"settings": {
-					"simpleSettings": [
+					"standardSettings": [
 						{"key": "RS01", "value": "1920x1080"},
 						{"key": "FR01", "value": "60"},
 						{"key": "MB01", "value": "20000"},
@@ -217,7 +217,7 @@ func TestFullLifecycle(t *testing.T) {
 				"connection": {
 					"transportProtocol": {
 						"srtCaller": {
-							"ip": "192.168.1.100",
+							"address": "192.168.1.100",
 							"port": 9000,
 							"minimumLatencyMilliseconds": 200
 						}
@@ -420,12 +420,12 @@ func TestOfflineConfigDelivery(t *testing.T) {
 	// Push a config update while device is offline
 	t.Log("Pushing config update while device is offline...")
 	offlineConfig := json.RawMessage(`{
-		"simpleSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"key": "sync_clock_source", "value": "PTP"}],
 		"channels": [{
 			"id": "CH01",
 			"state": "IDLE",
 			"settings": {
-				"simpleSettings": [
+				"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"},
 					{"key": "FR01", "value": "60"},
 					{"key": "MB01", "value": "5000"},
@@ -516,11 +516,11 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// ---------------------------------------------------------------
 	t.Log("Phase 1: Full 2-channel configuration update")
 	fullConfig := json.RawMessage(`{
-		"simpleSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"key": "sync_clock_source", "value": "PTP"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
-				"settings": {"simpleSettings": [
+				"settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"},
 					{"key": "FR01", "value": "60"},
 					{"key": "MB01", "value": "20000"},
@@ -530,12 +530,12 @@ func TestTwoChannelEncoder(t *testing.T) {
 					{"key": "IN01", "value": "SDI1"}
 				]},
 				"connection": {"transportProtocol": {"srtCaller": {
-					"ip": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
+					"address": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
 				}}}
 			},
 			{
 				"id": "CH02", "state": "ACTIVE",
-				"settings": {"simpleSettings": [
+				"settings": {"standardSettings": [
 					{"key": "RS01", "value": "1280x720"},
 					{"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"},
@@ -545,7 +545,7 @@ func TestTwoChannelEncoder(t *testing.T) {
 					{"key": "IN01", "value": "HDMI1"}
 				]},
 				"connection": {"transportProtocol": {"srtCaller": {
-					"ip": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
+					"address": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
 				}}}
 			}
 		]
@@ -590,11 +590,11 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// We use a distinct CH01 value (FR01=25) to confirm it was applied.
 	time.Sleep(1 * time.Second) // ensure epoch second advances for new configurationId
 	ch01OnlyConfig := json.RawMessage(`{
-		"simpleSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"key": "sync_clock_source", "value": "PTP"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
-				"settings": {"simpleSettings": [
+				"settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"},
 					{"key": "FR01", "value": "25"},
 					{"key": "MB01", "value": "20000"},
@@ -604,12 +604,12 @@ func TestTwoChannelEncoder(t *testing.T) {
 					{"key": "IN01", "value": "SDI1"}
 				]},
 				"connection": {"transportProtocol": {"srtCaller": {
-					"ip": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
+					"address": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
 				}}}
 			},
 			{
 				"id": "CH02", "state": "ACTIVE",
-				"settings": {"simpleSettings": [
+				"settings": {"standardSettings": [
 					{"key": "RS01", "value": "1280x720"},
 					{"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"},
@@ -619,7 +619,7 @@ func TestTwoChannelEncoder(t *testing.T) {
 					{"key": "IN01", "value": "HDMI1"}
 				]},
 				"connection": {"transportProtocol": {"srtCaller": {
-					"ip": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
+					"address": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
 				}}}
 			}
 		]
@@ -643,17 +643,17 @@ func TestTwoChannelEncoder(t *testing.T) {
 
 	// ---------------------------------------------------------------
 	// Phase 3: Device-level only update (same channel configs)
-	// Send identical channel configs — only simpleSettings changes.
+	// Send identical channel configs — only standardSettings changes.
 	// Both channels should be skipped since their configurationIds are unchanged.
 	// ---------------------------------------------------------------
 	t.Log("Phase 3: Device-level only update — channels should not be reapplied")
 	time.Sleep(1 * time.Second)
 	deviceOnlyConfig := json.RawMessage(`{
-		"simpleSettings": [{"key": "sync_clock_source", "value": "GENLOCK"}],
+		"standardSettings": [{"key": "sync_clock_source", "value": "GENLOCK"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
-				"settings": {"simpleSettings": [
+				"settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"},
 					{"key": "FR01", "value": "25"},
 					{"key": "MB01", "value": "20000"},
@@ -663,12 +663,12 @@ func TestTwoChannelEncoder(t *testing.T) {
 					{"key": "IN01", "value": "SDI1"}
 				]},
 				"connection": {"transportProtocol": {"srtCaller": {
-					"ip": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
+					"address": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
 				}}}
 			},
 			{
 				"id": "CH02", "state": "ACTIVE",
-				"settings": {"simpleSettings": [
+				"settings": {"standardSettings": [
 					{"key": "RS01", "value": "1280x720"},
 					{"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"},
@@ -678,7 +678,7 @@ func TestTwoChannelEncoder(t *testing.T) {
 					{"key": "IN01", "value": "HDMI1"}
 				]},
 				"connection": {"transportProtocol": {"srtCaller": {
-					"ip": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
+					"address": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
 				}}}
 			}
 		]
@@ -761,15 +761,15 @@ func TestConfigurationIdBumping(t *testing.T) {
 
 	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
 		return json.RawMessage(`{
-			"simpleSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
+			"standardSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
 			"channels": [
-				{"id": "CH01", "state": "` + ch01State + `", "settings": {"simpleSettings": [
+				{"id": "CH01", "state": "` + ch01State + `", "settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
 					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
 					{"key": "IN01", "value": "SDI1"}
 				]}},
-				{"id": "CH02", "state": "` + ch02State + `", "settings": {"simpleSettings": [
+				{"id": "CH02", "state": "` + ch02State + `", "settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
 					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
@@ -819,7 +819,7 @@ func TestConfigurationIdBumping(t *testing.T) {
 	t.Log("Push 2: OK — only CH01 bumped, IDs are independent")
 
 	// --- Push 3: change only device settings — only device ID bumps ---
-	t.Log("Push 3: change device simpleSettings only")
+	t.Log("Push 3: change device standardSettings only")
 	time.Sleep(4 * time.Second)
 	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "IDLE", "PTP"))
 	if code != 200 {
@@ -924,15 +924,15 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 
 	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
 		return json.RawMessage(`{
-			"simpleSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
+			"standardSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
 			"channels": [
-				{"id": "CH01", "state": "` + ch01State + `", "settings": {"simpleSettings": [
+				{"id": "CH01", "state": "` + ch01State + `", "settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
 					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
 					{"key": "IN01", "value": "SDI1"}
 				]}},
-				{"id": "CH02", "state": "` + ch02State + `", "settings": {"simpleSettings": [
+				{"id": "CH02", "state": "` + ch02State + `", "settings": {"standardSettings": [
 					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
 					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
 					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
@@ -1036,8 +1036,8 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 	}
 	t.Log("Push 2: OK — host bumped only CH01, actual config echoes correct IDs")
 
-	// Push 3: change only device simpleSettings
-	t.Log("ARD Push 3: change device simpleSettings only")
+	// Push 3: change only device standardSettings
+	t.Log("ARD Push 3: change device standardSettings only")
 	time.Sleep(2 * time.Second)
 	code, body = env.hostUpdateConfig(deviceID, token, baseConfig("ACTIVE", "IDLE", "PTP"))
 	if code != 200 {

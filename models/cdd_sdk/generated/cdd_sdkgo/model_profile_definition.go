@@ -23,7 +23,7 @@ var _ MappedNullable = &ProfileDefinition{}
 type ProfileDefinition struct {
 	Name string `json:"name"`
 	Id string `json:"id"`
-	Info string `json:"info"`
+	Description string `json:"description"`
 }
 
 type _ProfileDefinition ProfileDefinition
@@ -32,11 +32,11 @@ type _ProfileDefinition ProfileDefinition
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewProfileDefinition(name string, id string, info string) *ProfileDefinition {
+func NewProfileDefinition(name string, id string, description string) *ProfileDefinition {
 	this := ProfileDefinition{}
 	this.Name = name
 	this.Id = id
-	this.Info = info
+	this.Description = description
 	return &this
 }
 
@@ -96,28 +96,28 @@ func (o *ProfileDefinition) SetId(v string) {
 	o.Id = v
 }
 
-// GetInfo returns the Info field value
-func (o *ProfileDefinition) GetInfo() string {
+// GetDescription returns the Description field value
+func (o *ProfileDefinition) GetDescription() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Info
+	return o.Description
 }
 
-// GetInfoOk returns a tuple with the Info field value
+// GetDescriptionOk returns a tuple with the Description field value
 // and a boolean to check if the value has been set.
-func (o *ProfileDefinition) GetInfoOk() (*string, bool) {
+func (o *ProfileDefinition) GetDescriptionOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Info, true
+	return &o.Description, true
 }
 
-// SetInfo sets field value
-func (o *ProfileDefinition) SetInfo(v string) {
-	o.Info = v
+// SetDescription sets field value
+func (o *ProfileDefinition) SetDescription(v string) {
+	o.Description = v
 }
 
 func (o ProfileDefinition) MarshalJSON() ([]byte, error) {
@@ -132,7 +132,7 @@ func (o ProfileDefinition) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
 	toSerialize["id"] = o.Id
-	toSerialize["info"] = o.Info
+	toSerialize["description"] = o.Description
 	return toSerialize, nil
 }
 
@@ -143,7 +143,7 @@ func (o *ProfileDefinition) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"name",
 		"id",
-		"info",
+		"description",
 	}
 
 	allProperties := make(map[string]interface{})

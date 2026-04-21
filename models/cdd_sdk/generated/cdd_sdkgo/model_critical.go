@@ -21,7 +21,7 @@ var _ MappedNullable = &Critical{}
 
 // Critical struct for Critical
 type Critical struct {
-	Critical CriticalState `json:"critical"`
+	Critical UnhealthyStateDescription `json:"critical"`
 }
 
 type _Critical Critical
@@ -30,7 +30,7 @@ type _Critical Critical
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCritical(critical CriticalState) *Critical {
+func NewCritical(critical UnhealthyStateDescription) *Critical {
 	this := Critical{}
 	this.Critical = critical
 	return &this
@@ -45,9 +45,9 @@ func NewCriticalWithDefaults() *Critical {
 }
 
 // GetCritical returns the Critical field value
-func (o *Critical) GetCritical() CriticalState {
+func (o *Critical) GetCritical() UnhealthyStateDescription {
 	if o == nil {
-		var ret CriticalState
+		var ret UnhealthyStateDescription
 		return ret
 	}
 
@@ -56,7 +56,7 @@ func (o *Critical) GetCritical() CriticalState {
 
 // GetCriticalOk returns a tuple with the Critical field value
 // and a boolean to check if the value has been set.
-func (o *Critical) GetCriticalOk() (*CriticalState, bool) {
+func (o *Critical) GetCriticalOk() (*UnhealthyStateDescription, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -64,7 +64,7 @@ func (o *Critical) GetCriticalOk() (*CriticalState, bool) {
 }
 
 // SetCritical sets field value
-func (o *Critical) SetCritical(v CriticalState) {
+func (o *Critical) SetCritical(v UnhealthyStateDescription) {
 	o.Critical = v
 }
 

@@ -14,9 +14,9 @@ import { RtpFecConfiguration } from '../models/RtpFecConfiguration';
 import { HttpFile } from '../http/http';
 
 export class RtpTransportProtocol {
-    'ip': string;
+    'address': string;
     'port': number;
-    'sourceIpFilter'?: string;
+    'sourceAddressFilter'?: string;
     'rtpPayloadType'?: number;
     'fecConfig'?: RtpFecConfiguration;
 
@@ -26,8 +26,8 @@ export class RtpTransportProtocol {
 
     static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
         {
-            "name": "ip",
-            "baseName": "ip",
+            "name": "address",
+            "baseName": "address",
             "type": "string",
             "format": ""
         },
@@ -38,8 +38,8 @@ export class RtpTransportProtocol {
             "format": ""
         },
         {
-            "name": "sourceIpFilter",
-            "baseName": "sourceIpFilter",
+            "name": "sourceAddressFilter",
+            "baseName": "sourceAddressFilter",
             "type": "string",
             "format": ""
         },

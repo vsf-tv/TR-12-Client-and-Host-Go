@@ -21,9 +21,9 @@ var _ MappedNullable = &RtpTransportProtocol{}
 
 // RtpTransportProtocol struct for RtpTransportProtocol
 type RtpTransportProtocol struct {
-	Ip string `json:"ip"`
+	Address string `json:"address"`
 	Port float32 `json:"port"`
-	SourceIpFilter *string `json:"sourceIpFilter,omitempty"`
+	SourceAddressFilter *string `json:"sourceAddressFilter,omitempty"`
 	RtpPayloadType *float32 `json:"rtpPayloadType,omitempty"`
 	FecConfig *RtpFecConfiguration `json:"fecConfig,omitempty"`
 }
@@ -34,9 +34,9 @@ type _RtpTransportProtocol RtpTransportProtocol
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRtpTransportProtocol(ip string, port float32) *RtpTransportProtocol {
+func NewRtpTransportProtocol(address string, port float32) *RtpTransportProtocol {
 	this := RtpTransportProtocol{}
-	this.Ip = ip
+	this.Address = address
 	this.Port = port
 	return &this
 }
@@ -49,28 +49,28 @@ func NewRtpTransportProtocolWithDefaults() *RtpTransportProtocol {
 	return &this
 }
 
-// GetIp returns the Ip field value
-func (o *RtpTransportProtocol) GetIp() string {
+// GetAddress returns the Address field value
+func (o *RtpTransportProtocol) GetAddress() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Ip
+	return o.Address
 }
 
-// GetIpOk returns a tuple with the Ip field value
+// GetAddressOk returns a tuple with the Address field value
 // and a boolean to check if the value has been set.
-func (o *RtpTransportProtocol) GetIpOk() (*string, bool) {
+func (o *RtpTransportProtocol) GetAddressOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Ip, true
+	return &o.Address, true
 }
 
-// SetIp sets field value
-func (o *RtpTransportProtocol) SetIp(v string) {
-	o.Ip = v
+// SetAddress sets field value
+func (o *RtpTransportProtocol) SetAddress(v string) {
+	o.Address = v
 }
 
 // GetPort returns the Port field value
@@ -97,36 +97,36 @@ func (o *RtpTransportProtocol) SetPort(v float32) {
 	o.Port = v
 }
 
-// GetSourceIpFilter returns the SourceIpFilter field value if set, zero value otherwise.
-func (o *RtpTransportProtocol) GetSourceIpFilter() string {
-	if o == nil || IsNil(o.SourceIpFilter) {
+// GetSourceAddressFilter returns the SourceAddressFilter field value if set, zero value otherwise.
+func (o *RtpTransportProtocol) GetSourceAddressFilter() string {
+	if o == nil || IsNil(o.SourceAddressFilter) {
 		var ret string
 		return ret
 	}
-	return *o.SourceIpFilter
+	return *o.SourceAddressFilter
 }
 
-// GetSourceIpFilterOk returns a tuple with the SourceIpFilter field value if set, nil otherwise
+// GetSourceAddressFilterOk returns a tuple with the SourceAddressFilter field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RtpTransportProtocol) GetSourceIpFilterOk() (*string, bool) {
-	if o == nil || IsNil(o.SourceIpFilter) {
+func (o *RtpTransportProtocol) GetSourceAddressFilterOk() (*string, bool) {
+	if o == nil || IsNil(o.SourceAddressFilter) {
 		return nil, false
 	}
-	return o.SourceIpFilter, true
+	return o.SourceAddressFilter, true
 }
 
-// HasSourceIpFilter returns a boolean if a field has been set.
-func (o *RtpTransportProtocol) HasSourceIpFilter() bool {
-	if o != nil && !IsNil(o.SourceIpFilter) {
+// HasSourceAddressFilter returns a boolean if a field has been set.
+func (o *RtpTransportProtocol) HasSourceAddressFilter() bool {
+	if o != nil && !IsNil(o.SourceAddressFilter) {
 		return true
 	}
 
 	return false
 }
 
-// SetSourceIpFilter gets a reference to the given string and assigns it to the SourceIpFilter field.
-func (o *RtpTransportProtocol) SetSourceIpFilter(v string) {
-	o.SourceIpFilter = &v
+// SetSourceAddressFilter gets a reference to the given string and assigns it to the SourceAddressFilter field.
+func (o *RtpTransportProtocol) SetSourceAddressFilter(v string) {
+	o.SourceAddressFilter = &v
 }
 
 // GetRtpPayloadType returns the RtpPayloadType field value if set, zero value otherwise.
@@ -203,10 +203,10 @@ func (o RtpTransportProtocol) MarshalJSON() ([]byte, error) {
 
 func (o RtpTransportProtocol) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["ip"] = o.Ip
+	toSerialize["address"] = o.Address
 	toSerialize["port"] = o.Port
-	if !IsNil(o.SourceIpFilter) {
-		toSerialize["sourceIpFilter"] = o.SourceIpFilter
+	if !IsNil(o.SourceAddressFilter) {
+		toSerialize["sourceAddressFilter"] = o.SourceAddressFilter
 	}
 	if !IsNil(o.RtpPayloadType) {
 		toSerialize["rtpPayloadType"] = o.RtpPayloadType
@@ -222,7 +222,7 @@ func (o *RtpTransportProtocol) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"ip",
+		"address",
 		"port",
 	}
 

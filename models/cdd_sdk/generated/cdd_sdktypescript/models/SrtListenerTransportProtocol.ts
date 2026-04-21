@@ -16,7 +16,7 @@ import { HttpFile } from '../http/http';
 export class SrtListenerTransportProtocol {
     'streamId'?: string;
     'port': number;
-    'minimumLatencyMilliseconds': number;
+    'minimumLatencyMilliseconds'?: number;
     'encryption'?: EncryptionAes;
     '_interface'?: string;
 

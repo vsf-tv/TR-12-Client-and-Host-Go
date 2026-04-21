@@ -24,7 +24,7 @@ export interface RtpFecStreamConfig {
      * @type {string}
      * @memberof RtpFecStreamConfig
      */
-    ip?: string;
+    address?: string;
     /**
      * 
      * @type {number}
@@ -56,7 +56,7 @@ export function RtpFecStreamConfigFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'ip': json['ip'] == null ? undefined : json['ip'],
+        'address': json['address'] == null ? undefined : json['address'],
         'port': json['port'] == null ? undefined : json['port'],
         'rtpPayloadType': json['rtpPayloadType'] == null ? undefined : json['rtpPayloadType'],
     };
@@ -73,7 +73,7 @@ export function RtpFecStreamConfigToJSONTyped(value?: RtpFecStreamConfig | null,
 
     return {
         
-        'ip': value['ip'],
+        'address': value['address'],
         'port': value['port'],
         'rtpPayloadType': value['rtpPayloadType'],
     };

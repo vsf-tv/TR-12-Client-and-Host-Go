@@ -18,7 +18,7 @@ import { HttpFile } from '../http/http';
 export class DeviceConfiguration {
     'configurationId': string;
     'channels': Array<ChannelConfiguration>;
-    'simpleSettings'?: Array<IdAndValue>;
+    'standardSettings'?: Array<IdAndValue>;
     'health'?: Health;
 
     static readonly discriminator: string | undefined = undefined;
@@ -39,8 +39,8 @@ export class DeviceConfiguration {
             "format": ""
         },
         {
-            "name": "simpleSettings",
-            "baseName": "simpleSettings",
+            "name": "standardSettings",
+            "baseName": "standardSettings",
             "type": "Array<IdAndValue>",
             "format": ""
         },

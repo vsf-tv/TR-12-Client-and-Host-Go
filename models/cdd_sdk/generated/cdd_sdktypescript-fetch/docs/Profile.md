@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`profile` | [SettingProfile](SettingProfile.md)
+`profile` | [ChannelProfile](ChannelProfile.md)
 
 ## Example
 

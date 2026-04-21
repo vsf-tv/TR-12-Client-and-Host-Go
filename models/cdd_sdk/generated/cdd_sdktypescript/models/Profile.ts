@@ -10,11 +10,11 @@
  * Do not edit the class manually.
  */
 
-import { SettingProfile } from '../models/SettingProfile';
+import { ChannelProfile } from '../models/ChannelProfile';
 import { HttpFile } from '../http/http';
 
 export class Profile {
-    'profile': SettingProfile;
+    'profile': ChannelProfile;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -24,7 +24,7 @@ export class Profile {
         {
             "name": "profile",
             "baseName": "profile",
-            "type": "SettingProfile",
+            "type": "ChannelProfile",
             "format": ""
         }    ];
 

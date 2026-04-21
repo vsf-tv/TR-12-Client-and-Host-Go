@@ -20,18 +20,18 @@ import { mapValues } from '../runtime';
  */
 export interface EncryptionAes256 {
     /**
-     * A 64-character hexadecimal string.
+     * 
      * @type {string}
      * @memberof EncryptionAes256
      */
-    passcode: string;
+    passphrase: string;
 }
 
 /**
  * Check if a given object implements the EncryptionAes256 interface.
  */
 export function instanceOfEncryptionAes256(value: object): value is EncryptionAes256 {
-    if (!('passcode' in value) || value['passcode'] === undefined) return false;
+    if (!('passphrase' in value) || value['passphrase'] === undefined) return false;
     return true;
 }
 
@@ -45,7 +45,7 @@ export function EncryptionAes256FromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'passcode': json['passcode'],
+        'passphrase': json['passphrase'],
     };
 }
 
@@ -60,7 +60,7 @@ export function EncryptionAes256ToJSONTyped(value?: EncryptionAes256 | null, ign
 
     return {
         
-        'passcode': value['passcode'],
+        'passphrase': value['passphrase'],
     };
 }
 

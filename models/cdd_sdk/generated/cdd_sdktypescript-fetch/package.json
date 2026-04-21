@@ -1,8 +1,0 @@
-{
-  "name": "cdd-sdk-models",
-  "version": "1.0.0",
-  "description": "Auto-generated TR-12 CDD SDK TypeScript models (do not edit manually)",
-  "main": "index.ts",
-  "types": "index.ts",
-  "private": true
-}

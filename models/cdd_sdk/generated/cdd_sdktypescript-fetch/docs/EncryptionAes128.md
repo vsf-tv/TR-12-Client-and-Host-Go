@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`passcode` | string
+`passphrase` | string
 
 ## Example
 
@@ -15,7 +15,7 @@ import type { EncryptionAes128 } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "passcode": null,
+  "passphrase": null,
 } satisfies EncryptionAes128
 
 console.log(example)

@@ -17,7 +17,7 @@ import { HttpFile } from '../http/http';
 export class RistListenerTransportProtocol {
     'streamId'?: RistStreamIdentifier;
     'port': number;
-    'minimumLatencyMilliseconds': number;
+    'minimumLatencyMilliseconds'?: number;
     'encryption'?: EncryptionAes;
     '_interface'?: string;
 

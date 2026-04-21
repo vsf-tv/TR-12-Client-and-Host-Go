@@ -1,5 +1,5 @@
 {
-  "simpleSettings": [
+  "standardSettings": [
       {
         "key": "sync_clock_source",
         "value": "NTP"
@@ -10,7 +10,7 @@
       "id": "CH01",
       "state": "ACTIVE",
       "settings": {
-        "simpleSettings": [
+        "standardSettings": [
           {
             "key": "RS01",
             "value": "1920x1080"
@@ -44,7 +44,7 @@
       "connection": {
         "transportProtocol": {
           "srtCaller": {
-            "ip": "3.213.165.124",
+            "address": "3.213.165.124",
             "port": 2001,
             "minimumLatencyMilliseconds": 150,
             "streamId": "discovery1"

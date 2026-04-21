@@ -5,16 +5,16 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **StreamId** | Pointer to [**RistStreamIdentifier**](RistStreamIdentifier.md) |  | [optional] 
-**Ip** | **string** |  | 
+**Address** | **string** |  | 
 **Port** | **float32** |  | 
-**MinimumLatencyMilliseconds** | **float32** |  | [default to 3000]
+**MinimumLatencyMilliseconds** | Pointer to **float32** |  | [optional] [default to 1000]
 **Encryption** | Pointer to [**EncryptionAes**](EncryptionAes.md) |  | [optional] 
 
 ## Methods
 
 ### NewRistCallerTransportProtocol
 
-`func NewRistCallerTransportProtocol(ip string, port float32, minimumLatencyMilliseconds float32, ) *RistCallerTransportProtocol`
+`func NewRistCallerTransportProtocol(address string, port float32, ) *RistCallerTransportProtocol`
 
 NewRistCallerTransportProtocol instantiates a new RistCallerTransportProtocol object
 This constructor will assign default values to properties that have it defined,
@@ -54,24 +54,24 @@ SetStreamId sets StreamId field to given value.
 
 HasStreamId returns a boolean if a field has been set.
 
-### GetIp
+### GetAddress
 
-`func (o *RistCallerTransportProtocol) GetIp() string`
+`func (o *RistCallerTransportProtocol) GetAddress() string`
 
-GetIp returns the Ip field if non-nil, zero value otherwise.
+GetAddress returns the Address field if non-nil, zero value otherwise.
 
-### GetIpOk
+### GetAddressOk
 
-`func (o *RistCallerTransportProtocol) GetIpOk() (*string, bool)`
+`func (o *RistCallerTransportProtocol) GetAddressOk() (*string, bool)`
 
-GetIpOk returns a tuple with the Ip field if it's non-nil, zero value otherwise
+GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIp
+### SetAddress
 
-`func (o *RistCallerTransportProtocol) SetIp(v string)`
+`func (o *RistCallerTransportProtocol) SetAddress(v string)`
 
-SetIp sets Ip field to given value.
+SetAddress sets Address field to given value.
 
 
 ### GetPort
@@ -113,6 +113,11 @@ and a boolean to check if the value has been set.
 
 SetMinimumLatencyMilliseconds sets MinimumLatencyMilliseconds field to given value.
 
+### HasMinimumLatencyMilliseconds
+
+`func (o *RistCallerTransportProtocol) HasMinimumLatencyMilliseconds() bool`
+
+HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
 
 ### GetEncryption
 

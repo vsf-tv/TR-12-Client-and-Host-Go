@@ -326,10 +326,16 @@ mkdir -p /tmp/cdd_certs /tmp/cdd_logs
 Then start the ARD in Terminal 2:
 ```bash
 # Against the VSF test endpoint:
-./bin/ard --host_id vsf_test_host
+./bin/ard --host_id vsf_test_host  --registration_file cmd/application_reference_design/payloads/1_channel_encoder/registration.json
+
+./bin/ard --host_id vsf_test_host  --registration_file cmd/application_reference_design/payloads/2_channel_encoder/registration.json
 
 # Or against the local TR-12 Host Service:
-./bin/ard --host_id local_go_host
+./bin/ard --host_id local_go_host --registration_file cmd/application_reference_design/payloads/1_channel_encoder/registration.json
+
+./bin/ard --host_id local_go_host --registration_file cmd/application_reference_design/payloads/1_channel_encoder/registration.json
+
+
 ```
 
 The ARD accepts these flags:
@@ -366,7 +372,7 @@ client/
 ├── cmd/
 │   ├── cdd-sdk/main.go              # SDK entry point, CLI flag parsing
 │   ├── ard/main.go                  # ARD entry point
-│   └── proprietary-osprey-encoder-bridge/                 # Device integration shim (gitignored — device-specific)
+│   └── osprey-tr12-client/                      # Device integration shim (gitignored — device-specific)
 │       ├── main.go
 │       ├── device_deploy.sh
 │       ├── osprey_registration.json
@@ -384,7 +390,7 @@ client/
 │   ├── api/server.go                 # Gin REST API server
 │   ├── ard/
 │   │   ├── application.go           # ARD main run loop
-│   │   ├── application_loop.go      # Reusable ApplicationLoop (ARD + proprietary-osprey-encoder-bridge)
+│   │   ├── application_loop.go      # Reusable ApplicationLoop (ARD + osprey-tr12-client)
 │   │   ├── callbacks.go             # ArdCallbacks — reference DeviceCallbacks implementation
 │   │   ├── device_callbacks.go      # DeviceCallbacks interface definition
 │   │   ├── encoder.go               # ffmpeg encoder simulation

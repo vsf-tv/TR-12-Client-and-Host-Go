@@ -9,9 +9,9 @@ Name | Type
 `name` | string
 `id` | string
 `channelType` | [ChannelType](ChannelType.md)
-`simpleSettings` | [Array&lt;Setting&gt;](Setting.md)
+`standardSettings` | [Array&lt;Setting&gt;](Setting.md)
 `profiles` | [Array&lt;ProfileDefinition&gt;](ProfileDefinition.md)
-`connectionProtocols` | [Array&lt;SupportedProtocol&gt;](SupportedProtocol.md)
+`connectionProtocols` | [Array&lt;TransportProtocolName&gt;](TransportProtocolName.md)
 
 ## Example
 
@@ -23,7 +23,7 @@ const example = {
   "name": null,
   "id": null,
   "channelType": null,
-  "simpleSettings": null,
+  "standardSettings": null,
   "profiles": null,
   "connectionProtocols": null,
 } satisfies Channel

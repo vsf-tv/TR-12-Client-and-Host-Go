@@ -77,7 +77,7 @@ func pairFailureResponse(reason tr12models.CreatePairingCodeFailureReason) []byt
 }
 
 // authResponse builds an authenticate response JSON.
-func authResponse(status tr12models.AuthStatus, mqttURI, region string) []byte {
+func authResponse(status tr12models.PairingCodeAuthorizedStatus, mqttURI, region string) []byte {
 	caCert := "-----BEGIN CERTIFICATE-----\nfake-ca\n-----END CERTIFICATE-----\n"
 	deviceCert := "-----BEGIN CERTIFICATE-----\nfake-device\n-----END CERTIFICATE-----\n"
 	subTopic := "cdd/dev1/config/update"
@@ -90,26 +90,26 @@ func authResponse(status tr12models.AuthStatus, mqttURI, region string) []byte {
 	pubDeprovTopic := "cdd/dev1/deprovision/ack"
 	thumbTopic := "cdd/dev1/thumbnail/subscription"
 	logTopic := "cdd/dev1/log/subscription"
-	proto := "mqtt"
+	proto := "x-amzn-mqtt-ca"
 	timeout := float32(300)
 	interval := float32(1)
 	keepalive := float32(30)
 
 	hs := &tr12models.HostSettings{
-		IotProtocolName:                    proto,
-		PairingTimeoutSeconds:              timeout,
-		MinIntervalPubSeconds:              interval,
-		MqttKeepaliveSeconds:               keepalive,
-		SubUpdateTopic:                     subTopic,
-		PubReportRegistrationTopic:         pubTopic,
-		PubReportStatusTopic:               statusTopic,
-		PubReportActualConfigurationTopic:  actualTopic,
-		PubReportSchemaTopic:               schemaTopic,
-		SubUpdateCertsTopic:                certsTopic,
-		SubDeprovisionTopic:                deprovTopic,
-		PubDeprovisionTopic:                pubDeprovTopic,
+		MqttAlpnProtocol:                    proto,
+		PairingTimeoutSeconds:               timeout,
+		MinimumIntervalPublishSeconds:       interval,
+		MqttKeepaliveSeconds:                keepalive,
+		SubUpdateTopic:                      subTopic,
+		PublishReportRegistrationTopic:      pubTopic,
+		PublishReportStatusTopic:            statusTopic,
+		PublishReportActualConfigurationTopic: actualTopic,
+		PublishReportSchemaTopic:            schemaTopic,
+		SubUpdateCertsTopic:                 certsTopic,
+		SubDeprovisionTopic:                 deprovTopic,
+		PublishDeprovisionTopic:             pubDeprovTopic,
 		SubUpdateThumbnailSubscriptionTopic: thumbTopic,
-		SubUpdateLogSubscriptionTopic:      logTopic,
+		SubUpdateLogSubscriptionTopic:       logTopic,
 	}
 
 	resp := tr12models.AuthenticatePairingCodeResponseContent{

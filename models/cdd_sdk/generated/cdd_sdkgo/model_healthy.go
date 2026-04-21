@@ -21,7 +21,7 @@ var _ MappedNullable = &Healthy{}
 
 // Healthy struct for Healthy
 type Healthy struct {
-	// Healthy state — only the state indicator, no additional fields needed.
+	// Healthy state — no additional fields needed.
 	Healthy map[string]interface{} `json:"healthy"`
 }
 

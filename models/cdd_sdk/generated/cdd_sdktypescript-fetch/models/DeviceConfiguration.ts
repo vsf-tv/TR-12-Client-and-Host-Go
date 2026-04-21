@@ -58,7 +58,7 @@ export interface DeviceConfiguration {
      * @type {Array<IdAndValue>}
      * @memberof DeviceConfiguration
      */
-    simpleSettings?: Array<IdAndValue>;
+    standardSettings?: Array<IdAndValue>;
     /**
      * 
      * @type {Health}
@@ -88,7 +88,7 @@ export function DeviceConfigurationFromJSONTyped(json: any, ignoreDiscriminator:
         
         'configurationId': json['configurationId'],
         'channels': ((json['channels'] as Array<any>).map(ChannelConfigurationFromJSON)),
-        'simpleSettings': json['simpleSettings'] == null ? undefined : ((json['simpleSettings'] as Array<any>).map(IdAndValueFromJSON)),
+        'standardSettings': json['standardSettings'] == null ? undefined : ((json['standardSettings'] as Array<any>).map(IdAndValueFromJSON)),
         'health': json['health'] == null ? undefined : HealthFromJSON(json['health']),
     };
 }
@@ -106,7 +106,7 @@ export function DeviceConfigurationToJSONTyped(value?: DeviceConfiguration | nul
         
         'configurationId': value['configurationId'],
         'channels': ((value['channels'] as Array<any>).map(ChannelConfigurationToJSON)),
-        'simpleSettings': value['simpleSettings'] == null ? undefined : ((value['simpleSettings'] as Array<any>).map(IdAndValueToJSON)),
+        'standardSettings': value['standardSettings'] == null ? undefined : ((value['standardSettings'] as Array<any>).map(IdAndValueToJSON)),
         'health': HealthToJSON(value['health']),
     };
 }

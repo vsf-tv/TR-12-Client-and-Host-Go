@@ -1,8 +1,8 @@
 {
-  "simpleSettings": [
+  "standardSettings": [
     {
       "name": "Clock Source",
-      "info": "Sets the clock source for all active channels.",
+      "description": "Sets the clock source for all active channels.",
       "id": "sync_clock_source",
       "enums": {
         "values": [
@@ -25,33 +25,33 @@
         {
           "name": "h264_contribution_compact",
           "id": "h264c",
-          "info": "H264, 30fps, 10mbs, 720p, 6s gop"
+          "description": "H264, 30fps, 10mbs, 720p, 6s gop"
         },
         {
           "name": "h264_contribution_full",
           "id": "h264f",
-          "info": "H264, 60fps, 20mbs, 1080p, 3s gop"
+          "description": "H264, 60fps, 20mbs, 1080p, 3s gop"
         },
         {
           "name": "h265_contribution_compact",
           "id": "h265c",
-          "info": "H265, 30fps, 10mbs, 1080p, 3s gop"
+          "description": "H265, 30fps, 10mbs, 1080p, 3s gop"
         },
         {
           "name": "h265_4k",
           "id": "h265k",
-          "info": "H265, 60fps, 40mps, 4k, 3s gop"
+          "description": "H265, 60fps, 40mps, 4k, 3s gop"
         },
         {
           "name": "h265_4k_low_latency",
           "id": "h265k",
-          "info": "H265, 60fps, 40mps, 4k, 500ms gop"
+          "description": "H265, 60fps, 40mps, 4k, 500ms gop"
         }
       ],
-      "simpleSettings": [
+      "standardSettings": [
         {
           "name": "resolution",
-          "info": "Output video dimensions.",
+          "description": "Output video dimensions.",
           "id": "RS01",
           "enums": {
             "values": [
@@ -65,7 +65,7 @@
         },
         {
           "name": "framerate",
-          "info": "Frames per second (fps).",
+          "description": "Frames per second (fps).",
           "id": "FR01",
           "enums": {
             "values": [
@@ -79,17 +79,17 @@
         },
         {
           "name": "max_bitrate",
-          "info": "Maximum data rate limit (Kbps).",
+          "description": "Maximum data rate limit (Kbps).",
           "id": "MB01",
           "ranges": {
-            "min": 5000,
-            "max": 50000,
+            "minimum": 5000,
+            "maximum": 50000,
             "defaultValue": 10000
           }
         },
         {
           "name": "rate_control",
-          "info": "Method used to control the output bitrate.",
+          "description": "Method used to control the output bitrate.",
           "id": "RC01",
           "enums": {
             "values": [
@@ -102,7 +102,7 @@
         },
         {
           "name": "codec",
-          "info": "Video compression standard.",
+          "description": "Video compression standard.",
           "id": "CO01",
           "enums": {
             "values": [
@@ -114,7 +114,7 @@
         },
         {
           "name": "gop_size",
-          "info": "Group of Pictures (I-frame interval in frames).",
+          "description": "Group of Pictures (I-frame interval in frames).",
           "id": "GP01",
           "enums": {
             "values": [
@@ -127,7 +127,7 @@
         },
         {
           "name": "selected_input",
-          "info": "Hardware input source selection.",
+          "description": "Hardware input source selection.",
           "id": "IN01",
           "enums": {
             "values": [

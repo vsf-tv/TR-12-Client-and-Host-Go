@@ -23,7 +23,7 @@ var _ MappedNullable = &RistListenerTransportProtocol{}
 type RistListenerTransportProtocol struct {
 	StreamId *RistStreamIdentifier `json:"streamId,omitempty"`
 	Port float32 `json:"port"`
-	MinimumLatencyMilliseconds float32 `json:"minimumLatencyMilliseconds"`
+	MinimumLatencyMilliseconds *float32 `json:"minimumLatencyMilliseconds,omitempty"`
 	Encryption *EncryptionAes `json:"encryption,omitempty"`
 	Interface *string `json:"interface,omitempty"`
 }
@@ -34,10 +34,11 @@ type _RistListenerTransportProtocol RistListenerTransportProtocol
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRistListenerTransportProtocol(port float32, minimumLatencyMilliseconds float32) *RistListenerTransportProtocol {
+func NewRistListenerTransportProtocol(port float32) *RistListenerTransportProtocol {
 	this := RistListenerTransportProtocol{}
 	this.Port = port
-	this.MinimumLatencyMilliseconds = minimumLatencyMilliseconds
+	var minimumLatencyMilliseconds float32 = 1000
+	this.MinimumLatencyMilliseconds = &minimumLatencyMilliseconds
 	return &this
 }
 
@@ -46,8 +47,8 @@ func NewRistListenerTransportProtocol(port float32, minimumLatencyMilliseconds f
 // but it doesn't guarantee that properties required by API are set
 func NewRistListenerTransportProtocolWithDefaults() *RistListenerTransportProtocol {
 	this := RistListenerTransportProtocol{}
-	var minimumLatencyMilliseconds float32 = 3000
-	this.MinimumLatencyMilliseconds = minimumLatencyMilliseconds
+	var minimumLatencyMilliseconds float32 = 1000
+	this.MinimumLatencyMilliseconds = &minimumLatencyMilliseconds
 	return &this
 }
 
@@ -107,28 +108,36 @@ func (o *RistListenerTransportProtocol) SetPort(v float32) {
 	o.Port = v
 }
 
-// GetMinimumLatencyMilliseconds returns the MinimumLatencyMilliseconds field value
+// GetMinimumLatencyMilliseconds returns the MinimumLatencyMilliseconds field value if set, zero value otherwise.
 func (o *RistListenerTransportProtocol) GetMinimumLatencyMilliseconds() float32 {
-	if o == nil {
+	if o == nil || IsNil(o.MinimumLatencyMilliseconds) {
 		var ret float32
 		return ret
 	}
-
-	return o.MinimumLatencyMilliseconds
+	return *o.MinimumLatencyMilliseconds
 }
 
-// GetMinimumLatencyMillisecondsOk returns a tuple with the MinimumLatencyMilliseconds field value
+// GetMinimumLatencyMillisecondsOk returns a tuple with the MinimumLatencyMilliseconds field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *RistListenerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*float32, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.MinimumLatencyMilliseconds) {
 		return nil, false
 	}
-	return &o.MinimumLatencyMilliseconds, true
+	return o.MinimumLatencyMilliseconds, true
 }
 
-// SetMinimumLatencyMilliseconds sets field value
+// HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
+func (o *RistListenerTransportProtocol) HasMinimumLatencyMilliseconds() bool {
+	if o != nil && !IsNil(o.MinimumLatencyMilliseconds) {
+		return true
+	}
+
+	return false
+}
+
+// SetMinimumLatencyMilliseconds gets a reference to the given float32 and assigns it to the MinimumLatencyMilliseconds field.
 func (o *RistListenerTransportProtocol) SetMinimumLatencyMilliseconds(v float32) {
-	o.MinimumLatencyMilliseconds = v
+	o.MinimumLatencyMilliseconds = &v
 }
 
 // GetEncryption returns the Encryption field value if set, zero value otherwise.
@@ -209,7 +218,9 @@ func (o RistListenerTransportProtocol) ToMap() (map[string]interface{}, error) {
 		toSerialize["streamId"] = o.StreamId
 	}
 	toSerialize["port"] = o.Port
-	toSerialize["minimumLatencyMilliseconds"] = o.MinimumLatencyMilliseconds
+	if !IsNil(o.MinimumLatencyMilliseconds) {
+		toSerialize["minimumLatencyMilliseconds"] = o.MinimumLatencyMilliseconds
+	}
 	if !IsNil(o.Encryption) {
 		toSerialize["encryption"] = o.Encryption
 	}
@@ -225,7 +236,6 @@ func (o *RistListenerTransportProtocol) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"port",
-		"minimumLatencyMilliseconds",
 	}
 
 	allProperties := make(map[string]interface{})

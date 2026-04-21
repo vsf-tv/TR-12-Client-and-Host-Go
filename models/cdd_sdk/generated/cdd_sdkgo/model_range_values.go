@@ -21,8 +21,8 @@ var _ MappedNullable = &RangeValues{}
 
 // RangeValues struct for RangeValues
 type RangeValues struct {
-	Min float32 `json:"min"`
-	Max float32 `json:"max"`
+	Minimum float32 `json:"minimum"`
+	Maximum float32 `json:"maximum"`
 	DefaultValue float32 `json:"defaultValue"`
 }
 
@@ -32,10 +32,10 @@ type _RangeValues RangeValues
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRangeValues(min float32, max float32, defaultValue float32) *RangeValues {
+func NewRangeValues(minimum float32, maximum float32, defaultValue float32) *RangeValues {
 	this := RangeValues{}
-	this.Min = min
-	this.Max = max
+	this.Minimum = minimum
+	this.Maximum = maximum
 	this.DefaultValue = defaultValue
 	return &this
 }
@@ -48,52 +48,52 @@ func NewRangeValuesWithDefaults() *RangeValues {
 	return &this
 }
 
-// GetMin returns the Min field value
-func (o *RangeValues) GetMin() float32 {
+// GetMinimum returns the Minimum field value
+func (o *RangeValues) GetMinimum() float32 {
 	if o == nil {
 		var ret float32
 		return ret
 	}
 
-	return o.Min
+	return o.Minimum
 }
 
-// GetMinOk returns a tuple with the Min field value
+// GetMinimumOk returns a tuple with the Minimum field value
 // and a boolean to check if the value has been set.
-func (o *RangeValues) GetMinOk() (*float32, bool) {
+func (o *RangeValues) GetMinimumOk() (*float32, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Min, true
+	return &o.Minimum, true
 }
 
-// SetMin sets field value
-func (o *RangeValues) SetMin(v float32) {
-	o.Min = v
+// SetMinimum sets field value
+func (o *RangeValues) SetMinimum(v float32) {
+	o.Minimum = v
 }
 
-// GetMax returns the Max field value
-func (o *RangeValues) GetMax() float32 {
+// GetMaximum returns the Maximum field value
+func (o *RangeValues) GetMaximum() float32 {
 	if o == nil {
 		var ret float32
 		return ret
 	}
 
-	return o.Max
+	return o.Maximum
 }
 
-// GetMaxOk returns a tuple with the Max field value
+// GetMaximumOk returns a tuple with the Maximum field value
 // and a boolean to check if the value has been set.
-func (o *RangeValues) GetMaxOk() (*float32, bool) {
+func (o *RangeValues) GetMaximumOk() (*float32, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Max, true
+	return &o.Maximum, true
 }
 
-// SetMax sets field value
-func (o *RangeValues) SetMax(v float32) {
-	o.Max = v
+// SetMaximum sets field value
+func (o *RangeValues) SetMaximum(v float32) {
+	o.Maximum = v
 }
 
 // GetDefaultValue returns the DefaultValue field value
@@ -130,8 +130,8 @@ func (o RangeValues) MarshalJSON() ([]byte, error) {
 
 func (o RangeValues) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["min"] = o.Min
-	toSerialize["max"] = o.Max
+	toSerialize["minimum"] = o.Minimum
+	toSerialize["maximum"] = o.Maximum
 	toSerialize["defaultValue"] = o.DefaultValue
 	return toSerialize, nil
 }
@@ -141,8 +141,8 @@ func (o *RangeValues) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"min",
-		"max",
+		"minimum",
+		"maximum",
 		"defaultValue",
 	}
 

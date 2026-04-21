@@ -140,6 +140,9 @@ func (l *ApplicationLoop) processConfiguration() {
 
 	cfg := resp.Configuration.Payload
 
+	l.logf("[LOOP] get_configuration deviceConfigId=%s latestDeviceConfigId=%s channels=%d",
+		cfg.ConfigurationId, l.latestDeviceConfigId, len(cfg.Channels))
+
 	anyApplied := false
 
 	// --- Per-channel: apply if ChannelConfiguration.configurationId changed ---
@@ -154,21 +157,23 @@ func (l *ApplicationLoop) processConfiguration() {
 		anyApplied = true
 	}
 
-	// --- Device-level: apply simpleSettings if DeviceConfiguration.configurationId changed ---
-	if cfg.ConfigurationId != l.latestDeviceConfigId && len(cfg.SimpleSettings) > 0 {
-		l.logf("[LOOP] applying device simpleSettings (configurationId %s → %s)",
-			l.latestDeviceConfigId, cfg.ConfigurationId)
-		for _, kv := range cfg.SimpleSettings {
-			l.callbacks.UpdateDeviceKeyValue(kv.Key, kv.Value)
+	// --- Device-level: apply standardSettings if DeviceConfiguration.configurationId changed ---
+	if cfg.ConfigurationId != l.latestDeviceConfigId {
+		if len(cfg.StandardSettings) > 0 {
+			l.logf("[LOOP] applying device standardSettings (configurationId %s → %s)",
+				l.latestDeviceConfigId, cfg.ConfigurationId)
+			for _, kv := range cfg.StandardSettings {
+				l.callbacks.UpdateDeviceKeyValue(kv.Key, kv.Value)
+			}
+			anyApplied = true
 		}
-		anyApplied = true
+		// Always track the device configurationId so we don't re-process it
+		l.latestDeviceConfigId = cfg.ConfigurationId
 	}
 
 	if !anyApplied {
 		return
 	}
-
-	l.latestDeviceConfigId = cfg.ConfigurationId
 
 	if l.ConfigAppliedCallback != nil {
 		// Build a composite ID from all applied configurationIds so the callback

@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`ip` | string
+`address` | string
 `port` | number
 `rtpPayloadType` | number
 
@@ -17,7 +17,7 @@ import type { RtpFecStreamConfig } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "ip": null,
+  "address": null,
   "port": null,
   "rtpPayloadType": null,
 } satisfies RtpFecStreamConfig

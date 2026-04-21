@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Passcode** | **string** | A 32-character hexadecimal string. | 
+**Passphrase** | **string** |  | 
 
 ## Methods
 
 ### NewEncryptionAes128
 
-`func NewEncryptionAes128(passcode string, ) *EncryptionAes128`
+`func NewEncryptionAes128(passphrase string, ) *EncryptionAes128`
 
 NewEncryptionAes128 instantiates a new EncryptionAes128 object
 This constructor will assign default values to properties that have it defined,
@@ -25,24 +25,24 @@ NewEncryptionAes128WithDefaults instantiates a new EncryptionAes128 object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetPasscode
+### GetPassphrase
 
-`func (o *EncryptionAes128) GetPasscode() string`
+`func (o *EncryptionAes128) GetPassphrase() string`
 
-GetPasscode returns the Passcode field if non-nil, zero value otherwise.
+GetPassphrase returns the Passphrase field if non-nil, zero value otherwise.
 
-### GetPasscodeOk
+### GetPassphraseOk
 
-`func (o *EncryptionAes128) GetPasscodeOk() (*string, bool)`
+`func (o *EncryptionAes128) GetPassphraseOk() (*string, bool)`
 
-GetPasscodeOk returns a tuple with the Passcode field if it's non-nil, zero value otherwise
+GetPassphraseOk returns a tuple with the Passphrase field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetPasscode
+### SetPassphrase
 
-`func (o *EncryptionAes128) SetPasscode(v string)`
+`func (o *EncryptionAes128) SetPassphrase(v string)`
 
-SetPasscode sets Passcode field to given value.
+SetPassphrase sets Passphrase field to given value.
 
 
 

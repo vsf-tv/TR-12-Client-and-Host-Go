@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `id` | string
 `name` | string
-`info` | string
+`description` | string
 `enums` | [EnumValues](EnumValues.md)
 `ranges` | [RangeValues](RangeValues.md)
 
@@ -21,7 +21,7 @@ import type { Setting } from ''
 const example = {
   "id": null,
   "name": null,
-  "info": null,
+  "description": null,
   "enums": null,
   "ranges": null,
 } satisfies Setting

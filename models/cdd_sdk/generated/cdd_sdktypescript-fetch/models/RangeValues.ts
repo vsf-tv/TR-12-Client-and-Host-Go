@@ -24,13 +24,13 @@ export interface RangeValues {
      * @type {number}
      * @memberof RangeValues
      */
-    min: number;
+    minimum: number;
     /**
      * 
      * @type {number}
      * @memberof RangeValues
      */
-    max: number;
+    maximum: number;
     /**
      * 
      * @type {number}
@@ -43,8 +43,8 @@ export interface RangeValues {
  * Check if a given object implements the RangeValues interface.
  */
 export function instanceOfRangeValues(value: object): value is RangeValues {
-    if (!('min' in value) || value['min'] === undefined) return false;
-    if (!('max' in value) || value['max'] === undefined) return false;
+    if (!('minimum' in value) || value['minimum'] === undefined) return false;
+    if (!('maximum' in value) || value['maximum'] === undefined) return false;
     if (!('defaultValue' in value) || value['defaultValue'] === undefined) return false;
     return true;
 }
@@ -59,8 +59,8 @@ export function RangeValuesFromJSONTyped(json: any, ignoreDiscriminator: boolean
     }
     return {
         
-        'min': json['min'],
-        'max': json['max'],
+        'minimum': json['minimum'],
+        'maximum': json['maximum'],
         'defaultValue': json['defaultValue'],
     };
 }
@@ -76,8 +76,8 @@ export function RangeValuesToJSONTyped(value?: RangeValues | null, ignoreDiscrim
 
     return {
         
-        'min': value['min'],
-        'max': value['max'],
+        'minimum': value['minimum'],
+        'maximum': value['maximum'],
         'defaultValue': value['defaultValue'],
     };
 }

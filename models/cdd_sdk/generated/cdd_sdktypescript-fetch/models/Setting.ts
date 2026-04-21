@@ -51,7 +51,7 @@ export interface Setting {
      * @type {string}
      * @memberof Setting
      */
-    info: string;
+    description: string;
     /**
      * 
      * @type {EnumValues}
@@ -72,7 +72,7 @@ export interface Setting {
 export function instanceOfSetting(value: object): value is Setting {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('info' in value) || value['info'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     return true;
 }
 
@@ -88,7 +88,7 @@ export function SettingFromJSONTyped(json: any, ignoreDiscriminator: boolean): S
         
         'id': json['id'],
         'name': json['name'],
-        'info': json['info'],
+        'description': json['description'],
         'enums': json['enums'] == null ? undefined : EnumValuesFromJSON(json['enums']),
         'ranges': json['ranges'] == null ? undefined : RangeValuesFromJSON(json['ranges']),
     };
@@ -107,7 +107,7 @@ export function SettingToJSONTyped(value?: Setting | null, ignoreDiscriminator: 
         
         'id': value['id'],
         'name': value['name'],
-        'info': value['info'],
+        'description': value['description'],
         'enums': EnumValuesToJSON(value['enums']),
         'ranges': RangeValuesToJSON(value['ranges']),
     };

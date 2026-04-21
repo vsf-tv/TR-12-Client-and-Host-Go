@@ -1,8 +1,8 @@
 {
-  "simpleSettings": [
+  "standardSettings": [
     {
       "name": "Clock Source",
-      "info": "Sets the clock source for all active channels.",
+      "description": "Sets the clock source for all active channels.",
       "id": "sync_clock_source",
       "enums": {
         "values": ["INTERNAL", "GENLOCK", "NTP", "PTP"],
@@ -16,33 +16,33 @@
       "id": "CH01",
       "channelType": "SOURCE",
       "connectionProtocols": ["SRT_CALLER", "SRT_LISTENER"],
-      "simpleSettings": [
+      "standardSettings": [
         {
-          "name": "resolution", "info": "Output video dimensions.", "id": "RS01",
+          "name": "resolution", "description": "Output video dimensions.", "id": "RS01",
           "enums": { "values": ["1920x1080","1280x720","640x480"], "defaultValue": "1920x1080" }
         },
         {
-          "name": "framerate", "info": "Frames per second.", "id": "FR01",
+          "name": "framerate", "description": "Frames per second.", "id": "FR01",
           "enums": { "values": ["30","60","25"], "defaultValue": "30" }
         },
         {
-          "name": "max_bitrate", "info": "Maximum data rate (Kbps).", "id": "MB01",
-          "ranges": { "min": 5000, "max": 50000, "defaultValue": 10000 }
+          "name": "max_bitrate", "description": "Maximum data rate (Kbps).", "id": "MB01",
+          "ranges": { "minimum": 5000, "maximum": 50000, "defaultValue": 10000 }
         },
         {
-          "name": "rate_control", "info": "Bitrate control method.", "id": "RC01",
+          "name": "rate_control", "description": "Bitrate control method.", "id": "RC01",
           "enums": { "values": ["CBR","VBR"], "defaultValue": "CBR" }
         },
         {
-          "name": "codec", "info": "Video compression standard.", "id": "CO01",
+          "name": "codec", "description": "Video compression standard.", "id": "CO01",
           "enums": { "values": ["H.264","H.265"], "defaultValue": "H.264" }
         },
         {
-          "name": "gop_size", "info": "I-frame interval in frames.", "id": "GP01",
+          "name": "gop_size", "description": "I-frame interval in frames.", "id": "GP01",
           "enums": { "values": ["30","60","90"], "defaultValue": "60" }
         },
         {
-          "name": "selected_input", "info": "Hardware input source.", "id": "IN01",
+          "name": "selected_input", "description": "Hardware input source.", "id": "IN01",
           "enums": { "values": ["SDI1","HDMI1"], "defaultValue": "SDI1" }
         }
       ]
@@ -52,33 +52,33 @@
       "id": "CH02",
       "channelType": "SOURCE",
       "connectionProtocols": ["SRT_CALLER", "SRT_LISTENER"],
-      "simpleSettings": [
+      "standardSettings": [
         {
-          "name": "resolution", "info": "Output video dimensions.", "id": "RS01",
+          "name": "resolution", "description": "Output video dimensions.", "id": "RS01",
           "enums": { "values": ["1920x1080","1280x720","640x480"], "defaultValue": "1920x1080" }
         },
         {
-          "name": "framerate", "info": "Frames per second.", "id": "FR01",
+          "name": "framerate", "description": "Frames per second.", "id": "FR01",
           "enums": { "values": ["30","60","25"], "defaultValue": "30" }
         },
         {
-          "name": "max_bitrate", "info": "Maximum data rate (Kbps).", "id": "MB01",
-          "ranges": { "min": 5000, "max": 50000, "defaultValue": 10000 }
+          "name": "max_bitrate", "description": "Maximum data rate (Kbps).", "id": "MB01",
+          "ranges": { "minimum": 5000, "maximum": 50000, "defaultValue": 10000 }
         },
         {
-          "name": "rate_control", "info": "Bitrate control method.", "id": "RC01",
+          "name": "rate_control", "description": "Bitrate control method.", "id": "RC01",
           "enums": { "values": ["CBR","VBR"], "defaultValue": "CBR" }
         },
         {
-          "name": "codec", "info": "Video compression standard.", "id": "CO01",
+          "name": "codec", "description": "Video compression standard.", "id": "CO01",
           "enums": { "values": ["H.264","H.265"], "defaultValue": "H.264" }
         },
         {
-          "name": "gop_size", "info": "I-frame interval in frames.", "id": "GP01",
+          "name": "gop_size", "description": "I-frame interval in frames.", "id": "GP01",
           "enums": { "values": ["30","60","90"], "defaultValue": "60" }
         },
         {
-          "name": "selected_input", "info": "Hardware input source.", "id": "IN01",
+          "name": "selected_input", "description": "Hardware input source.", "id": "IN01",
           "enums": { "values": ["SDI1","HDMI1"], "defaultValue": "SDI1" }
         }
       ]

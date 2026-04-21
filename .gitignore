@@ -38,6 +38,7 @@ host/bin/
 
 # Proprietary device integrations — not part of the reference implementation
 client/cmd/proprietary*/
+client/cmd/osprey-tr12-client/
 client/proprietary*
 
 console/

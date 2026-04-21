@@ -52,6 +52,13 @@ func (c *SDKClient) Disconnect() (*cddsdkgo.DisconnectResponseContent, error) {
 	return doTypedPUT[cddsdkgo.DisconnectResponseContent](c, "/disconnect", nil)
 }
 
+// Deprovision calls PUT /deprovision on the SDK daemon, which informs the host,
+// deletes credentials, and resets SDK state.
+func (c *SDKClient) Deprovision(hostID string) (*cddsdkgo.DeprovisionResponseContent, error) {
+	body := map[string]string{"hostId": hostID}
+	return doTypedPUT[cddsdkgo.DeprovisionResponseContent](c, "/deprovision", body)
+}
+
 // GetState calls GET /get_state.
 func (c *SDKClient) GetState() (*cddsdkgo.GetConnectionStatusResponseContent, error) {
 	return doTypedGET[cddsdkgo.GetConnectionStatusResponseContent](c, "/get_state")

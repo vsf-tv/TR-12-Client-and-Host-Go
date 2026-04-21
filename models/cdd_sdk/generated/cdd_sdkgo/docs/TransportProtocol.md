@@ -8,16 +8,15 @@ Name | Type | Description | Notes
 **SrtCaller** | [**SrtCallerTransportProtocol**](SrtCallerTransportProtocol.md) |  | 
 **RistListener** | [**RistListenerTransportProtocol**](RistListenerTransportProtocol.md) |  | 
 **RistCaller** | [**RistCallerTransportProtocol**](RistCallerTransportProtocol.md) |  | 
-**ZixiListener** | [**ZixiListenerTransportProtocol**](ZixiListenerTransportProtocol.md) |  | 
-**ZixiCaller** | [**ZixiCallerTransportProtocol**](ZixiCallerTransportProtocol.md) |  | 
+**ZixiPush** | [**ZixiPushTransportProtocol**](ZixiPushTransportProtocol.md) |  | 
+**ZixiPull** | [**ZixiPullTransportProtocol**](ZixiPullTransportProtocol.md) |  | 
 **Rtp** | [**RtpTransportProtocol**](RtpTransportProtocol.md) |  | 
-**WebRtc** | [**WebRtcTransportProtocol**](WebRtcTransportProtocol.md) |  | 
 
 ## Methods
 
 ### NewTransportProtocol
 
-`func NewTransportProtocol(srtListener SrtListenerTransportProtocol, srtCaller SrtCallerTransportProtocol, ristListener RistListenerTransportProtocol, ristCaller RistCallerTransportProtocol, zixiListener ZixiListenerTransportProtocol, zixiCaller ZixiCallerTransportProtocol, rtp RtpTransportProtocol, webRtc WebRtcTransportProtocol, ) *TransportProtocol`
+`func NewTransportProtocol(srtListener SrtListenerTransportProtocol, srtCaller SrtCallerTransportProtocol, ristListener RistListenerTransportProtocol, ristCaller RistCallerTransportProtocol, zixiPush ZixiPushTransportProtocol, zixiPull ZixiPullTransportProtocol, rtp RtpTransportProtocol, ) *TransportProtocol`
 
 NewTransportProtocol instantiates a new TransportProtocol object
 This constructor will assign default values to properties that have it defined,
@@ -112,44 +111,44 @@ and a boolean to check if the value has been set.
 SetRistCaller sets RistCaller field to given value.
 
 
-### GetZixiListener
+### GetZixiPush
 
-`func (o *TransportProtocol) GetZixiListener() ZixiListenerTransportProtocol`
+`func (o *TransportProtocol) GetZixiPush() ZixiPushTransportProtocol`
 
-GetZixiListener returns the ZixiListener field if non-nil, zero value otherwise.
+GetZixiPush returns the ZixiPush field if non-nil, zero value otherwise.
 
-### GetZixiListenerOk
+### GetZixiPushOk
 
-`func (o *TransportProtocol) GetZixiListenerOk() (*ZixiListenerTransportProtocol, bool)`
+`func (o *TransportProtocol) GetZixiPushOk() (*ZixiPushTransportProtocol, bool)`
 
-GetZixiListenerOk returns a tuple with the ZixiListener field if it's non-nil, zero value otherwise
+GetZixiPushOk returns a tuple with the ZixiPush field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetZixiListener
+### SetZixiPush
 
-`func (o *TransportProtocol) SetZixiListener(v ZixiListenerTransportProtocol)`
+`func (o *TransportProtocol) SetZixiPush(v ZixiPushTransportProtocol)`
 
-SetZixiListener sets ZixiListener field to given value.
+SetZixiPush sets ZixiPush field to given value.
 
 
-### GetZixiCaller
+### GetZixiPull
 
-`func (o *TransportProtocol) GetZixiCaller() ZixiCallerTransportProtocol`
+`func (o *TransportProtocol) GetZixiPull() ZixiPullTransportProtocol`
 
-GetZixiCaller returns the ZixiCaller field if non-nil, zero value otherwise.
+GetZixiPull returns the ZixiPull field if non-nil, zero value otherwise.
 
-### GetZixiCallerOk
+### GetZixiPullOk
 
-`func (o *TransportProtocol) GetZixiCallerOk() (*ZixiCallerTransportProtocol, bool)`
+`func (o *TransportProtocol) GetZixiPullOk() (*ZixiPullTransportProtocol, bool)`
 
-GetZixiCallerOk returns a tuple with the ZixiCaller field if it's non-nil, zero value otherwise
+GetZixiPullOk returns a tuple with the ZixiPull field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetZixiCaller
+### SetZixiPull
 
-`func (o *TransportProtocol) SetZixiCaller(v ZixiCallerTransportProtocol)`
+`func (o *TransportProtocol) SetZixiPull(v ZixiPullTransportProtocol)`
 
-SetZixiCaller sets ZixiCaller field to given value.
+SetZixiPull sets ZixiPull field to given value.
 
 
 ### GetRtp
@@ -170,26 +169,6 @@ and a boolean to check if the value has been set.
 `func (o *TransportProtocol) SetRtp(v RtpTransportProtocol)`
 
 SetRtp sets Rtp field to given value.
-
-
-### GetWebRtc
-
-`func (o *TransportProtocol) GetWebRtc() WebRtcTransportProtocol`
-
-GetWebRtc returns the WebRtc field if non-nil, zero value otherwise.
-
-### GetWebRtcOk
-
-`func (o *TransportProtocol) GetWebRtcOk() (*WebRtcTransportProtocol, bool)`
-
-GetWebRtcOk returns a tuple with the WebRtc field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetWebRtc
-
-`func (o *TransportProtocol) SetWebRtc(v WebRtcTransportProtocol)`
-
-SetWebRtc sets WebRtc field to given value.
 
 
 

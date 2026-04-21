@@ -22,7 +22,7 @@ var _ MappedNullable = &DeviceRegistration{}
 // DeviceRegistration struct for DeviceRegistration
 type DeviceRegistration struct {
 	Channels []Channel `json:"channels"`
-	SimpleSettings []Setting `json:"simpleSettings,omitempty"`
+	StandardSettings []Setting `json:"standardSettings,omitempty"`
 	Thumbnails []Thumbnail `json:"thumbnails,omitempty"`
 }
 
@@ -70,36 +70,36 @@ func (o *DeviceRegistration) SetChannels(v []Channel) {
 	o.Channels = v
 }
 
-// GetSimpleSettings returns the SimpleSettings field value if set, zero value otherwise.
-func (o *DeviceRegistration) GetSimpleSettings() []Setting {
-	if o == nil || IsNil(o.SimpleSettings) {
+// GetStandardSettings returns the StandardSettings field value if set, zero value otherwise.
+func (o *DeviceRegistration) GetStandardSettings() []Setting {
+	if o == nil || IsNil(o.StandardSettings) {
 		var ret []Setting
 		return ret
 	}
-	return o.SimpleSettings
+	return o.StandardSettings
 }
 
-// GetSimpleSettingsOk returns a tuple with the SimpleSettings field value if set, nil otherwise
+// GetStandardSettingsOk returns a tuple with the StandardSettings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *DeviceRegistration) GetSimpleSettingsOk() ([]Setting, bool) {
-	if o == nil || IsNil(o.SimpleSettings) {
+func (o *DeviceRegistration) GetStandardSettingsOk() ([]Setting, bool) {
+	if o == nil || IsNil(o.StandardSettings) {
 		return nil, false
 	}
-	return o.SimpleSettings, true
+	return o.StandardSettings, true
 }
 
-// HasSimpleSettings returns a boolean if a field has been set.
-func (o *DeviceRegistration) HasSimpleSettings() bool {
-	if o != nil && !IsNil(o.SimpleSettings) {
+// HasStandardSettings returns a boolean if a field has been set.
+func (o *DeviceRegistration) HasStandardSettings() bool {
+	if o != nil && !IsNil(o.StandardSettings) {
 		return true
 	}
 
 	return false
 }
 
-// SetSimpleSettings gets a reference to the given []Setting and assigns it to the SimpleSettings field.
-func (o *DeviceRegistration) SetSimpleSettings(v []Setting) {
-	o.SimpleSettings = v
+// SetStandardSettings gets a reference to the given []Setting and assigns it to the StandardSettings field.
+func (o *DeviceRegistration) SetStandardSettings(v []Setting) {
+	o.StandardSettings = v
 }
 
 // GetThumbnails returns the Thumbnails field value if set, zero value otherwise.
@@ -145,8 +145,8 @@ func (o DeviceRegistration) MarshalJSON() ([]byte, error) {
 func (o DeviceRegistration) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["channels"] = o.Channels
-	if !IsNil(o.SimpleSettings) {
-		toSerialize["simpleSettings"] = o.SimpleSettings
+	if !IsNil(o.StandardSettings) {
+		toSerialize["standardSettings"] = o.StandardSettings
 	}
 	if !IsNil(o.Thumbnails) {
 		toSerialize["thumbnails"] = o.Thumbnails

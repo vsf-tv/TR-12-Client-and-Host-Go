@@ -4,15 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Min** | **float32** |  | 
-**Max** | **float32** |  | 
+**Minimum** | **float32** |  | 
+**Maximum** | **float32** |  | 
 **DefaultValue** | **float32** |  | 
 
 ## Methods
 
 ### NewRangeValues
 
-`func NewRangeValues(min float32, max float32, defaultValue float32, ) *RangeValues`
+`func NewRangeValues(minimum float32, maximum float32, defaultValue float32, ) *RangeValues`
 
 NewRangeValues instantiates a new RangeValues object
 This constructor will assign default values to properties that have it defined,
@@ -27,44 +27,44 @@ NewRangeValuesWithDefaults instantiates a new RangeValues object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetMin
+### GetMinimum
 
-`func (o *RangeValues) GetMin() float32`
+`func (o *RangeValues) GetMinimum() float32`
 
-GetMin returns the Min field if non-nil, zero value otherwise.
+GetMinimum returns the Minimum field if non-nil, zero value otherwise.
 
-### GetMinOk
+### GetMinimumOk
 
-`func (o *RangeValues) GetMinOk() (*float32, bool)`
+`func (o *RangeValues) GetMinimumOk() (*float32, bool)`
 
-GetMinOk returns a tuple with the Min field if it's non-nil, zero value otherwise
+GetMinimumOk returns a tuple with the Minimum field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetMin
+### SetMinimum
 
-`func (o *RangeValues) SetMin(v float32)`
+`func (o *RangeValues) SetMinimum(v float32)`
 
-SetMin sets Min field to given value.
+SetMinimum sets Minimum field to given value.
 
 
-### GetMax
+### GetMaximum
 
-`func (o *RangeValues) GetMax() float32`
+`func (o *RangeValues) GetMaximum() float32`
 
-GetMax returns the Max field if non-nil, zero value otherwise.
+GetMaximum returns the Maximum field if non-nil, zero value otherwise.
 
-### GetMaxOk
+### GetMaximumOk
 
-`func (o *RangeValues) GetMaxOk() (*float32, bool)`
+`func (o *RangeValues) GetMaximumOk() (*float32, bool)`
 
-GetMaxOk returns a tuple with the Max field if it's non-nil, zero value otherwise
+GetMaximumOk returns a tuple with the Maximum field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetMax
+### SetMaximum
 
-`func (o *RangeValues) SetMax(v float32)`
+`func (o *RangeValues) SetMaximum(v float32)`
 
-SetMax sets Max field to given value.
+SetMaximum sets Maximum field to given value.
 
 
 ### GetDefaultValue

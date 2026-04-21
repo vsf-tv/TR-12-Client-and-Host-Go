@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `streamId` | [RistStreamIdentifier](RistStreamIdentifier.md)
-`ip` | string
+`address` | string
 `port` | number
 `minimumLatencyMilliseconds` | number
 `encryption` | [EncryptionAes](EncryptionAes.md)
@@ -20,7 +20,7 @@ import type { RistCallerTransportProtocol } from ''
 // TODO: Update the object below with actual values
 const example = {
   "streamId": null,
-  "ip": null,
+  "address": null,
   "port": null,
   "minimumLatencyMilliseconds": null,
   "encryption": null,

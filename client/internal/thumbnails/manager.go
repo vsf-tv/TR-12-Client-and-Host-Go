@@ -59,8 +59,8 @@ func (u *Uploader) run() {
 	period := int(u.request.GetPeriodSeconds())
 	for {
 		now := time.Now()
-		expires := u.request.GetExpiresTimestamp()
-		if u.request.HasExpiresTimestamp() && !now.Before(expires) {
+		expires := u.request.GetExpiresAt()
+		if u.request.HasExpiresAt() && !now.Before(expires) {
 			u.logger.Info("Thumbnails: Subscription Expired.")
 			return
 		}
@@ -81,7 +81,7 @@ func (u *Uploader) run() {
 }
 
 func validateRequestParams(req *tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) bool {
-	if req.HasExpiresTimestamp() && !time.Now().Before(req.GetExpiresTimestamp()) {
+	if req.HasExpiresAt() && !time.Now().Before(req.GetExpiresAt()) {
 		logger.Info("Thumbnail: Request expired.")
 		return false
 	}
@@ -92,7 +92,7 @@ func validateRequestParams(req *tr12models.ThumbnailRequest, logger *cddlogger.C
 		return false
 	}
 	fileSizeKB := float64(info.Size()) / 1024.0
-	maxSize := float64(req.GetMaxSizeKilobyte())
+	maxSize := float64(req.GetMaxSizeKB())
 	if fileSizeKB > maxSize {
 		logger.Infof("Thumbnails: %.0fKB file exceeds %.0fKB limit", fileSizeKB, maxSize)
 		return false

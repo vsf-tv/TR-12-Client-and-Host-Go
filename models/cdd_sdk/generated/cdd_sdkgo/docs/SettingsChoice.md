@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**SimpleSettings** | [**[]IdAndValue**](IdAndValue.md) |  | 
-**Profile** | [**SettingProfile**](SettingProfile.md) |  | 
+**StandardSettings** | [**[]IdAndValue**](IdAndValue.md) |  | 
+**Profile** | [**ChannelProfile**](ChannelProfile.md) |  | 
 
 ## Methods
 
 ### NewSettingsChoice
 
-`func NewSettingsChoice(simpleSettings []IdAndValue, profile SettingProfile, ) *SettingsChoice`
+`func NewSettingsChoice(standardSettings []IdAndValue, profile ChannelProfile, ) *SettingsChoice`
 
 NewSettingsChoice instantiates a new SettingsChoice object
 This constructor will assign default values to properties that have it defined,
@@ -26,42 +26,42 @@ NewSettingsChoiceWithDefaults instantiates a new SettingsChoice object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetSimpleSettings
+### GetStandardSettings
 
-`func (o *SettingsChoice) GetSimpleSettings() []IdAndValue`
+`func (o *SettingsChoice) GetStandardSettings() []IdAndValue`
 
-GetSimpleSettings returns the SimpleSettings field if non-nil, zero value otherwise.
+GetStandardSettings returns the StandardSettings field if non-nil, zero value otherwise.
 
-### GetSimpleSettingsOk
+### GetStandardSettingsOk
 
-`func (o *SettingsChoice) GetSimpleSettingsOk() (*[]IdAndValue, bool)`
+`func (o *SettingsChoice) GetStandardSettingsOk() (*[]IdAndValue, bool)`
 
-GetSimpleSettingsOk returns a tuple with the SimpleSettings field if it's non-nil, zero value otherwise
+GetStandardSettingsOk returns a tuple with the StandardSettings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetSimpleSettings
+### SetStandardSettings
 
-`func (o *SettingsChoice) SetSimpleSettings(v []IdAndValue)`
+`func (o *SettingsChoice) SetStandardSettings(v []IdAndValue)`
 
-SetSimpleSettings sets SimpleSettings field to given value.
+SetStandardSettings sets StandardSettings field to given value.
 
 
 ### GetProfile
 
-`func (o *SettingsChoice) GetProfile() SettingProfile`
+`func (o *SettingsChoice) GetProfile() ChannelProfile`
 
 GetProfile returns the Profile field if non-nil, zero value otherwise.
 
 ### GetProfileOk
 
-`func (o *SettingsChoice) GetProfileOk() (*SettingProfile, bool)`
+`func (o *SettingsChoice) GetProfileOk() (*ChannelProfile, bool)`
 
 GetProfileOk returns a tuple with the Profile field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetProfile
 
-`func (o *SettingsChoice) SetProfile(v SettingProfile)`
+`func (o *SettingsChoice) SetProfile(v ChannelProfile)`
 
 SetProfile sets Profile field to given value.
 

@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `name` | string
 `id` | string
-`info` | string
+`description` | string
 
 ## Example
 
@@ -19,7 +19,7 @@ import type { ProfileDefinition } from ''
 const example = {
   "name": null,
   "id": null,
-  "info": null,
+  "description": null,
 } satisfies ProfileDefinition
 
 console.log(example)

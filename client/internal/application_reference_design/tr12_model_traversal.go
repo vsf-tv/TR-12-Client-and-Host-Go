@@ -41,7 +41,7 @@ func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DeviceConfigurati
 	if desired == nil {
 		return false
 	}
-	for _, kv := range desired.SimpleSettings {
+	for _, kv := range desired.StandardSettings {
 		s.CB.UpdateDeviceKeyValue(kv.Key, kv.Value)
 	}
 	for _, ch := range desired.Channels {
@@ -54,11 +54,11 @@ func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DeviceConfigurati
 func (s *Tr12Shim) applyChannel(chCfg cddsdkgo.ChannelConfiguration) {
 	chID := chCfg.Id
 
-	// Settings (SimpleSettings or Profile via oneOf union)
+	// Settings (StandardSettings or Profile via oneOf union)
 	if chCfg.Settings != nil {
 		settings := chCfg.Settings
-		if settings.SimpleSettings != nil {
-			for _, kv := range settings.SimpleSettings.SimpleSettings {
+		if settings.StandardSettings != nil {
+			for _, kv := range settings.StandardSettings.StandardSettings {
 				s.CB.UpdateChannelSettings(chID, kv.Key, kv.Value)
 			}
 		} else if settings.Profile != nil {
@@ -91,9 +91,9 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		result.Health = health
 	}
 
-	// Device-level simple settings
+	// Device-level standard settings
 	var deviceSettings []cddsdkgo.IdAndValue
-	for _, setting := range registration.SimpleSettings {
+	for _, setting := range registration.StandardSettings {
 		if val, found := s.CB.GetDeviceUpdatedValue(setting.Id); found {
 			deviceSettings = append(deviceSettings, cddsdkgo.IdAndValue{
 				Key: setting.Id, Value: val,
@@ -101,7 +101,7 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		}
 	}
 	if len(deviceSettings) > 0 {
-		result.SimpleSettings = deviceSettings
+		result.StandardSettings = deviceSettings
 	}
 
 	// Channels — echo back the configurationId the ARD actually applied per channel
@@ -133,17 +133,17 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 		if profileID, found := s.CB.GetChannelProfileValue(chID); found {
 			chCfg.Settings = &cddsdkgo.SettingsChoice{
 				Profile: &cddsdkgo.Profile{
-					Profile: cddsdkgo.SettingProfile{Id: profileID},
+					Profile: cddsdkgo.ChannelProfile{Id: profileID},
 				},
 			}
 			hasProfile = true
 		}
 	}
 
-	// Simple settings if no profile
-	if !hasProfile && len(regCh.SimpleSettings) > 0 {
+	// Standard settings if no profile
+	if !hasProfile && len(regCh.StandardSettings) > 0 {
 		var kvList []cddsdkgo.IdAndValue
-		for _, setting := range regCh.SimpleSettings {
+		for _, setting := range regCh.StandardSettings {
 			if val, found := s.CB.GetChannelUpdatedValue(chID, setting.Id); found {
 				kvList = append(kvList, cddsdkgo.IdAndValue{
 					Key: setting.Id, Value: val,
@@ -152,8 +152,8 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 		}
 		if len(kvList) > 0 {
 			chCfg.Settings = &cddsdkgo.SettingsChoice{
-				SimpleSettings: &cddsdkgo.SimpleSettings{
-					SimpleSettings: kvList,
+				StandardSettings: &cddsdkgo.StandardSettings{
+					StandardSettings: kvList,
 				},
 			}
 		}

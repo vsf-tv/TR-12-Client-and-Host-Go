@@ -15,7 +15,7 @@ import { HttpFile } from '../http/http';
 export class ProfileDefinition {
     'name': string;
     'id': string;
-    'info': string;
+    'description': string;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -35,8 +35,8 @@ export class ProfileDefinition {
             "format": ""
         },
         {
-            "name": "info",
-            "baseName": "info",
+            "name": "description",
+            "baseName": "description",
             "type": "string",
             "format": ""
         }    ];

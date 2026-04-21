@@ -343,7 +343,7 @@ func TestUpdateConfiguration_Success(t *testing.T) {
 	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	// Set registration so validation passes
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1","simpleSettings":[{"id":"brightness"}],"profiles":[{"id":"prof1"}]}]}`)
+	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1","standardSettings":[{"id":"brightness"}],"profiles":[{"id":"prof1"}]}]}`)
 	store.UpdateDeviceRegistration(deviceID, reg)
 
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
@@ -502,8 +502,8 @@ func TestRotateCredentials_NotActive(t *testing.T) {
 // --- validateConfiguration ---
 
 func TestValidateConfiguration_ValidConfig(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","simpleSettings":[{"id":"brightness"}],"profiles":[{"id":"prof1"}]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","settings":{"simpleSettings":[{"key":"brightness"}],"profile":{"id":"prof1"}}}]}`)
+	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","standardSettings":[{"id":"brightness"}],"profiles":[{"id":"prof1"}]}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","settings":{"standardSettings":[{"key":"brightness"}],"profile":{"id":"prof1"}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
 	}
@@ -519,8 +519,8 @@ func TestValidateConfiguration_UnknownChannel(t *testing.T) {
 }
 
 func TestValidateConfiguration_UnknownSettingKey(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","simpleSettings":[{"id":"brightness"}]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","settings":{"simpleSettings":[{"key":"contrast"}]}}]}`)
+	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","standardSettings":[{"id":"brightness"}]}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","settings":{"standardSettings":[{"key":"contrast"}]}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown setting key") {
 		t.Fatalf("expected unknown setting key error, got %v", err)
@@ -546,16 +546,16 @@ func TestValidateConfiguration_InvalidChannelState(t *testing.T) {
 }
 
 func TestValidateConfiguration_DeviceLevelSettingValid(t *testing.T) {
-	reg := json.RawMessage(`{"simpleSettings":[{"id":"clock_source"}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
-	cfg := json.RawMessage(`{"simpleSettings":[{"key":"clock_source","value":"PTP"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
+	reg := json.RawMessage(`{"standardSettings":[{"id":"clock_source"}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	cfg := json.RawMessage(`{"standardSettings":[{"key":"clock_source","value":"PTP"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
 	}
 }
 
 func TestValidateConfiguration_DeviceLevelSettingUnknown(t *testing.T) {
-	reg := json.RawMessage(`{"simpleSettings":[{"id":"clock_source"}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
-	cfg := json.RawMessage(`{"simpleSettings":[{"key":"bogus_setting","value":"foo"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
+	reg := json.RawMessage(`{"standardSettings":[{"id":"clock_source"}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	cfg := json.RawMessage(`{"standardSettings":[{"key":"bogus_setting","value":"foo"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown device-level setting key") {
 		t.Fatalf("expected unknown device-level setting key error, got %v", err)
@@ -567,7 +567,7 @@ func TestValidateConfiguration_DeviceLevelSettingUnknown(t *testing.T) {
 
 func TestValidateConfiguration_ConnectionValid(t *testing.T) {
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","connectionProtocols":["SRT_CALLER"]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"ip":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200}}}}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200}}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
 	}
@@ -575,7 +575,7 @@ func TestValidateConfiguration_ConnectionValid(t *testing.T) {
 
 func TestValidateConfiguration_ConnectionUnknownProtocolType(t *testing.T) {
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","connectionProtocols":["SRT_CALLER"]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"rtmpCaller":{"ip":"1.2.3.4"}}}}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"rtmpCaller":{"address":"1.2.3.4"}}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown transport protocol type") {
 		t.Fatalf("expected unknown transport protocol type error, got %v", err)
@@ -584,7 +584,7 @@ func TestValidateConfiguration_ConnectionUnknownProtocolType(t *testing.T) {
 
 func TestValidateConfiguration_ConnectionProtocolNotRegistered(t *testing.T) {
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","connectionProtocols":["SRT_LISTENER"]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"ip":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200}}}}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200}}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "not supported by channel") {
 		t.Fatalf("expected protocol not supported error, got %v", err)
@@ -593,27 +593,27 @@ func TestValidateConfiguration_ConnectionProtocolNotRegistered(t *testing.T) {
 
 func TestValidateConfiguration_ConnectionUnknownField(t *testing.T) {
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","connectionProtocols":["SRT_CALLER"]}]}`)
-	// "address" and "ports" are wrong — should be "ip" and "port"
+	// "address" and "ports" are wrong — "ports" should be "port"
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"address":"1.2.3.4","ports":9000,"minimumLatencyMilliseconds":200}}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown field") {
 		t.Fatalf("expected unknown field error, got %v", err)
 	}
-	if !strings.Contains(err.Error(), "address") {
-		t.Fatalf("expected error to mention 'address', got %v", err)
+	if !strings.Contains(err.Error(), "ports") {
+		t.Fatalf("expected error to mention 'ports', got %v", err)
 	}
 }
 
 func TestValidateConfiguration_ConnectionMissingRequiredField(t *testing.T) {
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","connectionProtocols":["SRT_CALLER"]}]}`)
-	// Missing "ip" which is required for srtCaller
+	// Missing "address" which is required for srtCaller
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"port":9000,"minimumLatencyMilliseconds":200}}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "missing required field") {
 		t.Fatalf("expected missing required field error, got %v", err)
 	}
-	if !strings.Contains(err.Error(), `"ip"`) {
-		t.Fatalf("expected error to mention 'ip', got %v", err)
+	if !strings.Contains(err.Error(), `"address"`) {
+		t.Fatalf("expected error to mention 'address', got %v", err)
 	}
 }
 
@@ -627,7 +627,7 @@ func TestValidateConfiguration_ConnectionSrtListenerValid(t *testing.T) {
 
 func TestValidateConfiguration_ConnectionWithOptionalFields(t *testing.T) {
 	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","connectionProtocols":["SRT_CALLER"]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"ip":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200,"streamId":"test123"}}}}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","connection":{"transportProtocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200,"streamId":"test123"}}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid with optional streamId, got %v", err)
 	}

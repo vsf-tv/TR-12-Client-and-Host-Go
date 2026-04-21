@@ -286,8 +286,8 @@ func newTestEnv(t *testing.T) *testEnv {
   "deviceTypes": ["SOURCE", "DESTINATION", "BOTH"],
   "createPairingCodeUrl": "http://127.0.0.1:%d",
   "authenticatePairingCodeUrl": "http://127.0.0.1:%d",
-  "thumbnailMaxSizeKB": 100,
-  "logFileMaxSizeKB": 500
+  "thumbnailMaximumSizeKB": 100,
+  "logFileMaximumSizeKB": 500
 }`, httpPort, httpPort)
 	os.WriteFile(filepath.Join(hostCfgDir, "tr12-host.json"), []byte(hostCfg), 0644)
 

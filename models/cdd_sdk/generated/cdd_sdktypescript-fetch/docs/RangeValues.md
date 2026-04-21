@@ -6,8 +6,8 @@
 
 Name | Type
 ------------ | -------------
-`min` | number
-`max` | number
+`minimum` | number
+`maximum` | number
 `defaultValue` | number
 
 ## Example
@@ -17,8 +17,8 @@ import type { RangeValues } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "min": null,
-  "max": null,
+  "minimum": null,
+  "maximum": null,
   "defaultValue": null,
 } satisfies RangeValues
 

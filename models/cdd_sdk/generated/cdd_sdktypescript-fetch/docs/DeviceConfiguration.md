@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `configurationId` | string
 `channels` | [Array&lt;ChannelConfiguration&gt;](ChannelConfiguration.md)
-`simpleSettings` | [Array&lt;IdAndValue&gt;](IdAndValue.md)
+`standardSettings` | [Array&lt;IdAndValue&gt;](IdAndValue.md)
 `health` | [Health](Health.md)
 
 ## Example
@@ -20,7 +20,7 @@ import type { DeviceConfiguration } from ''
 const example = {
   "configurationId": null,
   "channels": null,
-  "simpleSettings": null,
+  "standardSettings": null,
   "health": null,
 } satisfies DeviceConfiguration
 

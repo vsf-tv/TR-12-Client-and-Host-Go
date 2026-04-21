@@ -16,9 +16,9 @@ import { HttpFile } from '../http/http';
 
 export class RistCallerTransportProtocol {
     'streamId'?: RistStreamIdentifier;
-    'ip': string;
+    'address': string;
     'port': number;
-    'minimumLatencyMilliseconds': number;
+    'minimumLatencyMilliseconds'?: number;
     'encryption'?: EncryptionAes;
 
     static readonly discriminator: string | undefined = undefined;
@@ -33,8 +33,8 @@ export class RistCallerTransportProtocol {
             "format": ""
         },
         {
-            "name": "ip",
-            "baseName": "ip",
+            "name": "address",
+            "baseName": "address",
             "type": "string",
             "format": ""
         },

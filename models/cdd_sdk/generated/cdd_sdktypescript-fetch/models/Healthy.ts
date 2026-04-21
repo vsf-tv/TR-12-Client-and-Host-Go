@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface Healthy {
     /**
-     * Healthy state — only the state indicator, no additional fields needed.
+     * Healthy state — no additional fields needed.
      * @type {object}
      * @memberof Healthy
      */

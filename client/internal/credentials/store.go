@@ -210,9 +210,9 @@ func (s *Store) RotateCerts(rotate *tr12models.RotateCertificatesRequestContent)
 		}
 		needUpdate = true
 	}
-	if s.ConnSettings != nil && (rotate.MqttUri != s.ConnSettings.URI || rotate.RegionName != s.ConnSettings.Region) {
+	if s.ConnSettings != nil && (rotate.MqttUri != s.ConnSettings.URI || rotate.GetRegionName() != s.ConnSettings.Region) {
 		s.ConnSettings.URI = rotate.MqttUri
-		s.ConnSettings.Region = rotate.RegionName
+		s.ConnSettings.Region = rotate.GetRegionName()
 		csData, _ := json.Marshal(s.ConnSettings)
 		if err := os.WriteFile(s.ConnSettingsFile, csData, 0600); err != nil {
 			return false, fmt.Errorf("unable to write rotated connection_settings: %w", err)

@@ -13,10 +13,7 @@
 import { HttpFile } from '../http/http';
 
 export class EncryptionAes256 {
-    /**
-    * A 64-character hexadecimal string.
-    */
-    'passcode': string;
+    'passphrase': string;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -24,10 +21,10 @@ export class EncryptionAes256 {
 
     static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
         {
-            "name": "passcode",
-            "baseName": "passcode",
+            "name": "passphrase",
+            "baseName": "passphrase",
             "type": "string",
-            "format": ""
+            "format": "password"
         }    ];
 
     static getAttributeTypeMap() {

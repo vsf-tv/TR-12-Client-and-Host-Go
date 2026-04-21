@@ -13,7 +13,7 @@
 import { HttpFile } from '../http/http';
 
 export class RtpFecStreamConfig {
-    'ip'?: string;
+    'address'?: string;
     'port'?: number;
     'rtpPayloadType'?: number;
 
@@ -23,8 +23,8 @@ export class RtpFecStreamConfig {
 
     static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
         {
-            "name": "ip",
-            "baseName": "ip",
+            "name": "address",
+            "baseName": "address",
             "type": "string",
             "format": ""
         },

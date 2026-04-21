@@ -23,6 +23,7 @@ import (
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/config"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/db"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/models"
+	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
 )
 
 // RotationService handles background certificate rotation.
@@ -102,7 +103,7 @@ func (s *RotationService) rotateDevice(d *models.Device) error {
 	rotate := models.RotateCertificatesRequestContent{
 		MqttUri:           mqttURI,
 		DeviceCertificate: string(newCert),
-		RegionName:        "local",
+		RegionName:        tr12models.PtrString("local"),
 	}
 	payload, _ := json.Marshal(rotate)
 	topic := fmt.Sprintf("cdd/%s/certs/update", d.DeviceID)

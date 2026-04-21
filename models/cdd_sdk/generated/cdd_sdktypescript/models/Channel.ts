@@ -13,16 +13,16 @@
 import { ChannelType } from '../models/ChannelType';
 import { ProfileDefinition } from '../models/ProfileDefinition';
 import { Setting } from '../models/Setting';
-import { SupportedProtocol } from '../models/SupportedProtocol';
+import { TransportProtocolName } from '../models/TransportProtocolName';
 import { HttpFile } from '../http/http';
 
 export class Channel {
     'name': string;
     'id': string;
     'channelType'?: ChannelType;
-    'simpleSettings'?: Array<Setting>;
+    'standardSettings'?: Array<Setting>;
     'profiles'?: Array<ProfileDefinition>;
-    'connectionProtocols'?: Array<SupportedProtocol>;
+    'connectionProtocols'?: Array<TransportProtocolName>;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -48,8 +48,8 @@ export class Channel {
             "format": ""
         },
         {
-            "name": "simpleSettings",
-            "baseName": "simpleSettings",
+            "name": "standardSettings",
+            "baseName": "standardSettings",
             "type": "Array<Setting>",
             "format": ""
         },
@@ -62,7 +62,7 @@ export class Channel {
         {
             "name": "connectionProtocols",
             "baseName": "connectionProtocols",
-            "type": "Array<SupportedProtocol>",
+            "type": "Array<TransportProtocolName>",
             "format": ""
         }    ];
 

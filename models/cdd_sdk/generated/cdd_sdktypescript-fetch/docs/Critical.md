@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`critical` | [CriticalState](CriticalState.md)
+`critical` | [UnhealthyStateDescription](UnhealthyStateDescription.md)
 
 ## Example
 

@@ -6,9 +6,9 @@
 
 Name | Type
 ------------ | -------------
-`ip` | string
+`address` | string
 `port` | number
-`sourceIpFilter` | string
+`sourceAddressFilter` | string
 `rtpPayloadType` | number
 `fecConfig` | [RtpFecConfiguration](RtpFecConfiguration.md)
 
@@ -19,9 +19,9 @@ import type { RtpTransportProtocol } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "ip": null,
+  "address": null,
   "port": null,
-  "sourceIpFilter": null,
+  "sourceAddressFilter": null,
   "rtpPayloadType": null,
   "fecConfig": null,
 } satisfies RtpTransportProtocol

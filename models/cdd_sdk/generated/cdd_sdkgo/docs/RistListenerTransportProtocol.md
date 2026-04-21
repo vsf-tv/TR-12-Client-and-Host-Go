@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **StreamId** | Pointer to [**RistStreamIdentifier**](RistStreamIdentifier.md) |  | [optional] 
 **Port** | **float32** |  | 
-**MinimumLatencyMilliseconds** | **float32** |  | [default to 3000]
+**MinimumLatencyMilliseconds** | Pointer to **float32** |  | [optional] [default to 1000]
 **Encryption** | Pointer to [**EncryptionAes**](EncryptionAes.md) |  | [optional] 
 **Interface** | Pointer to **string** |  | [optional] 
 
@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 
 ### NewRistListenerTransportProtocol
 
-`func NewRistListenerTransportProtocol(port float32, minimumLatencyMilliseconds float32, ) *RistListenerTransportProtocol`
+`func NewRistListenerTransportProtocol(port float32, ) *RistListenerTransportProtocol`
 
 NewRistListenerTransportProtocol instantiates a new RistListenerTransportProtocol object
 This constructor will assign default values to properties that have it defined,
@@ -93,6 +93,11 @@ and a boolean to check if the value has been set.
 
 SetMinimumLatencyMilliseconds sets MinimumLatencyMilliseconds field to given value.
 
+### HasMinimumLatencyMilliseconds
+
+`func (o *RistListenerTransportProtocol) HasMinimumLatencyMilliseconds() bool`
+
+HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
 
 ### GetEncryption
 

@@ -328,7 +328,7 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	if len(device.DesiredConfig) > 0 {
 		var prev struct {
 			ConfigurationId string          `json:"configurationId"`
-			SimpleSettings  json.RawMessage `json:"simpleSettings"`
+			SimpleSettings  json.RawMessage `json:"standardSettings"`
 			Channels        []struct {
 				Id              string          `json:"id"`
 				ConfigurationId string          `json:"configurationId"`
@@ -354,7 +354,7 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	}
 
 	var newCfg struct {
-		SimpleSettings json.RawMessage `json:"simpleSettings"`
+		SimpleSettings json.RawMessage `json:"standardSettings"`
 		Channels       []struct {
 			Id         string          `json:"id"`
 			State      string          `json:"state"`
@@ -524,7 +524,7 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 	rotate := tr12models.RotateCertificatesRequestContent{
 		MqttUri:           mqttURI,
 		DeviceCertificate: string(newCert),
-		RegionName:        "local",
+		RegionName:        tr12models.PtrString("local"),
 	}
 	payload, _ := json.Marshal(rotate)
 	topic := fmt.Sprintf("cdd/%s/certs/update", deviceID)
@@ -544,7 +544,7 @@ func failPair(reason models.CreatePairingCodeFailureReason) *models.CreatePairin
 
 func buildHostSettings(deviceID string, pairingTimeout int) *models.HostSettings {
 	hs := tr12models.NewHostSettings(
-		"mqtt",
+		"x-amzn-mqtt-ca",
 		float32(pairingTimeout),
 		1,
 		30,
@@ -555,8 +555,8 @@ func buildHostSettings(deviceID string, pairingTimeout int) *models.HostSettings
 		fmt.Sprintf("cdd/%s/status/report", deviceID),
 		fmt.Sprintf("cdd/%s/config/actual/report", deviceID),
 		fmt.Sprintf("cdd/%s/certs/update", deviceID),
-		fmt.Sprintf("cdd/%s/deprovision/ack", deviceID), // PubDeprovisionTopic (device publishes ack here)
-		fmt.Sprintf("cdd/%s/deprovision", deviceID),      // SubDeprovisionTopic (device subscribes — host publishes command here)
+		fmt.Sprintf("cdd/%s/deprovision/ack", deviceID),
+		fmt.Sprintf("cdd/%s/deprovision", deviceID),
 		fmt.Sprintf("cdd/%s/log/subscription", deviceID),
 	)
 	log.Printf("[HOST buildHostSettings] deviceID=%s subUpdateTopic=%q", deviceID, hs.SubUpdateTopic)
@@ -641,7 +641,7 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 			Settings   json.RawMessage `json:"settings,omitempty"`
 			Connection json.RawMessage `json:"connection,omitempty"`
 		} `json:"channels"`
-		SimpleSettings []struct{ Key string `json:"key"` } `json:"simpleSettings,omitempty"`
+		SimpleSettings []struct{ Key string `json:"key"` } `json:"standardSettings,omitempty"`
 	}
 	if err := json.Unmarshal(cfgJSON, &cfg); err != nil {
 		return fmt.Errorf("invalid configuration JSON: %w", err)
@@ -651,11 +651,11 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 		Channels []struct {
 			ID                  string                            `json:"id"`
 			Name                string                            `json:"name"`
-			SimpleSettings      []struct{ ID string `json:"id"` } `json:"simpleSettings,omitempty"`
+			SimpleSettings      []struct{ ID string `json:"id"` } `json:"standardSettings,omitempty"`
 			Profiles            []struct{ ID string `json:"id"` } `json:"profiles,omitempty"`
 			ConnectionProtocols []string                          `json:"connectionProtocols,omitempty"`
 		} `json:"channels"`
-		SimpleSettings []struct{ ID string `json:"id"` } `json:"simpleSettings,omitempty"`
+		SimpleSettings []struct{ ID string `json:"id"` } `json:"standardSettings,omitempty"`
 	}
 	if err := json.Unmarshal(regJSON, &reg); err != nil {
 		return fmt.Errorf("invalid registration JSON: %w", err)
@@ -701,7 +701,7 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 
 		if len(cfgCh.Settings) > 0 {
 			var settings struct {
-				SimpleSettings []struct{ Key string `json:"key"` } `json:"simpleSettings,omitempty"`
+				SimpleSettings []struct{ Key string `json:"key"` } `json:"standardSettings,omitempty"`
 				Profile        *struct{ ID string `json:"id"` }   `json:"profile,omitempty"`
 			}
 			json.Unmarshal(cfgCh.Settings, &settings)
@@ -749,58 +749,66 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 // Required fields are marked true, optional fields are marked false.
 var protocolFieldMap = map[string]map[string]bool{
 	"srtCaller": {
-		"ip":                          true,
+		"address":                     true,
 		"port":                        true,
-		"minimumLatencyMilliseconds":  true,
+		"minimumLatencyMilliseconds":  false,
 		"streamId":                    false,
 		"encryption":                  false,
 	},
 	"srtListener": {
 		"port":                        true,
-		"minimumLatencyMilliseconds":  true,
+		"minimumLatencyMilliseconds":  false,
 		"streamId":                    false,
 		"encryption":                  false,
 		"interface":                   false,
 	},
 	"ristCaller": {
-		"ip":                          true,
+		"address":                     true,
 		"port":                        true,
-		"minimumLatencyMilliseconds":  true,
+		"minimumLatencyMilliseconds":  false,
 		"streamId":                    false,
 		"encryption":                  false,
 	},
 	"ristListener": {
 		"port":                        true,
-		"minimumLatencyMilliseconds":  true,
+		"minimumLatencyMilliseconds":  false,
 		"streamId":                    false,
 		"encryption":                  false,
 		"interface":                   false,
 	},
-	"zixiCaller": {
-		"streamId":                    true,
-		"ip":                          true,
+	"zixiPush": {
+		"streamId":                    false,
+		"address":                     true,
 		"port":                        true,
-		"minimumLatencyMilliseconds":  true,
+		"minimumLatencyMilliseconds":  false,
 		"encryption":                  false,
 	},
-	"zixiListener": {
-		"streamId":                    true,
+	"zixiPull": {
+		"streamId":                    false,
+		"address":                     true,
 		"port":                        true,
-		"minimumLatencyMilliseconds":  true,
+		"minimumLatencyMilliseconds":  false,
 		"encryption":                  false,
-		"interface":                   false,
+	},
+	"rtp": {
+		"address":                     true,
+		"port":                        true,
+		"sourceAddressFilter":         false,
+		"rtpPayloadType":              false,
+		"fecConfig":                   false,
 	},
 }
 
 // protocolKeyToRegistration maps the JSON union key (e.g. "srtCaller") to the
-// SupportedProtocol enum value in the registration (e.g. "SRT_CALLER").
+// TransportProtocolName enum value in the registration (e.g. "SRT_CALLER").
 var protocolKeyToRegistration = map[string]string{
-	"srtCaller":     "SRT_CALLER",
-	"srtListener":   "SRT_LISTENER",
-	"ristCaller":    "RIST_CALLER",
-	"ristListener":  "RIST_LISTENER",
-	"zixiCaller":    "ZIXI_CALLER",
-	"zixiListener":  "ZIXI_LISTENER",
+	"srtCaller":    "SRT_CALLER",
+	"srtListener":  "SRT_LISTENER",
+	"ristCaller":   "RIST_CALLER",
+	"ristListener": "RIST_LISTENER",
+	"zixiPush":     "ZIXI_PUSH",
+	"zixiPull":     "ZIXI_PULL",
+	"rtp":          "RTP",
 }
 
 func validateConnection(connJSON json.RawMessage, registeredProtocols []string, channelID string) error {

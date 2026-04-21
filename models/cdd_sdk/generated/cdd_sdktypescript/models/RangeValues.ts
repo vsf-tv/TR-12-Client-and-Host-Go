@@ -13,8 +13,8 @@
 import { HttpFile } from '../http/http';
 
 export class RangeValues {
-    'min': number;
-    'max': number;
+    'minimum': number;
+    'maximum': number;
     'defaultValue': number;
 
     static readonly discriminator: string | undefined = undefined;
@@ -23,14 +23,14 @@ export class RangeValues {
 
     static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
         {
-            "name": "min",
-            "baseName": "min",
+            "name": "minimum",
+            "baseName": "minimum",
             "type": "number",
             "format": "float"
         },
         {
-            "name": "max",
-            "baseName": "max",
+            "name": "maximum",
+            "baseName": "maximum",
             "type": "number",
             "format": "float"
         },

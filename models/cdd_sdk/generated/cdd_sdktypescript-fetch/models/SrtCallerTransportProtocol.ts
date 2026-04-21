@@ -38,7 +38,7 @@ export interface SrtCallerTransportProtocol {
      * @type {string}
      * @memberof SrtCallerTransportProtocol
      */
-    ip: string;
+    address: string;
     /**
      * 
      * @type {number}
@@ -50,7 +50,7 @@ export interface SrtCallerTransportProtocol {
      * @type {number}
      * @memberof SrtCallerTransportProtocol
      */
-    minimumLatencyMilliseconds: number;
+    minimumLatencyMilliseconds?: number;
     /**
      * 
      * @type {EncryptionAes}
@@ -63,9 +63,8 @@ export interface SrtCallerTransportProtocol {
  * Check if a given object implements the SrtCallerTransportProtocol interface.
  */
 export function instanceOfSrtCallerTransportProtocol(value: object): value is SrtCallerTransportProtocol {
-    if (!('ip' in value) || value['ip'] === undefined) return false;
+    if (!('address' in value) || value['address'] === undefined) return false;
     if (!('port' in value) || value['port'] === undefined) return false;
-    if (!('minimumLatencyMilliseconds' in value) || value['minimumLatencyMilliseconds'] === undefined) return false;
     return true;
 }
 
@@ -80,9 +79,9 @@ export function SrtCallerTransportProtocolFromJSONTyped(json: any, ignoreDiscrim
     return {
         
         'streamId': json['streamId'] == null ? undefined : json['streamId'],
-        'ip': json['ip'],
+        'address': json['address'],
         'port': json['port'],
-        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'],
+        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
         'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
     };
 }
@@ -99,7 +98,7 @@ export function SrtCallerTransportProtocolToJSONTyped(value?: SrtCallerTransport
     return {
         
         'streamId': value['streamId'],
-        'ip': value['ip'],
+        'address': value['address'],
         'port': value['port'],
         'minimumLatencyMilliseconds': value['minimumLatencyMilliseconds'],
         'encryption': EncryptionAesToJSON(value['encryption']),

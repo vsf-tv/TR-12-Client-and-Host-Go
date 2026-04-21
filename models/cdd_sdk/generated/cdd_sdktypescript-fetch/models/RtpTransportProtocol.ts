@@ -32,7 +32,7 @@ export interface RtpTransportProtocol {
      * @type {string}
      * @memberof RtpTransportProtocol
      */
-    ip: string;
+    address: string;
     /**
      * 
      * @type {number}
@@ -44,7 +44,7 @@ export interface RtpTransportProtocol {
      * @type {string}
      * @memberof RtpTransportProtocol
      */
-    sourceIpFilter?: string;
+    sourceAddressFilter?: string;
     /**
      * 
      * @type {number}
@@ -63,7 +63,7 @@ export interface RtpTransportProtocol {
  * Check if a given object implements the RtpTransportProtocol interface.
  */
 export function instanceOfRtpTransportProtocol(value: object): value is RtpTransportProtocol {
-    if (!('ip' in value) || value['ip'] === undefined) return false;
+    if (!('address' in value) || value['address'] === undefined) return false;
     if (!('port' in value) || value['port'] === undefined) return false;
     return true;
 }
@@ -78,9 +78,9 @@ export function RtpTransportProtocolFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'ip': json['ip'],
+        'address': json['address'],
         'port': json['port'],
-        'sourceIpFilter': json['sourceIpFilter'] == null ? undefined : json['sourceIpFilter'],
+        'sourceAddressFilter': json['sourceAddressFilter'] == null ? undefined : json['sourceAddressFilter'],
         'rtpPayloadType': json['rtpPayloadType'] == null ? undefined : json['rtpPayloadType'],
         'fecConfig': json['fecConfig'] == null ? undefined : RtpFecConfigurationFromJSON(json['fecConfig']),
     };
@@ -97,9 +97,9 @@ export function RtpTransportProtocolToJSONTyped(value?: RtpTransportProtocol | n
 
     return {
         
-        'ip': value['ip'],
+        'address': value['address'],
         'port': value['port'],
-        'sourceIpFilter': value['sourceIpFilter'],
+        'sourceAddressFilter': value['sourceAddressFilter'],
         'rtpPayloadType': value['rtpPayloadType'],
         'fecConfig': RtpFecConfigurationToJSON(value['fecConfig']),
     };

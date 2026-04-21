@@ -15,9 +15,8 @@ import { RistListener } from '../models/RistListener';
 import { Rtp } from '../models/Rtp';
 import { SrtCaller } from '../models/SrtCaller';
 import { SrtListener } from '../models/SrtListener';
-import { WebRtc } from '../models/WebRtc';
-import { ZixiCaller } from '../models/ZixiCaller';
-import { ZixiListener } from '../models/ZixiListener';
+import { ZixiPull } from '../models/ZixiPull';
+import { ZixiPush } from '../models/ZixiPush';
 import { HttpFile } from '../http/http';
 
 /**
@@ -25,7 +24,7 @@ import { HttpFile } from '../http/http';
  * Type
  * @export
  */
-export type TransportProtocol = RistCaller | RistListener | Rtp | SrtCaller | SrtListener | WebRtc | ZixiCaller | ZixiListener;
+export type TransportProtocol = RistCaller | RistListener | Rtp | SrtCaller | SrtListener | ZixiPull | ZixiPush;
 
 /**
 * @type TransportProtocolClass
@@ -36,7 +35,6 @@ export class TransportProtocolClass {
 
     static readonly mapping: {[index: string]: string} | undefined = undefined;
 }
-
 
 
 

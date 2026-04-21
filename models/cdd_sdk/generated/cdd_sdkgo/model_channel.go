@@ -24,9 +24,9 @@ type Channel struct {
 	Name string `json:"name"`
 	Id string `json:"id"`
 	ChannelType *ChannelType `json:"channelType,omitempty"`
-	SimpleSettings []Setting `json:"simpleSettings,omitempty"`
+	StandardSettings []Setting `json:"standardSettings,omitempty"`
 	Profiles []ProfileDefinition `json:"profiles,omitempty"`
-	ConnectionProtocols []SupportedProtocol `json:"connectionProtocols,omitempty"`
+	ConnectionProtocols []TransportProtocolName `json:"connectionProtocols,omitempty"`
 }
 
 type _Channel Channel
@@ -130,36 +130,36 @@ func (o *Channel) SetChannelType(v ChannelType) {
 	o.ChannelType = &v
 }
 
-// GetSimpleSettings returns the SimpleSettings field value if set, zero value otherwise.
-func (o *Channel) GetSimpleSettings() []Setting {
-	if o == nil || IsNil(o.SimpleSettings) {
+// GetStandardSettings returns the StandardSettings field value if set, zero value otherwise.
+func (o *Channel) GetStandardSettings() []Setting {
+	if o == nil || IsNil(o.StandardSettings) {
 		var ret []Setting
 		return ret
 	}
-	return o.SimpleSettings
+	return o.StandardSettings
 }
 
-// GetSimpleSettingsOk returns a tuple with the SimpleSettings field value if set, nil otherwise
+// GetStandardSettingsOk returns a tuple with the StandardSettings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetSimpleSettingsOk() ([]Setting, bool) {
-	if o == nil || IsNil(o.SimpleSettings) {
+func (o *Channel) GetStandardSettingsOk() ([]Setting, bool) {
+	if o == nil || IsNil(o.StandardSettings) {
 		return nil, false
 	}
-	return o.SimpleSettings, true
+	return o.StandardSettings, true
 }
 
-// HasSimpleSettings returns a boolean if a field has been set.
-func (o *Channel) HasSimpleSettings() bool {
-	if o != nil && !IsNil(o.SimpleSettings) {
+// HasStandardSettings returns a boolean if a field has been set.
+func (o *Channel) HasStandardSettings() bool {
+	if o != nil && !IsNil(o.StandardSettings) {
 		return true
 	}
 
 	return false
 }
 
-// SetSimpleSettings gets a reference to the given []Setting and assigns it to the SimpleSettings field.
-func (o *Channel) SetSimpleSettings(v []Setting) {
-	o.SimpleSettings = v
+// SetStandardSettings gets a reference to the given []Setting and assigns it to the StandardSettings field.
+func (o *Channel) SetStandardSettings(v []Setting) {
+	o.StandardSettings = v
 }
 
 // GetProfiles returns the Profiles field value if set, zero value otherwise.
@@ -195,9 +195,9 @@ func (o *Channel) SetProfiles(v []ProfileDefinition) {
 }
 
 // GetConnectionProtocols returns the ConnectionProtocols field value if set, zero value otherwise.
-func (o *Channel) GetConnectionProtocols() []SupportedProtocol {
+func (o *Channel) GetConnectionProtocols() []TransportProtocolName {
 	if o == nil || IsNil(o.ConnectionProtocols) {
-		var ret []SupportedProtocol
+		var ret []TransportProtocolName
 		return ret
 	}
 	return o.ConnectionProtocols
@@ -205,7 +205,7 @@ func (o *Channel) GetConnectionProtocols() []SupportedProtocol {
 
 // GetConnectionProtocolsOk returns a tuple with the ConnectionProtocols field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetConnectionProtocolsOk() ([]SupportedProtocol, bool) {
+func (o *Channel) GetConnectionProtocolsOk() ([]TransportProtocolName, bool) {
 	if o == nil || IsNil(o.ConnectionProtocols) {
 		return nil, false
 	}
@@ -221,8 +221,8 @@ func (o *Channel) HasConnectionProtocols() bool {
 	return false
 }
 
-// SetConnectionProtocols gets a reference to the given []SupportedProtocol and assigns it to the ConnectionProtocols field.
-func (o *Channel) SetConnectionProtocols(v []SupportedProtocol) {
+// SetConnectionProtocols gets a reference to the given []TransportProtocolName and assigns it to the ConnectionProtocols field.
+func (o *Channel) SetConnectionProtocols(v []TransportProtocolName) {
 	o.ConnectionProtocols = v
 }
 
@@ -241,8 +241,8 @@ func (o Channel) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ChannelType) {
 		toSerialize["channelType"] = o.ChannelType
 	}
-	if !IsNil(o.SimpleSettings) {
-		toSerialize["simpleSettings"] = o.SimpleSettings
+	if !IsNil(o.StandardSettings) {
+		toSerialize["standardSettings"] = o.StandardSettings
 	}
 	if !IsNil(o.Profiles) {
 		toSerialize["profiles"] = o.Profiles

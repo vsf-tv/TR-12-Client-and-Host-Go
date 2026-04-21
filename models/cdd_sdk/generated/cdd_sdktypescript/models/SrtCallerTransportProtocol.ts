@@ -15,9 +15,9 @@ import { HttpFile } from '../http/http';
 
 export class SrtCallerTransportProtocol {
     'streamId'?: string;
-    'ip': string;
+    'address': string;
     'port': number;
-    'minimumLatencyMilliseconds': number;
+    'minimumLatencyMilliseconds'?: number;
     'encryption'?: EncryptionAes;
 
     static readonly discriminator: string | undefined = undefined;
@@ -32,8 +32,8 @@ export class SrtCallerTransportProtocol {
             "format": ""
         },
         {
-            "name": "ip",
-            "baseName": "ip",
+            "name": "address",
+            "baseName": "address",
             "type": "string",
             "format": ""
         },

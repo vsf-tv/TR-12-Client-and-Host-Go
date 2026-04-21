@@ -7,8 +7,8 @@
 Name | Type
 ------------ | -------------
 `healthy` | object
-`degraded` | [DegradedState](DegradedState.md)
-`critical` | [CriticalState](CriticalState.md)
+`degraded` | [UnhealthyStateDescription](UnhealthyStateDescription.md)
+`critical` | [UnhealthyStateDescription](UnhealthyStateDescription.md)
 
 ## Example
 

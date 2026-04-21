@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Channels** | [**[]Channel**](Channel.md) |  | 
-**SimpleSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
+**StandardSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
 **Thumbnails** | Pointer to [**[]Thumbnail**](Thumbnail.md) |  | [optional] 
 
 ## Methods
@@ -47,30 +47,30 @@ and a boolean to check if the value has been set.
 SetChannels sets Channels field to given value.
 
 
-### GetSimpleSettings
+### GetStandardSettings
 
-`func (o *DeviceRegistration) GetSimpleSettings() []Setting`
+`func (o *DeviceRegistration) GetStandardSettings() []Setting`
 
-GetSimpleSettings returns the SimpleSettings field if non-nil, zero value otherwise.
+GetStandardSettings returns the StandardSettings field if non-nil, zero value otherwise.
 
-### GetSimpleSettingsOk
+### GetStandardSettingsOk
 
-`func (o *DeviceRegistration) GetSimpleSettingsOk() (*[]Setting, bool)`
+`func (o *DeviceRegistration) GetStandardSettingsOk() (*[]Setting, bool)`
 
-GetSimpleSettingsOk returns a tuple with the SimpleSettings field if it's non-nil, zero value otherwise
+GetStandardSettingsOk returns a tuple with the StandardSettings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetSimpleSettings
+### SetStandardSettings
 
-`func (o *DeviceRegistration) SetSimpleSettings(v []Setting)`
+`func (o *DeviceRegistration) SetStandardSettings(v []Setting)`
 
-SetSimpleSettings sets SimpleSettings field to given value.
+SetStandardSettings sets StandardSettings field to given value.
 
-### HasSimpleSettings
+### HasStandardSettings
 
-`func (o *DeviceRegistration) HasSimpleSettings() bool`
+`func (o *DeviceRegistration) HasStandardSettings() bool`
 
-HasSimpleSettings returns a boolean if a field has been set.
+HasStandardSettings returns a boolean if a field has been set.
 
 ### GetThumbnails
 

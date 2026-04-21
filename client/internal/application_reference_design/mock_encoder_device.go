@@ -220,10 +220,10 @@ func (e *Encoder) HandleTransportConfigChange(channelID string, connection *cdds
 		return
 	}
 	srt := tp.SrtCaller.SrtCaller
-	ip := srt.Ip
+	ip := srt.Address
 	port := int(srt.Port)
 	streamID := srt.GetStreamId()
-	latencyMs := int(srt.MinimumLatencyMilliseconds)
+	latencyMs := int(srt.GetMinimumLatencyMilliseconds())
 	fmt.Printf("[%s] Got SRT config: ip=%s port=%d streamId=%s latencyMs=%d\n", channelID, ip, port, streamID, latencyMs)
 	e.mu.Lock()
 	ch := e.getOrCreateChannel(channelID)
@@ -279,11 +279,12 @@ func (e *Encoder) GetChannelConnection(channelID string) *cddsdkgo.Connection {
 	}
 
 	srtProto := cddsdkgo.SrtCallerTransportProtocol{
-		Ip:                         ip,
-		Port:                       float32(port),
-		MinimumLatencyMilliseconds: float32(latencyMs),
+		Address: ip,
+		Port:    float32(port),
 	}
 	srtProto.StreamId = &streamID
+	latencyF := float32(latencyMs)
+	srtProto.MinimumLatencyMilliseconds = &latencyF
 	tp := cddsdkgo.SrtCallerAsTransportProtocol(cddsdkgo.NewSrtCaller(srtProto))
 	conn := cddsdkgo.NewConnection()
 	conn.SetTransportProtocol(tp)
@@ -300,13 +301,13 @@ func (e *Encoder) SetChannelHealth(channelID string, level string, messages []st
 	componentName := "encoder-" + channelID
 	var h cddsdkgo.Health
 	if level == "CRITICAL" {
-		h = cddsdkgo.CriticalAsHealth(cddsdkgo.NewCritical(cddsdkgo.CriticalState{
+		h = cddsdkgo.CriticalAsHealth(cddsdkgo.NewCritical(cddsdkgo.UnhealthyStateDescription{
 			Messages:      messages,
 			Timestamp:     now,
 			ComponentName: componentName,
 		}))
 	} else {
-		h = cddsdkgo.DegradedAsHealth(cddsdkgo.NewDegraded(cddsdkgo.DegradedState{
+		h = cddsdkgo.DegradedAsHealth(cddsdkgo.NewDegraded(cddsdkgo.UnhealthyStateDescription{
 			Messages:      messages,
 			Timestamp:     now,
 			ComponentName: componentName,

@@ -45,7 +45,7 @@ export interface RistCallerTransportProtocol {
      * @type {string}
      * @memberof RistCallerTransportProtocol
      */
-    ip: string;
+    address: string;
     /**
      * 
      * @type {number}
@@ -57,7 +57,7 @@ export interface RistCallerTransportProtocol {
      * @type {number}
      * @memberof RistCallerTransportProtocol
      */
-    minimumLatencyMilliseconds: number;
+    minimumLatencyMilliseconds?: number;
     /**
      * 
      * @type {EncryptionAes}
@@ -70,9 +70,8 @@ export interface RistCallerTransportProtocol {
  * Check if a given object implements the RistCallerTransportProtocol interface.
  */
 export function instanceOfRistCallerTransportProtocol(value: object): value is RistCallerTransportProtocol {
-    if (!('ip' in value) || value['ip'] === undefined) return false;
+    if (!('address' in value) || value['address'] === undefined) return false;
     if (!('port' in value) || value['port'] === undefined) return false;
-    if (!('minimumLatencyMilliseconds' in value) || value['minimumLatencyMilliseconds'] === undefined) return false;
     return true;
 }
 
@@ -87,9 +86,9 @@ export function RistCallerTransportProtocolFromJSONTyped(json: any, ignoreDiscri
     return {
         
         'streamId': json['streamId'] == null ? undefined : RistStreamIdentifierFromJSON(json['streamId']),
-        'ip': json['ip'],
+        'address': json['address'],
         'port': json['port'],
-        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'],
+        'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
         'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
     };
 }
@@ -106,7 +105,7 @@ export function RistCallerTransportProtocolToJSONTyped(value?: RistCallerTranspo
     return {
         
         'streamId': RistStreamIdentifierToJSON(value['streamId']),
-        'ip': value['ip'],
+        'address': value['address'],
         'port': value['port'],
         'minimumLatencyMilliseconds': value['minimumLatencyMilliseconds'],
         'encryption': EncryptionAesToJSON(value['encryption']),

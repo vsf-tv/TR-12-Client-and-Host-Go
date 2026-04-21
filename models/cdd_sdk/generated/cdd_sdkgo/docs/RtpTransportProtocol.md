@@ -4,9 +4,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Ip** | **string** |  | 
+**Address** | **string** |  | 
 **Port** | **float32** |  | 
-**SourceIpFilter** | Pointer to **string** |  | [optional] 
+**SourceAddressFilter** | Pointer to **string** |  | [optional] 
 **RtpPayloadType** | Pointer to **float32** |  | [optional] 
 **FecConfig** | Pointer to [**RtpFecConfiguration**](RtpFecConfiguration.md) |  | [optional] 
 
@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 
 ### NewRtpTransportProtocol
 
-`func NewRtpTransportProtocol(ip string, port float32, ) *RtpTransportProtocol`
+`func NewRtpTransportProtocol(address string, port float32, ) *RtpTransportProtocol`
 
 NewRtpTransportProtocol instantiates a new RtpTransportProtocol object
 This constructor will assign default values to properties that have it defined,
@@ -29,24 +29,24 @@ NewRtpTransportProtocolWithDefaults instantiates a new RtpTransportProtocol obje
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetIp
+### GetAddress
 
-`func (o *RtpTransportProtocol) GetIp() string`
+`func (o *RtpTransportProtocol) GetAddress() string`
 
-GetIp returns the Ip field if non-nil, zero value otherwise.
+GetAddress returns the Address field if non-nil, zero value otherwise.
 
-### GetIpOk
+### GetAddressOk
 
-`func (o *RtpTransportProtocol) GetIpOk() (*string, bool)`
+`func (o *RtpTransportProtocol) GetAddressOk() (*string, bool)`
 
-GetIpOk returns a tuple with the Ip field if it's non-nil, zero value otherwise
+GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIp
+### SetAddress
 
-`func (o *RtpTransportProtocol) SetIp(v string)`
+`func (o *RtpTransportProtocol) SetAddress(v string)`
 
-SetIp sets Ip field to given value.
+SetAddress sets Address field to given value.
 
 
 ### GetPort
@@ -69,30 +69,30 @@ and a boolean to check if the value has been set.
 SetPort sets Port field to given value.
 
 
-### GetSourceIpFilter
+### GetSourceAddressFilter
 
-`func (o *RtpTransportProtocol) GetSourceIpFilter() string`
+`func (o *RtpTransportProtocol) GetSourceAddressFilter() string`
 
-GetSourceIpFilter returns the SourceIpFilter field if non-nil, zero value otherwise.
+GetSourceAddressFilter returns the SourceAddressFilter field if non-nil, zero value otherwise.
 
-### GetSourceIpFilterOk
+### GetSourceAddressFilterOk
 
-`func (o *RtpTransportProtocol) GetSourceIpFilterOk() (*string, bool)`
+`func (o *RtpTransportProtocol) GetSourceAddressFilterOk() (*string, bool)`
 
-GetSourceIpFilterOk returns a tuple with the SourceIpFilter field if it's non-nil, zero value otherwise
+GetSourceAddressFilterOk returns a tuple with the SourceAddressFilter field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetSourceIpFilter
+### SetSourceAddressFilter
 
-`func (o *RtpTransportProtocol) SetSourceIpFilter(v string)`
+`func (o *RtpTransportProtocol) SetSourceAddressFilter(v string)`
 
-SetSourceIpFilter sets SourceIpFilter field to given value.
+SetSourceAddressFilter sets SourceAddressFilter field to given value.
 
-### HasSourceIpFilter
+### HasSourceAddressFilter
 
-`func (o *RtpTransportProtocol) HasSourceIpFilter() bool`
+`func (o *RtpTransportProtocol) HasSourceAddressFilter() bool`
 
-HasSourceIpFilter returns a boolean if a field has been set.
+HasSourceAddressFilter returns a boolean if a field has been set.
 
 ### GetRtpPayloadType
 

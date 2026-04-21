@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ConfigurationId** | **string** |  | 
 **Channels** | [**[]ChannelConfiguration**](ChannelConfiguration.md) |  | 
-**SimpleSettings** | Pointer to [**[]IdAndValue**](IdAndValue.md) |  | [optional] 
+**StandardSettings** | Pointer to [**[]IdAndValue**](IdAndValue.md) |  | [optional] 
 **Health** | Pointer to [**Health**](Health.md) |  | [optional] 
 
 ## Methods
@@ -68,30 +68,30 @@ and a boolean to check if the value has been set.
 SetChannels sets Channels field to given value.
 
 
-### GetSimpleSettings
+### GetStandardSettings
 
-`func (o *DeviceConfiguration) GetSimpleSettings() []IdAndValue`
+`func (o *DeviceConfiguration) GetStandardSettings() []IdAndValue`
 
-GetSimpleSettings returns the SimpleSettings field if non-nil, zero value otherwise.
+GetStandardSettings returns the StandardSettings field if non-nil, zero value otherwise.
 
-### GetSimpleSettingsOk
+### GetStandardSettingsOk
 
-`func (o *DeviceConfiguration) GetSimpleSettingsOk() (*[]IdAndValue, bool)`
+`func (o *DeviceConfiguration) GetStandardSettingsOk() (*[]IdAndValue, bool)`
 
-GetSimpleSettingsOk returns a tuple with the SimpleSettings field if it's non-nil, zero value otherwise
+GetStandardSettingsOk returns a tuple with the StandardSettings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetSimpleSettings
+### SetStandardSettings
 
-`func (o *DeviceConfiguration) SetSimpleSettings(v []IdAndValue)`
+`func (o *DeviceConfiguration) SetStandardSettings(v []IdAndValue)`
 
-SetSimpleSettings sets SimpleSettings field to given value.
+SetStandardSettings sets StandardSettings field to given value.
 
-### HasSimpleSettings
+### HasStandardSettings
 
-`func (o *DeviceConfiguration) HasSimpleSettings() bool`
+`func (o *DeviceConfiguration) HasStandardSettings() bool`
 
-HasSimpleSettings returns a boolean if a field has been set.
+HasStandardSettings returns a boolean if a field has been set.
 
 ### GetHealth
 

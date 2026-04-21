@@ -23,7 +23,7 @@ var _ MappedNullable = &DeviceConfiguration{}
 type DeviceConfiguration struct {
 	ConfigurationId string `json:"configurationId"`
 	Channels []ChannelConfiguration `json:"channels"`
-	SimpleSettings []IdAndValue `json:"simpleSettings,omitempty"`
+	StandardSettings []IdAndValue `json:"standardSettings,omitempty"`
 	Health *Health `json:"health,omitempty"`
 }
 
@@ -96,36 +96,36 @@ func (o *DeviceConfiguration) SetChannels(v []ChannelConfiguration) {
 	o.Channels = v
 }
 
-// GetSimpleSettings returns the SimpleSettings field value if set, zero value otherwise.
-func (o *DeviceConfiguration) GetSimpleSettings() []IdAndValue {
-	if o == nil || IsNil(o.SimpleSettings) {
+// GetStandardSettings returns the StandardSettings field value if set, zero value otherwise.
+func (o *DeviceConfiguration) GetStandardSettings() []IdAndValue {
+	if o == nil || IsNil(o.StandardSettings) {
 		var ret []IdAndValue
 		return ret
 	}
-	return o.SimpleSettings
+	return o.StandardSettings
 }
 
-// GetSimpleSettingsOk returns a tuple with the SimpleSettings field value if set, nil otherwise
+// GetStandardSettingsOk returns a tuple with the StandardSettings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *DeviceConfiguration) GetSimpleSettingsOk() ([]IdAndValue, bool) {
-	if o == nil || IsNil(o.SimpleSettings) {
+func (o *DeviceConfiguration) GetStandardSettingsOk() ([]IdAndValue, bool) {
+	if o == nil || IsNil(o.StandardSettings) {
 		return nil, false
 	}
-	return o.SimpleSettings, true
+	return o.StandardSettings, true
 }
 
-// HasSimpleSettings returns a boolean if a field has been set.
-func (o *DeviceConfiguration) HasSimpleSettings() bool {
-	if o != nil && !IsNil(o.SimpleSettings) {
+// HasStandardSettings returns a boolean if a field has been set.
+func (o *DeviceConfiguration) HasStandardSettings() bool {
+	if o != nil && !IsNil(o.StandardSettings) {
 		return true
 	}
 
 	return false
 }
 
-// SetSimpleSettings gets a reference to the given []IdAndValue and assigns it to the SimpleSettings field.
-func (o *DeviceConfiguration) SetSimpleSettings(v []IdAndValue) {
-	o.SimpleSettings = v
+// SetStandardSettings gets a reference to the given []IdAndValue and assigns it to the StandardSettings field.
+func (o *DeviceConfiguration) SetStandardSettings(v []IdAndValue) {
+	o.StandardSettings = v
 }
 
 // GetHealth returns the Health field value if set, zero value otherwise.
@@ -172,8 +172,8 @@ func (o DeviceConfiguration) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["configurationId"] = o.ConfigurationId
 	toSerialize["channels"] = o.Channels
-	if !IsNil(o.SimpleSettings) {
-		toSerialize["simpleSettings"] = o.SimpleSettings
+	if !IsNil(o.StandardSettings) {
+		toSerialize["standardSettings"] = o.StandardSettings
 	}
 	if !IsNil(o.Health) {
 		toSerialize["health"] = o.Health

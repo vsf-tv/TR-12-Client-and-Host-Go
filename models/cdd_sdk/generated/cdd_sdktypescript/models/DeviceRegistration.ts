@@ -17,7 +17,7 @@ import { HttpFile } from '../http/http';
 
 export class DeviceRegistration {
     'channels': Array<Channel>;
-    'simpleSettings'?: Array<Setting>;
+    'standardSettings'?: Array<Setting>;
     'thumbnails'?: Array<Thumbnail>;
 
     static readonly discriminator: string | undefined = undefined;
@@ -32,8 +32,8 @@ export class DeviceRegistration {
             "format": ""
         },
         {
-            "name": "simpleSettings",
-            "baseName": "simpleSettings",
+            "name": "standardSettings",
+            "baseName": "standardSettings",
             "type": "Array<Setting>",
             "format": ""
         },

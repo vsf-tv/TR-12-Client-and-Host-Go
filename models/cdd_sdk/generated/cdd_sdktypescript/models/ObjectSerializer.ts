@@ -2,6 +2,7 @@ export * from '../models/Aes128';
 export * from '../models/Aes256';
 export * from '../models/Channel';
 export * from '../models/ChannelConfiguration';
+export * from '../models/ChannelProfile';
 export * from '../models/ChannelState';
 export * from '../models/ChannelStatus';
 export * from '../models/ChannelType';
@@ -9,13 +10,13 @@ export * from '../models/ConfigurationData';
 export * from '../models/ConnectRequestContent';
 export * from '../models/ConnectResponseContent';
 export * from '../models/Connection';
+export * from '../models/Critical';
+export * from '../models/Degraded';
 export * from '../models/DeprovisionResponseContent';
 export * from '../models/DeviceConfiguration';
 export * from '../models/DeviceRegistration';
 export * from '../models/DeviceStatus';
 export * from '../models/DisconnectResponseContent';
-export * from '../models/DtlsFingerprint';
-export * from '../models/DtlsSetupRole';
 export * from '../models/EncryptionAes';
 export * from '../models/EncryptionAes128';
 export * from '../models/EncryptionAes256';
@@ -24,9 +25,7 @@ export * from '../models/ErrorDetails';
 export * from '../models/GetConfigurationResponseContent';
 export * from '../models/GetConnectionStatusResponseContent';
 export * from '../models/Health';
-export * from '../models/HealthLevel';
-export * from '../models/IceParameters';
-export * from '../models/IceServer';
+export * from '../models/Healthy';
 export * from '../models/IdAndValue';
 export * from '../models/Profile';
 export * from '../models/ProfileDefinition';
@@ -45,32 +44,29 @@ export * from '../models/RtpFecConfiguration';
 export * from '../models/RtpFecStreamConfig';
 export * from '../models/RtpTransportProtocol';
 export * from '../models/Setting';
-export * from '../models/SettingProfile';
 export * from '../models/SettingsChoice';
-export * from '../models/SimpleSettings';
 export * from '../models/SrtCaller';
 export * from '../models/SrtCallerTransportProtocol';
 export * from '../models/SrtListener';
 export * from '../models/SrtListenerTransportProtocol';
+export * from '../models/StandardSettings';
 export * from '../models/StatusValue';
 export * from '../models/StreamId';
-export * from '../models/SupportedProtocol';
 export * from '../models/SynchronizationSource';
 export * from '../models/Thumbnail';
 export * from '../models/TransportProtocol';
-export * from '../models/WebRtc';
-export * from '../models/WebRtcFecConfig';
-export * from '../models/WebRtcFecMechanism';
-export * from '../models/WebRtcTransportProtocol';
-export * from '../models/ZixiCaller';
-export * from '../models/ZixiCallerTransportProtocol';
-export * from '../models/ZixiListener';
-export * from '../models/ZixiListenerTransportProtocol';
+export * from '../models/TransportProtocolName';
+export * from '../models/UnhealthyStateDescription';
+export * from '../models/ZixiPull';
+export * from '../models/ZixiPullTransportProtocol';
+export * from '../models/ZixiPush';
+export * from '../models/ZixiPushTransportProtocol';
 
 import { Aes128 } from '../models/Aes128';
 import { Aes256 } from '../models/Aes256';
 import { Channel       } from '../models/Channel';
 import { ChannelConfiguration       } from '../models/ChannelConfiguration';
+import { ChannelProfile } from '../models/ChannelProfile';
 import { ChannelState } from '../models/ChannelState';
 import { ChannelStatus    } from '../models/ChannelStatus';
 import { ChannelType } from '../models/ChannelType';
@@ -78,13 +74,13 @@ import { ConfigurationData } from '../models/ConfigurationData';
 import { ConnectRequestContent } from '../models/ConnectRequestContent';
 import { ConnectResponseContent } from '../models/ConnectResponseContent';
 import { Connection } from '../models/Connection';
+import { Critical } from '../models/Critical';
+import { Degraded } from '../models/Degraded';
 import { DeprovisionResponseContent } from '../models/DeprovisionResponseContent';
 import { DeviceConfiguration } from '../models/DeviceConfiguration';
 import { DeviceRegistration } from '../models/DeviceRegistration';
 import { DeviceStatus } from '../models/DeviceStatus';
 import { DisconnectResponseContent } from '../models/DisconnectResponseContent';
-import { DtlsFingerprint } from '../models/DtlsFingerprint';
-import { DtlsSetupRole } from '../models/DtlsSetupRole';
 import { EncryptionAesClass } from '../models/EncryptionAes';
 import { EncryptionAes128 } from '../models/EncryptionAes128';
 import { EncryptionAes256 } from '../models/EncryptionAes256';
@@ -92,10 +88,8 @@ import { EnumValues } from '../models/EnumValues';
 import { ErrorDetails } from '../models/ErrorDetails';
 import { GetConfigurationResponseContent } from '../models/GetConfigurationResponseContent';
 import { GetConnectionStatusResponseContent } from '../models/GetConnectionStatusResponseContent';
-import { Health     } from '../models/Health';
-import { HealthLevel } from '../models/HealthLevel';
-import { IceParameters } from '../models/IceParameters';
-import { IceServer } from '../models/IceServer';
+import { HealthClass } from '../models/Health';
+import { Healthy } from '../models/Healthy';
 import { IdAndValue } from '../models/IdAndValue';
 import { Profile } from '../models/Profile';
 import { ProfileDefinition } from '../models/ProfileDefinition';
@@ -114,27 +108,23 @@ import { RtpFecConfiguration } from '../models/RtpFecConfiguration';
 import { RtpFecStreamConfig } from '../models/RtpFecStreamConfig';
 import { RtpTransportProtocol } from '../models/RtpTransportProtocol';
 import { Setting } from '../models/Setting';
-import { SettingProfile } from '../models/SettingProfile';
 import { SettingsChoiceClass } from '../models/SettingsChoice';
-import { SimpleSettings } from '../models/SimpleSettings';
 import { SrtCaller } from '../models/SrtCaller';
 import { SrtCallerTransportProtocol } from '../models/SrtCallerTransportProtocol';
 import { SrtListener } from '../models/SrtListener';
 import { SrtListenerTransportProtocol } from '../models/SrtListenerTransportProtocol';
+import { StandardSettings } from '../models/StandardSettings';
 import { StatusValue } from '../models/StatusValue';
 import { StreamId } from '../models/StreamId';
-import { SupportedProtocol } from '../models/SupportedProtocol';
 import { SynchronizationSource } from '../models/SynchronizationSource';
 import { Thumbnail } from '../models/Thumbnail';
 import { TransportProtocolClass } from '../models/TransportProtocol';
-import { WebRtc } from '../models/WebRtc';
-import { WebRtcFecConfig     } from '../models/WebRtcFecConfig';
-import { WebRtcFecMechanism } from '../models/WebRtcFecMechanism';
-import { WebRtcTransportProtocol       } from '../models/WebRtcTransportProtocol';
-import { ZixiCaller } from '../models/ZixiCaller';
-import { ZixiCallerTransportProtocol } from '../models/ZixiCallerTransportProtocol';
-import { ZixiListener } from '../models/ZixiListener';
-import { ZixiListenerTransportProtocol } from '../models/ZixiListenerTransportProtocol';
+import { TransportProtocolName } from '../models/TransportProtocolName';
+import { UnhealthyStateDescription } from '../models/UnhealthyStateDescription';
+import { ZixiPull } from '../models/ZixiPull';
+import { ZixiPullTransportProtocol } from '../models/ZixiPullTransportProtocol';
+import { ZixiPush } from '../models/ZixiPush';
+import { ZixiPushTransportProtocol } from '../models/ZixiPushTransportProtocol';
 
 /* tslint:disable:no-unused-variable */
 let primitives = [
@@ -151,10 +141,7 @@ let primitives = [
 let enumsMap: Set<string> = new Set<string>([
     "ChannelState",
     "ChannelType",
-    "DtlsSetupRole",
-    "HealthLevel",
-    "SupportedProtocol",
-    "WebRtcFecMechanism",
+    "TransportProtocolName",
 ]);
 
 let typeMap: {[index: string]: any} = {
@@ -162,17 +149,19 @@ let typeMap: {[index: string]: any} = {
     "Aes256": Aes256,
     "Channel": Channel,
     "ChannelConfiguration": ChannelConfiguration,
+    "ChannelProfile": ChannelProfile,
     "ChannelStatus": ChannelStatus,
     "ConfigurationData": ConfigurationData,
     "ConnectRequestContent": ConnectRequestContent,
     "ConnectResponseContent": ConnectResponseContent,
     "Connection": Connection,
+    "Critical": Critical,
+    "Degraded": Degraded,
     "DeprovisionResponseContent": DeprovisionResponseContent,
     "DeviceConfiguration": DeviceConfiguration,
     "DeviceRegistration": DeviceRegistration,
     "DeviceStatus": DeviceStatus,
     "DisconnectResponseContent": DisconnectResponseContent,
-    "DtlsFingerprint": DtlsFingerprint,
     "EncryptionAes": EncryptionAesClass,
     "EncryptionAes128": EncryptionAes128,
     "EncryptionAes256": EncryptionAes256,
@@ -180,9 +169,8 @@ let typeMap: {[index: string]: any} = {
     "ErrorDetails": ErrorDetails,
     "GetConfigurationResponseContent": GetConfigurationResponseContent,
     "GetConnectionStatusResponseContent": GetConnectionStatusResponseContent,
-    "Health": Health,
-    "IceParameters": IceParameters,
-    "IceServer": IceServer,
+    "Health": HealthClass,
+    "Healthy": Healthy,
     "IdAndValue": IdAndValue,
     "Profile": Profile,
     "ProfileDefinition": ProfileDefinition,
@@ -201,25 +189,22 @@ let typeMap: {[index: string]: any} = {
     "RtpFecStreamConfig": RtpFecStreamConfig,
     "RtpTransportProtocol": RtpTransportProtocol,
     "Setting": Setting,
-    "SettingProfile": SettingProfile,
     "SettingsChoice": SettingsChoiceClass,
-    "SimpleSettings": SimpleSettings,
     "SrtCaller": SrtCaller,
     "SrtCallerTransportProtocol": SrtCallerTransportProtocol,
     "SrtListener": SrtListener,
     "SrtListenerTransportProtocol": SrtListenerTransportProtocol,
+    "StandardSettings": StandardSettings,
     "StatusValue": StatusValue,
     "StreamId": StreamId,
     "SynchronizationSource": SynchronizationSource,
     "Thumbnail": Thumbnail,
     "TransportProtocol": TransportProtocolClass,
-    "WebRtc": WebRtc,
-    "WebRtcFecConfig": WebRtcFecConfig,
-    "WebRtcTransportProtocol": WebRtcTransportProtocol,
-    "ZixiCaller": ZixiCaller,
-    "ZixiCallerTransportProtocol": ZixiCallerTransportProtocol,
-    "ZixiListener": ZixiListener,
-    "ZixiListenerTransportProtocol": ZixiListenerTransportProtocol,
+    "UnhealthyStateDescription": UnhealthyStateDescription,
+    "ZixiPull": ZixiPull,
+    "ZixiPullTransportProtocol": ZixiPullTransportProtocol,
+    "ZixiPush": ZixiPush,
+    "ZixiPushTransportProtocol": ZixiPushTransportProtocol,
 }
 
 type MimeTypeDescriptor = {

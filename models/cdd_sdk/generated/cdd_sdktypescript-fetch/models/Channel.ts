@@ -20,6 +20,13 @@ import {
     SettingToJSON,
     SettingToJSONTyped,
 } from './Setting';
+import type { TransportProtocolName } from './TransportProtocolName';
+import {
+    TransportProtocolNameFromJSON,
+    TransportProtocolNameFromJSONTyped,
+    TransportProtocolNameToJSON,
+    TransportProtocolNameToJSONTyped,
+} from './TransportProtocolName';
 import type { ProfileDefinition } from './ProfileDefinition';
 import {
     ProfileDefinitionFromJSON,
@@ -27,13 +34,6 @@ import {
     ProfileDefinitionToJSON,
     ProfileDefinitionToJSONTyped,
 } from './ProfileDefinition';
-import type { SupportedProtocol } from './SupportedProtocol';
-import {
-    SupportedProtocolFromJSON,
-    SupportedProtocolFromJSONTyped,
-    SupportedProtocolToJSON,
-    SupportedProtocolToJSONTyped,
-} from './SupportedProtocol';
 import type { ChannelType } from './ChannelType';
 import {
     ChannelTypeFromJSON,
@@ -71,7 +71,7 @@ export interface Channel {
      * @type {Array<Setting>}
      * @memberof Channel
      */
-    simpleSettings?: Array<Setting>;
+    standardSettings?: Array<Setting>;
     /**
      * 
      * @type {Array<ProfileDefinition>}
@@ -80,10 +80,10 @@ export interface Channel {
     profiles?: Array<ProfileDefinition>;
     /**
      * 
-     * @type {Array<SupportedProtocol>}
+     * @type {Array<TransportProtocolName>}
      * @memberof Channel
      */
-    connectionProtocols?: Array<SupportedProtocol>;
+    connectionProtocols?: Array<TransportProtocolName>;
 }
 
 
@@ -110,9 +110,9 @@ export function ChannelFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'name': json['name'],
         'id': json['id'],
         'channelType': json['channelType'] == null ? undefined : ChannelTypeFromJSON(json['channelType']),
-        'simpleSettings': json['simpleSettings'] == null ? undefined : ((json['simpleSettings'] as Array<any>).map(SettingFromJSON)),
+        'standardSettings': json['standardSettings'] == null ? undefined : ((json['standardSettings'] as Array<any>).map(SettingFromJSON)),
         'profiles': json['profiles'] == null ? undefined : ((json['profiles'] as Array<any>).map(ProfileDefinitionFromJSON)),
-        'connectionProtocols': json['connectionProtocols'] == null ? undefined : ((json['connectionProtocols'] as Array<any>).map(SupportedProtocolFromJSON)),
+        'connectionProtocols': json['connectionProtocols'] == null ? undefined : ((json['connectionProtocols'] as Array<any>).map(TransportProtocolNameFromJSON)),
     };
 }
 
@@ -130,9 +130,9 @@ export function ChannelToJSONTyped(value?: Channel | null, ignoreDiscriminator: 
         'name': value['name'],
         'id': value['id'],
         'channelType': ChannelTypeToJSON(value['channelType']),
-        'simpleSettings': value['simpleSettings'] == null ? undefined : ((value['simpleSettings'] as Array<any>).map(SettingToJSON)),
+        'standardSettings': value['standardSettings'] == null ? undefined : ((value['standardSettings'] as Array<any>).map(SettingToJSON)),
         'profiles': value['profiles'] == null ? undefined : ((value['profiles'] as Array<any>).map(ProfileDefinitionToJSON)),
-        'connectionProtocols': value['connectionProtocols'] == null ? undefined : ((value['connectionProtocols'] as Array<any>).map(SupportedProtocolToJSON)),
+        'connectionProtocols': value['connectionProtocols'] == null ? undefined : ((value['connectionProtocols'] as Array<any>).map(TransportProtocolNameToJSON)),
     };
 }
 

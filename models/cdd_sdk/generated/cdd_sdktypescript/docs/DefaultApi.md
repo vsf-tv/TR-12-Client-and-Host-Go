@@ -36,11 +36,11 @@ const request: DefaultApiConnectRequest = {
           name: "name_example",
           id: "id_example",
           channelType: "SOURCE",
-          simpleSettings: [
+          standardSettings: [
             {
               id: "id_example",
               name: "name_example",
-              info: "info_example",
+              description: "description_example",
               enums: {
                 values: [
                   "values_example",
@@ -48,8 +48,8 @@ const request: DefaultApiConnectRequest = {
                 defaultValue: "defaultValue_example",
               },
               ranges: {
-                min: 3.14,
-                max: 3.14,
+                minimum: 3.14,
+                maximum: 3.14,
                 defaultValue: 3.14,
               },
             },
@@ -58,7 +58,7 @@ const request: DefaultApiConnectRequest = {
             {
               name: "name_example",
               id: "id_example",
-              info: "info_example",
+              description: "description_example",
             },
           ],
           connectionProtocols: [
@@ -66,11 +66,11 @@ const request: DefaultApiConnectRequest = {
           ],
         },
       ],
-      simpleSettings: [
+      standardSettings: [
         {
           id: "id_example",
           name: "name_example",
-          info: "info_example",
+          description: "description_example",
           enums: {
             values: [
               "values_example",
@@ -78,8 +78,8 @@ const request: DefaultApiConnectRequest = {
             defaultValue: "defaultValue_example",
           },
           ranges: {
-            min: 3.14,
-            max: 3.14,
+            minimum: 3.14,
+            maximum: 3.14,
             defaultValue: 3.14,
           },
         },
@@ -347,30 +347,16 @@ const request: DefaultApiReportActualConfigurationRequest = {
           connection: {
             transportProtocol: null,
           },
-          health: {
-            state: "HEALTHY",
-            messages: [
-              "messages_example",
-            ],
-            timestamp: new Date('1970-01-01T00:00:00.00Z'),
-            componentName: "componentName_example",
-          },
+          health: null,
         },
       ],
-      simpleSettings: [
+      standardSettings: [
         {
           key: "key_example",
           value: "value_example",
         },
       ],
-      health: {
-        state: "HEALTHY",
-        messages: [
-          "messages_example",
-        ],
-        timestamp: new Date('1970-01-01T00:00:00.00Z'),
-        componentName: "componentName_example",
-      },
+      health: null,
     },
   },
 };

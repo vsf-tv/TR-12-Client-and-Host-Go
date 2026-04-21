@@ -19,7 +19,7 @@ import (
 // SettingsChoice - struct for SettingsChoice
 type SettingsChoice struct {
 	Profile *Profile
-	SimpleSettings *SimpleSettings
+	StandardSettings *StandardSettings
 }
 
 // ProfileAsSettingsChoice is a convenience function that returns Profile wrapped in SettingsChoice
@@ -29,10 +29,10 @@ func ProfileAsSettingsChoice(v *Profile) SettingsChoice {
 	}
 }
 
-// SimpleSettingsAsSettingsChoice is a convenience function that returns SimpleSettings wrapped in SettingsChoice
-func SimpleSettingsAsSettingsChoice(v *SimpleSettings) SettingsChoice {
+// StandardSettingsAsSettingsChoice is a convenience function that returns StandardSettings wrapped in SettingsChoice
+func StandardSettingsAsSettingsChoice(v *StandardSettings) SettingsChoice {
 	return SettingsChoice{
-		SimpleSettings: v,
+		StandardSettings: v,
 	}
 }
 
@@ -58,27 +58,27 @@ func (dst *SettingsChoice) UnmarshalJSON(data []byte) error {
 		dst.Profile = nil
 	}
 
-	// try to unmarshal data into SimpleSettings
-	err = newStrictDecoder(data).Decode(&dst.SimpleSettings)
+	// try to unmarshal data into StandardSettings
+	err = newStrictDecoder(data).Decode(&dst.StandardSettings)
 	if err == nil {
-		jsonSimpleSettings, _ := json.Marshal(dst.SimpleSettings)
-		if string(jsonSimpleSettings) == "{}" { // empty struct
-			dst.SimpleSettings = nil
+		jsonStandardSettings, _ := json.Marshal(dst.StandardSettings)
+		if string(jsonStandardSettings) == "{}" { // empty struct
+			dst.StandardSettings = nil
 		} else {
-			if err = validator.Validate(dst.SimpleSettings); err != nil {
-				dst.SimpleSettings = nil
+			if err = validator.Validate(dst.StandardSettings); err != nil {
+				dst.StandardSettings = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.SimpleSettings = nil
+		dst.StandardSettings = nil
 	}
 
 	if match > 1 { // more than 1 match
 		// reset to nil
 		dst.Profile = nil
-		dst.SimpleSettings = nil
+		dst.StandardSettings = nil
 
 		return fmt.Errorf("data matches more than one schema in oneOf(SettingsChoice)")
 	} else if match == 1 {
@@ -94,8 +94,8 @@ func (src SettingsChoice) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.Profile)
 	}
 
-	if src.SimpleSettings != nil {
-		return json.Marshal(&src.SimpleSettings)
+	if src.StandardSettings != nil {
+		return json.Marshal(&src.StandardSettings)
 	}
 
 	return nil, nil // no data in oneOf schemas
@@ -110,8 +110,8 @@ func (obj *SettingsChoice) GetActualInstance() (interface{}) {
 		return obj.Profile
 	}
 
-	if obj.SimpleSettings != nil {
-		return obj.SimpleSettings
+	if obj.StandardSettings != nil {
+		return obj.StandardSettings
 	}
 
 	// all schemas are nil
@@ -124,8 +124,8 @@ func (obj SettingsChoice) GetActualInstanceValue() (interface{}) {
 		return *obj.Profile
 	}
 
-	if obj.SimpleSettings != nil {
-		return *obj.SimpleSettings
+	if obj.StandardSettings != nil {
+		return *obj.StandardSettings
 	}
 
 	// all schemas are nil

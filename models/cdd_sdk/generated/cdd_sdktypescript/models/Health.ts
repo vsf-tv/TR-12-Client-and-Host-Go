@@ -10,51 +10,26 @@
  * Do not edit the class manually.
  */
 
-import { HealthLevel } from '../models/HealthLevel';
+import { Critical } from '../models/Critical';
+import { Degraded } from '../models/Degraded';
+import { Healthy } from '../models/Healthy';
 import { HttpFile } from '../http/http';
 
-export class Health {
-    'state': HealthLevel;
-    'messages'?: Array<string>;
-    'timestamp'?: Date;
-    'componentName'?: string;
+/**
+ * @type Health
+ * Type
+ * @export
+ */
+export type Health = Critical | Degraded | Healthy;
 
+/**
+* @type HealthClass
+* @export
+*/
+export class HealthClass {
     static readonly discriminator: string | undefined = undefined;
 
     static readonly mapping: {[index: string]: string} | undefined = undefined;
-
-    static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
-        {
-            "name": "state",
-            "baseName": "state",
-            "type": "HealthLevel",
-            "format": ""
-        },
-        {
-            "name": "messages",
-            "baseName": "messages",
-            "type": "Array<string>",
-            "format": ""
-        },
-        {
-            "name": "timestamp",
-            "baseName": "timestamp",
-            "type": "Date",
-            "format": "date-time"
-        },
-        {
-            "name": "componentName",
-            "baseName": "componentName",
-            "type": "string",
-            "format": ""
-        }    ];
-
-    static getAttributeTypeMap() {
-        return Health.attributeTypeMap;
-    }
-
-    public constructor() {
-    }
 }
 
 

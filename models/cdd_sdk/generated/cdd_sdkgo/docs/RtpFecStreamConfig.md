@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Ip** | Pointer to **string** |  | [optional] 
+**Address** | Pointer to **string** |  | [optional] 
 **Port** | Pointer to **float32** |  | [optional] 
 **RtpPayloadType** | Pointer to **float32** |  | [optional] 
 
@@ -27,30 +27,30 @@ NewRtpFecStreamConfigWithDefaults instantiates a new RtpFecStreamConfig object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetIp
+### GetAddress
 
-`func (o *RtpFecStreamConfig) GetIp() string`
+`func (o *RtpFecStreamConfig) GetAddress() string`
 
-GetIp returns the Ip field if non-nil, zero value otherwise.
+GetAddress returns the Address field if non-nil, zero value otherwise.
 
-### GetIpOk
+### GetAddressOk
 
-`func (o *RtpFecStreamConfig) GetIpOk() (*string, bool)`
+`func (o *RtpFecStreamConfig) GetAddressOk() (*string, bool)`
 
-GetIpOk returns a tuple with the Ip field if it's non-nil, zero value otherwise
+GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIp
+### SetAddress
 
-`func (o *RtpFecStreamConfig) SetIp(v string)`
+`func (o *RtpFecStreamConfig) SetAddress(v string)`
 
-SetIp sets Ip field to given value.
+SetAddress sets Address field to given value.
 
-### HasIp
+### HasAddress
 
-`func (o *RtpFecStreamConfig) HasIp() bool`
+`func (o *RtpFecStreamConfig) HasAddress() bool`
 
-HasIp returns a boolean if a field has been set.
+HasAddress returns a boolean if a field has been set.
 
 ### GetPort
 

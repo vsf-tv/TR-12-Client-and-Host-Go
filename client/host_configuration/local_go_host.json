@@ -4,6 +4,6 @@
   "deviceTypes": ["SOURCE", "DESTINATION", "BOTH"],
   "createPairingCodeUrl": "http://127.0.0.1:8080",
   "authenticatePairingCodeUrl": "http://127.0.0.1:8080",
-  "thumbnailMaxSizeKB": 100,
-  "logFileMaxSizeKB": 500
+  "thumbnailMaximumSizeKB": 100,
+  "logFileMaximumSizeKB": 500
 }

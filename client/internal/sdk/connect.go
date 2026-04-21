@@ -112,7 +112,7 @@ func (s *CddSdk) handlePairingState() (cddsdkgo.ConnectResponseContent, error) {
 		if loaded {
 			hs, _ := s.certs.GetHostSettings()
 			if hs != nil {
-				s.initThrottles(int(hs.MinIntervalPubSeconds))
+				s.initThrottles(int(hs.MinimumIntervalPublishSeconds))
 			}
 			return s.startConnect()
 		}
@@ -137,7 +137,7 @@ func (s *CddSdk) handleDisconnectedState() (cddsdkgo.ConnectResponseContent, err
 	if loaded {
 		hs, _ := s.certs.GetHostSettings()
 		if hs != nil {
-			s.statusThrottle = utils.NewThrottle(int(hs.MinIntervalPubSeconds))
+			s.statusThrottle = utils.NewThrottle(int(hs.MinimumIntervalPublishSeconds))
 		}
 		return s.startConnect()
 	}
@@ -233,7 +233,7 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 			Error: utils.ExceptionToErrorDetails(err),
 		}
 	}
-	if err := s.doPublishMessage(payload, hs.PubReportStatusTopic); err != nil {
+	if err := s.doPublishMessage(payload, hs.PublishReportStatusTopic); err != nil {
 		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state,
 			Message: fmt.Sprintf("Status update not sent: %v", err),
@@ -261,7 +261,7 @@ func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.DeviceConfiguration) cdds
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())
 		return *resp
 	}
-	if err := s.doPublishMessage(payload, hs.PubReportActualConfigurationTopic); err != nil {
+	if err := s.doPublishMessage(payload, hs.PublishReportActualConfigurationTopic); err != nil {
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, fmt.Sprintf("Configuration update not sent: %v", err))
 		return *resp
 	}
@@ -298,7 +298,7 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 	}
 	data, _ := json.Marshal(msg)
 	if s.mqttClient != nil {
-		token := s.mqttClient.Publish(hs.PubDeprovisionTopic, 1, false, data)
+		token := s.mqttClient.Publish(hs.PublishDeprovisionTopic, 1, false, data)
 		token.WaitTimeout(3 * time.Second)
 	}
 	// No sleep needed — WaitTimeout above ensures delivery before we proceed

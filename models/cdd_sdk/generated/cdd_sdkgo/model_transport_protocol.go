@@ -23,9 +23,8 @@ type TransportProtocol struct {
 	Rtp *Rtp
 	SrtCaller *SrtCaller
 	SrtListener *SrtListener
-	WebRtc *WebRtc
-	ZixiCaller *ZixiCaller
-	ZixiListener *ZixiListener
+	ZixiPull *ZixiPull
+	ZixiPush *ZixiPush
 }
 
 // RistCallerAsTransportProtocol is a convenience function that returns RistCaller wrapped in TransportProtocol
@@ -63,24 +62,17 @@ func SrtListenerAsTransportProtocol(v *SrtListener) TransportProtocol {
 	}
 }
 
-// WebRtcAsTransportProtocol is a convenience function that returns WebRtc wrapped in TransportProtocol
-func WebRtcAsTransportProtocol(v *WebRtc) TransportProtocol {
+// ZixiPullAsTransportProtocol is a convenience function that returns ZixiPull wrapped in TransportProtocol
+func ZixiPullAsTransportProtocol(v *ZixiPull) TransportProtocol {
 	return TransportProtocol{
-		WebRtc: v,
+		ZixiPull: v,
 	}
 }
 
-// ZixiCallerAsTransportProtocol is a convenience function that returns ZixiCaller wrapped in TransportProtocol
-func ZixiCallerAsTransportProtocol(v *ZixiCaller) TransportProtocol {
+// ZixiPushAsTransportProtocol is a convenience function that returns ZixiPush wrapped in TransportProtocol
+func ZixiPushAsTransportProtocol(v *ZixiPush) TransportProtocol {
 	return TransportProtocol{
-		ZixiCaller: v,
-	}
-}
-
-// ZixiListenerAsTransportProtocol is a convenience function that returns ZixiListener wrapped in TransportProtocol
-func ZixiListenerAsTransportProtocol(v *ZixiListener) TransportProtocol {
-	return TransportProtocol{
-		ZixiListener: v,
+		ZixiPush: v,
 	}
 }
 
@@ -174,55 +166,38 @@ func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 		dst.SrtListener = nil
 	}
 
-	// try to unmarshal data into WebRtc
-	err = newStrictDecoder(data).Decode(&dst.WebRtc)
+	// try to unmarshal data into ZixiPull
+	err = newStrictDecoder(data).Decode(&dst.ZixiPull)
 	if err == nil {
-		jsonWebRtc, _ := json.Marshal(dst.WebRtc)
-		if string(jsonWebRtc) == "{}" { // empty struct
-			dst.WebRtc = nil
+		jsonZixiPull, _ := json.Marshal(dst.ZixiPull)
+		if string(jsonZixiPull) == "{}" { // empty struct
+			dst.ZixiPull = nil
 		} else {
-			if err = validator.Validate(dst.WebRtc); err != nil {
-				dst.WebRtc = nil
+			if err = validator.Validate(dst.ZixiPull); err != nil {
+				dst.ZixiPull = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.WebRtc = nil
+		dst.ZixiPull = nil
 	}
 
-	// try to unmarshal data into ZixiCaller
-	err = newStrictDecoder(data).Decode(&dst.ZixiCaller)
+	// try to unmarshal data into ZixiPush
+	err = newStrictDecoder(data).Decode(&dst.ZixiPush)
 	if err == nil {
-		jsonZixiCaller, _ := json.Marshal(dst.ZixiCaller)
-		if string(jsonZixiCaller) == "{}" { // empty struct
-			dst.ZixiCaller = nil
+		jsonZixiPush, _ := json.Marshal(dst.ZixiPush)
+		if string(jsonZixiPush) == "{}" { // empty struct
+			dst.ZixiPush = nil
 		} else {
-			if err = validator.Validate(dst.ZixiCaller); err != nil {
-				dst.ZixiCaller = nil
+			if err = validator.Validate(dst.ZixiPush); err != nil {
+				dst.ZixiPush = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.ZixiCaller = nil
-	}
-
-	// try to unmarshal data into ZixiListener
-	err = newStrictDecoder(data).Decode(&dst.ZixiListener)
-	if err == nil {
-		jsonZixiListener, _ := json.Marshal(dst.ZixiListener)
-		if string(jsonZixiListener) == "{}" { // empty struct
-			dst.ZixiListener = nil
-		} else {
-			if err = validator.Validate(dst.ZixiListener); err != nil {
-				dst.ZixiListener = nil
-			} else {
-				match++
-			}
-		}
-	} else {
-		dst.ZixiListener = nil
+		dst.ZixiPush = nil
 	}
 
 	if match > 1 { // more than 1 match
@@ -232,9 +207,8 @@ func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 		dst.Rtp = nil
 		dst.SrtCaller = nil
 		dst.SrtListener = nil
-		dst.WebRtc = nil
-		dst.ZixiCaller = nil
-		dst.ZixiListener = nil
+		dst.ZixiPull = nil
+		dst.ZixiPush = nil
 
 		return fmt.Errorf("data matches more than one schema in oneOf(TransportProtocol)")
 	} else if match == 1 {
@@ -266,16 +240,12 @@ func (src TransportProtocol) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.SrtListener)
 	}
 
-	if src.WebRtc != nil {
-		return json.Marshal(&src.WebRtc)
+	if src.ZixiPull != nil {
+		return json.Marshal(&src.ZixiPull)
 	}
 
-	if src.ZixiCaller != nil {
-		return json.Marshal(&src.ZixiCaller)
-	}
-
-	if src.ZixiListener != nil {
-		return json.Marshal(&src.ZixiListener)
+	if src.ZixiPush != nil {
+		return json.Marshal(&src.ZixiPush)
 	}
 
 	return nil, nil // no data in oneOf schemas
@@ -306,16 +276,12 @@ func (obj *TransportProtocol) GetActualInstance() (interface{}) {
 		return obj.SrtListener
 	}
 
-	if obj.WebRtc != nil {
-		return obj.WebRtc
+	if obj.ZixiPull != nil {
+		return obj.ZixiPull
 	}
 
-	if obj.ZixiCaller != nil {
-		return obj.ZixiCaller
-	}
-
-	if obj.ZixiListener != nil {
-		return obj.ZixiListener
+	if obj.ZixiPush != nil {
+		return obj.ZixiPush
 	}
 
 	// all schemas are nil
@@ -344,16 +310,12 @@ func (obj TransportProtocol) GetActualInstanceValue() (interface{}) {
 		return *obj.SrtListener
 	}
 
-	if obj.WebRtc != nil {
-		return *obj.WebRtc
+	if obj.ZixiPull != nil {
+		return *obj.ZixiPull
 	}
 
-	if obj.ZixiCaller != nil {
-		return *obj.ZixiCaller
-	}
-
-	if obj.ZixiListener != nil {
-		return *obj.ZixiListener
+	if obj.ZixiPush != nil {
+		return *obj.ZixiPush
 	}
 
 	// all schemas are nil

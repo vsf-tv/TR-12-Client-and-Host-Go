@@ -17,7 +17,7 @@ import { HttpFile } from '../http/http';
 export class Setting {
     'id': string;
     'name': string;
-    'info': string;
+    'description': string;
     'enums'?: EnumValues;
     'ranges'?: RangeValues;
 
@@ -39,8 +39,8 @@ export class Setting {
             "format": ""
         },
         {
-            "name": "info",
-            "baseName": "info",
+            "name": "description",
+            "baseName": "description",
             "type": "string",
             "format": ""
         },

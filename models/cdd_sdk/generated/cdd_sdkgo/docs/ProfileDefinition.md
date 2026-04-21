@@ -6,13 +6,13 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** |  | 
 **Id** | **string** |  | 
-**Info** | **string** |  | 
+**Description** | **string** |  | 
 
 ## Methods
 
 ### NewProfileDefinition
 
-`func NewProfileDefinition(name string, id string, info string, ) *ProfileDefinition`
+`func NewProfileDefinition(name string, id string, description string, ) *ProfileDefinition`
 
 NewProfileDefinition instantiates a new ProfileDefinition object
 This constructor will assign default values to properties that have it defined,
@@ -67,24 +67,24 @@ and a boolean to check if the value has been set.
 SetId sets Id field to given value.
 
 
-### GetInfo
+### GetDescription
 
-`func (o *ProfileDefinition) GetInfo() string`
+`func (o *ProfileDefinition) GetDescription() string`
 
-GetInfo returns the Info field if non-nil, zero value otherwise.
+GetDescription returns the Description field if non-nil, zero value otherwise.
 
-### GetInfoOk
+### GetDescriptionOk
 
-`func (o *ProfileDefinition) GetInfoOk() (*string, bool)`
+`func (o *ProfileDefinition) GetDescriptionOk() (*string, bool)`
 
-GetInfoOk returns a tuple with the Info field if it's non-nil, zero value otherwise
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetInfo
+### SetDescription
 
-`func (o *ProfileDefinition) SetInfo(v string)`
+`func (o *ProfileDefinition) SetDescription(v string)`
 
-SetInfo sets Info field to given value.
+SetDescription sets Description field to given value.
 
 
 

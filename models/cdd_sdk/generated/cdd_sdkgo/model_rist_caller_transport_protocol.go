@@ -22,9 +22,9 @@ var _ MappedNullable = &RistCallerTransportProtocol{}
 // RistCallerTransportProtocol struct for RistCallerTransportProtocol
 type RistCallerTransportProtocol struct {
 	StreamId *RistStreamIdentifier `json:"streamId,omitempty"`
-	Ip string `json:"ip"`
+	Address string `json:"address"`
 	Port float32 `json:"port"`
-	MinimumLatencyMilliseconds float32 `json:"minimumLatencyMilliseconds"`
+	MinimumLatencyMilliseconds *float32 `json:"minimumLatencyMilliseconds,omitempty"`
 	Encryption *EncryptionAes `json:"encryption,omitempty"`
 }
 
@@ -34,11 +34,12 @@ type _RistCallerTransportProtocol RistCallerTransportProtocol
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRistCallerTransportProtocol(ip string, port float32, minimumLatencyMilliseconds float32) *RistCallerTransportProtocol {
+func NewRistCallerTransportProtocol(address string, port float32) *RistCallerTransportProtocol {
 	this := RistCallerTransportProtocol{}
-	this.Ip = ip
+	this.Address = address
 	this.Port = port
-	this.MinimumLatencyMilliseconds = minimumLatencyMilliseconds
+	var minimumLatencyMilliseconds float32 = 1000
+	this.MinimumLatencyMilliseconds = &minimumLatencyMilliseconds
 	return &this
 }
 
@@ -47,8 +48,8 @@ func NewRistCallerTransportProtocol(ip string, port float32, minimumLatencyMilli
 // but it doesn't guarantee that properties required by API are set
 func NewRistCallerTransportProtocolWithDefaults() *RistCallerTransportProtocol {
 	this := RistCallerTransportProtocol{}
-	var minimumLatencyMilliseconds float32 = 3000
-	this.MinimumLatencyMilliseconds = minimumLatencyMilliseconds
+	var minimumLatencyMilliseconds float32 = 1000
+	this.MinimumLatencyMilliseconds = &minimumLatencyMilliseconds
 	return &this
 }
 
@@ -84,28 +85,28 @@ func (o *RistCallerTransportProtocol) SetStreamId(v RistStreamIdentifier) {
 	o.StreamId = &v
 }
 
-// GetIp returns the Ip field value
-func (o *RistCallerTransportProtocol) GetIp() string {
+// GetAddress returns the Address field value
+func (o *RistCallerTransportProtocol) GetAddress() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Ip
+	return o.Address
 }
 
-// GetIpOk returns a tuple with the Ip field value
+// GetAddressOk returns a tuple with the Address field value
 // and a boolean to check if the value has been set.
-func (o *RistCallerTransportProtocol) GetIpOk() (*string, bool) {
+func (o *RistCallerTransportProtocol) GetAddressOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Ip, true
+	return &o.Address, true
 }
 
-// SetIp sets field value
-func (o *RistCallerTransportProtocol) SetIp(v string) {
-	o.Ip = v
+// SetAddress sets field value
+func (o *RistCallerTransportProtocol) SetAddress(v string) {
+	o.Address = v
 }
 
 // GetPort returns the Port field value
@@ -132,28 +133,36 @@ func (o *RistCallerTransportProtocol) SetPort(v float32) {
 	o.Port = v
 }
 
-// GetMinimumLatencyMilliseconds returns the MinimumLatencyMilliseconds field value
+// GetMinimumLatencyMilliseconds returns the MinimumLatencyMilliseconds field value if set, zero value otherwise.
 func (o *RistCallerTransportProtocol) GetMinimumLatencyMilliseconds() float32 {
-	if o == nil {
+	if o == nil || IsNil(o.MinimumLatencyMilliseconds) {
 		var ret float32
 		return ret
 	}
-
-	return o.MinimumLatencyMilliseconds
+	return *o.MinimumLatencyMilliseconds
 }
 
-// GetMinimumLatencyMillisecondsOk returns a tuple with the MinimumLatencyMilliseconds field value
+// GetMinimumLatencyMillisecondsOk returns a tuple with the MinimumLatencyMilliseconds field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *RistCallerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*float32, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.MinimumLatencyMilliseconds) {
 		return nil, false
 	}
-	return &o.MinimumLatencyMilliseconds, true
+	return o.MinimumLatencyMilliseconds, true
 }
 
-// SetMinimumLatencyMilliseconds sets field value
+// HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
+func (o *RistCallerTransportProtocol) HasMinimumLatencyMilliseconds() bool {
+	if o != nil && !IsNil(o.MinimumLatencyMilliseconds) {
+		return true
+	}
+
+	return false
+}
+
+// SetMinimumLatencyMilliseconds gets a reference to the given float32 and assigns it to the MinimumLatencyMilliseconds field.
 func (o *RistCallerTransportProtocol) SetMinimumLatencyMilliseconds(v float32) {
-	o.MinimumLatencyMilliseconds = v
+	o.MinimumLatencyMilliseconds = &v
 }
 
 // GetEncryption returns the Encryption field value if set, zero value otherwise.
@@ -201,9 +210,11 @@ func (o RistCallerTransportProtocol) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.StreamId) {
 		toSerialize["streamId"] = o.StreamId
 	}
-	toSerialize["ip"] = o.Ip
+	toSerialize["address"] = o.Address
 	toSerialize["port"] = o.Port
-	toSerialize["minimumLatencyMilliseconds"] = o.MinimumLatencyMilliseconds
+	if !IsNil(o.MinimumLatencyMilliseconds) {
+		toSerialize["minimumLatencyMilliseconds"] = o.MinimumLatencyMilliseconds
+	}
 	if !IsNil(o.Encryption) {
 		toSerialize["encryption"] = o.Encryption
 	}
@@ -215,9 +226,8 @@ func (o *RistCallerTransportProtocol) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"ip",
+		"address",
 		"port",
-		"minimumLatencyMilliseconds",
 	}
 
 	allProperties := make(map[string]interface{})

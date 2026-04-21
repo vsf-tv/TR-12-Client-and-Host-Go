@@ -6,8 +6,8 @@
 
 Name | Type
 ------------ | -------------
-`simpleSettings` | [Array&lt;IdAndValue&gt;](IdAndValue.md)
-`profile` | [SettingProfile](SettingProfile.md)
+`standardSettings` | [Array&lt;IdAndValue&gt;](IdAndValue.md)
+`profile` | [ChannelProfile](ChannelProfile.md)
 
 ## Example
 
@@ -16,7 +16,7 @@ import type { SettingsChoice } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "simpleSettings": null,
+  "standardSettings": null,
   "profile": null,
 } satisfies SettingsChoice
 
