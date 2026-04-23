@@ -39,7 +39,7 @@ func (h *PairingHandlers) Pair(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "code": 400})
 		return
 	}
-	log.Printf("[HOST /pair] Request: hostId=%s deviceType=%s version=%s", req.HostId, req.DeviceType, req.Version)
+	log.Printf("[HOST /pair] Request: hostId=%s deviceType=%s version=%s", req.HostId, req.DeviceType, req.Version.GetVersion())
 	resp, err := h.deviceSvc.Pair(req)
 	if err != nil {
 		log.Printf("[HOST /pair] Error: %v", err)

@@ -21,7 +21,8 @@ var _ MappedNullable = &EncryptionAes128{}
 
 // EncryptionAes128 struct for EncryptionAes128
 type EncryptionAes128 struct {
-	Passphrase string `json:"passphrase"`
+	// A 32-character hexadecimal string.
+	Passphrase string `json:"passphrase" validate:"regexp=^[a-fA-F0-9]+$"`
 }
 
 type _EncryptionAes128 EncryptionAes128

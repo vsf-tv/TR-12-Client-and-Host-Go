@@ -59,13 +59,13 @@ func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*model
 		return failPair(models.PairFailureHostIDMismatch), nil
 	}
 	// Validate version
-	if req.Version == "" {
+	if req.Version.GetVersion() == "" {
 		return failPair(models.PairFailureVersionNotSupported), nil
 	}
 	// Validate device type
 	validType := false
 	for _, dt := range []string{"SOURCE", "DESTINATION", "BOTH"} {
-		if strings.EqualFold(req.DeviceType, dt) {
+		if strings.EqualFold(string(req.DeviceType), dt) {
 			validType = true
 			break
 		}
@@ -88,7 +88,7 @@ func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*model
 	device := &models.Device{
 		DeviceID:         deviceID,
 		AccountID:        "",
-		DeviceType:       strings.ToUpper(req.DeviceType),
+		DeviceType:       strings.ToUpper(string(req.DeviceType)),
 		State:            "PAIRING",
 		PairedAt:         now.Format(time.RFC3339),
 		CurrentCertPEM:   string(certPEM),
@@ -452,7 +452,7 @@ func (s *DeviceService) Deprovision(deviceID, accountID string) error {
 
 	reason := tr12models.DEPROVISIONED
 	t := time.Now().UTC()
-	msg := models.DeprovisionRequest{Reason: &reason, Timestamp: &t}
+	msg := models.DeprovisionRequest{Reason: &reason, Timestamp: t}
 	payload, _ := json.Marshal(msg)
 	topic := fmt.Sprintf("cdd/%s/deprovision", deviceID)
 	return s.mqtt.Publish(topic, payload, true) // retained — offline device deprovisions itself on reconnect

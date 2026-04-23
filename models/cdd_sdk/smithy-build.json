@@ -10,7 +10,7 @@
   },
   "plugins": {
     "openapi": {
-      "service": "com.example.cdd#CddService",
+      "service": "com.cdd#CddService",
       "protocol": "aws.protocols#restJson1",
       "version": "3.0.2",
       "tags": true,

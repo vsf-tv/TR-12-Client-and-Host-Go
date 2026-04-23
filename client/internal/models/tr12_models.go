@@ -45,7 +45,8 @@ type RequestThumbnailRequestContent struct {
 
 // ---- Convenience constants ----
 
-const ProtocolVersion = "1.0.0"
+// ProtocolVersionString is the current protocol version sent during pairing.
+const ProtocolVersionString = "2.0.0"
 
 const (
 	StateDisconnected = "DISCONNECTED"

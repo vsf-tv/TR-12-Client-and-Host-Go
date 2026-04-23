@@ -111,10 +111,10 @@ func (p *Pairing) GetNewPairingCode() error {
 		return fmt.Errorf("failed to generate keys: %w", err)
 	}
 	reqBody := models.CreatePairingCodeRequestContent{
-		DeviceType:                p.DeviceType,
+		DeviceType:                tr12models.DeviceType(p.DeviceType),
 		HostId:                    p.HostID,
 		CertificateSigningRequest: p.Certs.CSR,
-		Version:                   models.ProtocolVersion,
+		Version:                   tr12models.ProtocolVersion{Version: tr12models.PtrString(models.ProtocolVersionString)},
 	}
 	body, _ := json.Marshal(reqBody)
 	log.Printf("[PAIR] POST %s/pair  body=%s", p.PairingURL, string(body))

@@ -200,6 +200,7 @@ components:
         id:
           type: string
         configurationId:
+          maxLength: 80
           type: string
         state:
           $ref: "#/components/schemas/ChannelState"
@@ -565,6 +566,7 @@ components:
         configurationId: configurationId
       properties:
         configurationId:
+          maxLength: 80
           type: string
         channels:
           items:
@@ -779,7 +781,11 @@ components:
         passphrase: passphrase
       properties:
         passphrase:
+          description: A 32-character hexadecimal string.
           format: password
+          maxLength: 32
+          minLength: 32
+          pattern: "^[a-fA-F0-9]+$"
           type: string
       required:
       - passphrase
@@ -787,7 +793,11 @@ components:
     EncryptionAes256:
       properties:
         passphrase:
+          description: A 64-character hexadecimal string.
           format: password
+          maxLength: 64
+          minLength: 64
+          pattern: "^[a-fA-F0-9]+$"
           type: string
       required:
       - passphrase
@@ -932,7 +942,7 @@ components:
       - $ref: "#/components/schemas/healthy"
       - $ref: "#/components/schemas/degraded"
       - $ref: "#/components/schemas/critical"
-    HealthyState:
+    Healthy:
       description: Healthy state — no additional fields needed.
       type: object
     IdAndValue:

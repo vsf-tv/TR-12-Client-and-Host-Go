@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Passphrase** | **string** |  | 
+**Passphrase** | **string** | A 32-character hexadecimal string. | 
 
 ## Methods
 

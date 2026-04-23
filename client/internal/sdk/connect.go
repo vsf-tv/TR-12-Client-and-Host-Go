@@ -294,7 +294,7 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 	t := time.Now().UTC()
 	msg := models.DeprovisionRequest{
 		Reason:    &reason,
-		Timestamp: &t,
+		Timestamp: t,
 	}
 	data, _ := json.Marshal(msg)
 	if s.mqttClient != nil {
