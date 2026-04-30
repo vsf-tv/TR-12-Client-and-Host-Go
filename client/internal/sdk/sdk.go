@@ -18,6 +18,7 @@ package sdk
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 
@@ -47,6 +48,7 @@ type CddSdk struct {
 	hostID             string
 	registration       map[string]interface{}
 	configPayload      *cddsdkgo.DeviceConfiguration // deserialized MQTT config payload
+	actualConfig       atomic.Pointer[cddsdkgo.DeviceConfiguration]
 	updateID           *utils.UpdateID
 	statusThrottle     *utils.Throttle
 	configThrottle     *utils.Throttle
@@ -77,6 +79,7 @@ func New(certsPath, deviceLocalID, deviceType, logPath, basePath string) (*CddSd
 		return nil, err
 	}
 	sdk.thumbnailManager = thumbnails.NewManager(sdk.logger)
+	sdk.thumbnailManager.SetPathResolver(sdk.ChannelThumbnailPath)
 	sdk.certs, _ = credentials.NewStore(certsPath, deviceLocalID, "undefined")
 	sdk.initThrottles(1)
 	return sdk, nil
@@ -89,6 +92,21 @@ func (s *CddSdk) Shutdown() {
 		s.mqttClient.Disconnect(250)
 	}
 	s.logger.Close()
+}
+
+// ChannelThumbnailPath returns the thumbnailLocalPath for a channel from the
+// latest ActualConfiguration. Returns "" if no config or no path set.
+func (s *CddSdk) ChannelThumbnailPath(channelID string) string {
+	cfg := s.actualConfig.Load()
+	if cfg == nil {
+		return ""
+	}
+	for _, ch := range cfg.Channels {
+		if ch.Id == channelID {
+			return ch.GetThumbnailLocalPath()
+		}
+	}
+	return ""
 }
 
 func (s *CddSdk) reset() {

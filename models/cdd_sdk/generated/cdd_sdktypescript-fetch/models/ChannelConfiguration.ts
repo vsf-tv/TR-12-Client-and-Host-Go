@@ -84,6 +84,15 @@ export interface ChannelConfiguration {
      * @memberof ChannelConfiguration
      */
     health?: Health;
+    /**
+     * Device-side only. Set by the application to indicate the local filesystem
+     * path to the thumbnail image for this channel. The host shall not set this
+     * field in desired configuration. The SDK reads this to resolve thumbnail
+     * subscriptions keyed by channelId.
+     * @type {string}
+     * @memberof ChannelConfiguration
+     */
+    thumbnailLocalPath?: string;
 }
 
 
@@ -114,6 +123,7 @@ export function ChannelConfigurationFromJSONTyped(json: any, ignoreDiscriminator
         'settings': json['settings'] == null ? undefined : SettingsChoiceFromJSON(json['settings']),
         'connection': json['connection'] == null ? undefined : ConnectionFromJSON(json['connection']),
         'health': json['health'] == null ? undefined : HealthFromJSON(json['health']),
+        'thumbnailLocalPath': json['thumbnailLocalPath'] == null ? undefined : json['thumbnailLocalPath'],
     };
 }
 
@@ -134,6 +144,7 @@ export function ChannelConfigurationToJSONTyped(value?: ChannelConfiguration | n
         'settings': SettingsChoiceToJSON(value['settings']),
         'connection': ConnectionToJSON(value['connection']),
         'health': HealthToJSON(value['health']),
+        'thumbnailLocalPath': value['thumbnailLocalPath'],
     };
 }
 

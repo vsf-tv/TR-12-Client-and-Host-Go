@@ -25,20 +25,25 @@ import (
 	tr12models "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/TR-12-Models/generated/tr12go"
 )
 
+// PathResolver returns the local filesystem path for a given channelId.
+type PathResolver func(channelID string) string
+
 // Uploader handles a single thumbnail subscription in its own goroutine.
 type Uploader struct {
-	source  string
-	request tr12models.ThumbnailRequest
-	stopCh  chan struct{}
-	logger  *cddlogger.CDDLogger
+	channelID    string
+	request      tr12models.ThumbnailRequest
+	pathResolver PathResolver
+	stopCh       chan struct{}
+	logger       *cddlogger.CDDLogger
 }
 
-func newUploader(source string, req tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) *Uploader {
+func newUploader(channelID string, req tr12models.ThumbnailRequest, resolver PathResolver, logger *cddlogger.CDDLogger) *Uploader {
 	return &Uploader{
-		source:  source,
-		request: req,
-		stopCh:  make(chan struct{}),
-		logger:  logger,
+		channelID:    channelID,
+		request:      req,
+		pathResolver: resolver,
+		stopCh:       make(chan struct{}),
+		logger:       logger,
 	}
 }
 
@@ -55,7 +60,7 @@ func (u *Uploader) stop() {
 }
 
 func (u *Uploader) run() {
-	u.logger.Infof("Thumbnails: Starting uploader for source: %s", u.source)
+	u.logger.Infof("Thumbnails: Starting uploader for channel: %s", u.channelID)
 	period := int(u.request.GetPeriodSeconds())
 	for {
 		now := time.Now()
@@ -64,12 +69,14 @@ func (u *Uploader) run() {
 			u.logger.Info("Thumbnails: Subscription Expired.")
 			return
 		}
-		if validateRequestParams(&u.request, u.logger) {
-			if err := utils.UploadFile(u.request.GetLocalPath(), u.request.GetRemotePath(), period, "thumbnail", u.request.GetHeaders()); err != nil {
+		localPath := u.pathResolver(u.channelID)
+		if localPath != "" && validateRequestParams(localPath, &u.request, u.logger) {
+			if err := utils.UploadFile(localPath, u.request.GetRemotePath(), period, "thumbnail", u.request.GetHeaders()); err != nil {
 				u.logger.Errorf("Thumbnails: upload error: %v", err)
 			}
+		} else if localPath == "" {
+			u.logger.Infof("Thumbnails: no thumbnailLocalPath for channel %s yet, skipping cycle", u.channelID)
 		}
-		// Wait period seconds, checking for stop every 100ms
 		for i := 0; i < period*10; i++ {
 			select {
 			case <-u.stopCh:
@@ -80,12 +87,11 @@ func (u *Uploader) run() {
 	}
 }
 
-func validateRequestParams(req *tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) bool {
+func validateRequestParams(localPath string, req *tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) bool {
 	if req.HasExpiresAt() && !time.Now().Before(req.GetExpiresAt()) {
 		logger.Info("Thumbnail: Request expired.")
 		return false
 	}
-	localPath := req.GetLocalPath()
 	info, err := os.Stat(localPath)
 	if err != nil {
 		logger.Infof("Thumbnails: Local path does not exist: %s", localPath)
@@ -102,9 +108,10 @@ func validateRequestParams(req *tr12models.ThumbnailRequest, logger *cddlogger.C
 
 // Manager manages all active thumbnail uploaders.
 type Manager struct {
-	mu        sync.Mutex
-	uploaders map[string]*Uploader
-	logger    *cddlogger.CDDLogger
+	mu           sync.Mutex
+	uploaders    map[string]*Uploader
+	pathResolver PathResolver
+	logger       *cddlogger.CDDLogger
 }
 
 // NewManager creates a new ThumbnailManager.
@@ -113,6 +120,13 @@ func NewManager(logger *cddlogger.CDDLogger) *Manager {
 		uploaders: make(map[string]*Uploader),
 		logger:    logger,
 	}
+}
+
+// SetPathResolver sets the function used to resolve thumbnail local paths per channel.
+func (m *Manager) SetPathResolver(resolver PathResolver) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.pathResolver = resolver
 }
 
 // StopAll stops all active thumbnail uploaders.
@@ -129,15 +143,17 @@ func (m *Manager) StopAll() {
 func (m *Manager) UpdateThumbnail(sub *models.RequestThumbnailRequestContent) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	for key, req := range sub.Requests {
-		if existing, ok := m.uploaders[key]; ok {
+	for channelID, req := range sub.Requests {
+		if existing, ok := m.uploaders[channelID]; ok {
 			existing.stop()
 		}
-		if !validateRequestParams(&req, m.logger) {
+		resolver := m.pathResolver
+		if resolver == nil {
+			m.logger.Infof("Thumbnails: no path resolver set, skipping channel %s", channelID)
 			continue
 		}
-		u := newUploader(key, req, m.logger)
-		m.uploaders[key] = u
+		u := newUploader(channelID, req, resolver, m.logger)
+		m.uploaders[channelID] = u
 		u.start()
 	}
 	return nil

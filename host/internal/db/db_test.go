@@ -414,7 +414,7 @@ func TestThumbnailCRUD(t *testing.T) {
 
 	thumb := &Thumbnail{
 		DeviceID:    "d1",
-		SourceID:    "ch1",
+		ChannelID:    "ch1",
 		ImageData:   []byte{0xFF, 0xD8, 0xFF},
 		Timestamp:   "2025-01-01T00:00:00Z",
 		ImageType:   "image/jpeg",

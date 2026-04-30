@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **Settings** | Pointer to [**SettingsChoice**](SettingsChoice.md) |  | [optional] 
 **Connection** | Pointer to [**Connection**](Connection.md) |  | [optional] 
 **Health** | Pointer to [**Health**](Health.md) |  | [optional] 
+**ThumbnailLocalPath** | Pointer to **string** | Device-side only. Set by the application to indicate the local filesystem path to the thumbnail image for this channel. The host shall not set this field in desired configuration. The SDK reads this to resolve thumbnail subscriptions keyed by channelId. | [optional] 
 
 ## Methods
 
@@ -164,6 +165,31 @@ SetHealth sets Health field to given value.
 `func (o *ChannelConfiguration) HasHealth() bool`
 
 HasHealth returns a boolean if a field has been set.
+
+### GetThumbnailLocalPath
+
+`func (o *ChannelConfiguration) GetThumbnailLocalPath() string`
+
+GetThumbnailLocalPath returns the ThumbnailLocalPath field if non-nil, zero value otherwise.
+
+### GetThumbnailLocalPathOk
+
+`func (o *ChannelConfiguration) GetThumbnailLocalPathOk() (*string, bool)`
+
+GetThumbnailLocalPathOk returns a tuple with the ThumbnailLocalPath field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetThumbnailLocalPath
+
+`func (o *ChannelConfiguration) SetThumbnailLocalPath(v string)`
+
+SetThumbnailLocalPath sets ThumbnailLocalPath field to given value.
+
+### HasThumbnailLocalPath
+
+`func (o *ChannelConfiguration) HasThumbnailLocalPath() bool`
+
+HasThumbnailLocalPath returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

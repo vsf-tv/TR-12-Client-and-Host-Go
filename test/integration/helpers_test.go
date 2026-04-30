@@ -471,9 +471,9 @@ func (e *testEnv) hostUpdateConfig(deviceID, token string, config json.RawMessag
 	return resp.StatusCode, string(bodyBytes)
 }
 
-func (e *testEnv) hostGetThumbnail(deviceID, sourceID, token string) (int, thumbnailResponse) {
+func (e *testEnv) hostGetThumbnail(deviceID, channelID, token string) (int, thumbnailResponse) {
 	e.t.Helper()
-	url := fmt.Sprintf("%s/thumbnail/%s?source=%s", e.hostURL, deviceID, sourceID)
+	url := fmt.Sprintf("%s/thumbnail/%s?channel=%s", e.hostURL, deviceID, channelID)
 	var thumb thumbnailResponse
 	code := e.doGetRaw(url, token, &thumb)
 	return code, thumb

@@ -23,6 +23,10 @@ export class ChannelConfiguration {
     'settings'?: SettingsChoice;
     'connection'?: Connection;
     'health'?: Health;
+    /**
+    * Device-side only. Set by the application to indicate the local filesystem path to the thumbnail image for this channel. The host shall not set this field in desired configuration. The SDK reads this to resolve thumbnail subscriptions keyed by channelId.
+    */
+    'thumbnailLocalPath'?: string;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -63,6 +67,12 @@ export class ChannelConfiguration {
             "name": "health",
             "baseName": "health",
             "type": "Health",
+            "format": ""
+        },
+        {
+            "name": "thumbnailLocalPath",
+            "baseName": "thumbnailLocalPath",
+            "type": "string",
             "format": ""
         }    ];
 

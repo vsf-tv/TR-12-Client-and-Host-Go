@@ -33,10 +33,10 @@ func NewUploadHandlers(thumbnailSvc *service.ThumbnailService, logSvc *service.L
 	return &UploadHandlers{thumbnailSvc: thumbnailSvc, logSvc: logSvc}
 }
 
-// UploadThumbnail handles PUT /upload/thumbnail/:deviceId/:sourceId.
+// UploadThumbnail handles PUT /upload/thumbnail/:deviceId/:channelId.
 func (h *UploadHandlers) UploadThumbnail(c *gin.Context) {
 	deviceID := c.Param("deviceId")
-	sourceID := c.Param("sourceId")
+	channelID := c.Param("channelId")
 
 	data, err := io.ReadAll(c.Request.Body)
 	if err != nil {
@@ -51,11 +51,11 @@ func (h *UploadHandlers) UploadThumbnail(c *gin.Context) {
 		imageType = "png"
 	} else if strings.Contains(ct, "jpeg") || strings.Contains(ct, "jpg") {
 		imageType = "jpg"
-	} else if ext := filepath.Ext(sourceID); ext != "" {
+	} else if ext := filepath.Ext(channelID); ext != "" {
 		imageType = strings.TrimPrefix(ext, ".")
 	}
 
-	if err := h.thumbnailSvc.StoreThumbnail(deviceID, sourceID, data, imageType); err != nil {
+	if err := h.thumbnailSvc.StoreThumbnail(deviceID, channelID, data, imageType); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "code": 500})
 		return
 	}

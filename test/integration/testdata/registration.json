@@ -14,7 +14,7 @@
   ],
   "channels": [
     {
-      "name": "Encoder Channel 1",
+      "name": "Channel 1",
       "id": "CH01",
       "channelType": "SOURCE",
       "connectionProtocols": [
@@ -139,18 +139,6 @@
           }
         }
       ]
-    }
-  ],
-  "thumbnails": [
-    {
-      "name": "Channel Preview",
-      "id": "SDI-1",
-      "localPath": "/tmp/image_sdi.jpg"
-    },
-    {
-      "name": "Channel Preview",
-      "id": "HDMI-1",
-      "localPath": "/tmp/image_hdmi.jpg"
     }
   ]
 }

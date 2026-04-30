@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface EncryptionAes256 {
     /**
-     * 
+     * A 64-character hexadecimal string.
      * @type {string}
      * @memberof EncryptionAes256
      */

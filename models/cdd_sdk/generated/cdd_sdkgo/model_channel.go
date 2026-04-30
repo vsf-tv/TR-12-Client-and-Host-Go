@@ -23,7 +23,7 @@ var _ MappedNullable = &Channel{}
 type Channel struct {
 	Name string `json:"name"`
 	Id string `json:"id"`
-	ChannelType *ChannelType `json:"channelType,omitempty"`
+	ChannelType ChannelType `json:"channelType"`
 	StandardSettings []Setting `json:"standardSettings,omitempty"`
 	Profiles []ProfileDefinition `json:"profiles,omitempty"`
 	ConnectionProtocols []TransportProtocolName `json:"connectionProtocols,omitempty"`
@@ -35,10 +35,11 @@ type _Channel Channel
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewChannel(name string, id string) *Channel {
+func NewChannel(name string, id string, channelType ChannelType) *Channel {
 	this := Channel{}
 	this.Name = name
 	this.Id = id
+	this.ChannelType = channelType
 	return &this
 }
 
@@ -98,36 +99,28 @@ func (o *Channel) SetId(v string) {
 	o.Id = v
 }
 
-// GetChannelType returns the ChannelType field value if set, zero value otherwise.
+// GetChannelType returns the ChannelType field value
 func (o *Channel) GetChannelType() ChannelType {
-	if o == nil || IsNil(o.ChannelType) {
+	if o == nil {
 		var ret ChannelType
 		return ret
 	}
-	return *o.ChannelType
+
+	return o.ChannelType
 }
 
-// GetChannelTypeOk returns a tuple with the ChannelType field value if set, nil otherwise
+// GetChannelTypeOk returns a tuple with the ChannelType field value
 // and a boolean to check if the value has been set.
 func (o *Channel) GetChannelTypeOk() (*ChannelType, bool) {
-	if o == nil || IsNil(o.ChannelType) {
+	if o == nil {
 		return nil, false
 	}
-	return o.ChannelType, true
+	return &o.ChannelType, true
 }
 
-// HasChannelType returns a boolean if a field has been set.
-func (o *Channel) HasChannelType() bool {
-	if o != nil && !IsNil(o.ChannelType) {
-		return true
-	}
-
-	return false
-}
-
-// SetChannelType gets a reference to the given ChannelType and assigns it to the ChannelType field.
+// SetChannelType sets field value
 func (o *Channel) SetChannelType(v ChannelType) {
-	o.ChannelType = &v
+	o.ChannelType = v
 }
 
 // GetStandardSettings returns the StandardSettings field value if set, zero value otherwise.
@@ -238,9 +231,7 @@ func (o Channel) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
 	toSerialize["id"] = o.Id
-	if !IsNil(o.ChannelType) {
-		toSerialize["channelType"] = o.ChannelType
-	}
+	toSerialize["channelType"] = o.ChannelType
 	if !IsNil(o.StandardSettings) {
 		toSerialize["standardSettings"] = o.StandardSettings
 	}
@@ -260,6 +251,7 @@ func (o *Channel) UnmarshalJSON(data []byte) (err error) {
 	requiredProperties := []string{
 		"name",
 		"id",
+		"channelType",
 	}
 
 	allProperties := make(map[string]interface{})

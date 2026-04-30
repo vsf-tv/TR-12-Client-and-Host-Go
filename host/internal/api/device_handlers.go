@@ -122,9 +122,9 @@ func (h *DeviceHandlers) Deprovision(c *gin.Context) {
 func (h *DeviceHandlers) GetThumbnail(c *gin.Context) {
 	accountID := c.GetString("account_id")
 	deviceID := c.Param("deviceId")
-	sourceID := c.Query("source")
-	if sourceID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "source query parameter required", "code": 400})
+	channelID := c.Query("channel")
+	if channelID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "channel query parameter required", "code": 400})
 		return
 	}
 
@@ -135,7 +135,7 @@ func (h *DeviceHandlers) GetThumbnail(c *gin.Context) {
 		return
 	}
 
-	thumb, subscribed, err := h.thumbnailSvc.GetThumbnail(deviceID, sourceID)
+	thumb, subscribed, err := h.thumbnailSvc.GetThumbnail(deviceID, channelID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "code": 500})
 		return

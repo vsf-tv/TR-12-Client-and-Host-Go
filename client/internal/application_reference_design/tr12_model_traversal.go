@@ -165,6 +165,11 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 		chCfg.Connection = conn
 	}
 
+	// Thumbnail local path
+	if path, ok := s.CB.GetChannelThumbnailLocalPath(chID); ok && path != "" {
+		chCfg.ThumbnailLocalPath = &path
+	}
+
 	return chCfg
 }
 

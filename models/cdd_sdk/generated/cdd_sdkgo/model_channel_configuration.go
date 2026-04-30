@@ -27,6 +27,8 @@ type ChannelConfiguration struct {
 	Settings *SettingsChoice `json:"settings,omitempty"`
 	Connection *Connection `json:"connection,omitempty"`
 	Health *Health `json:"health,omitempty"`
+	// Device-side only. Set by the application to indicate the local filesystem path to the thumbnail image for this channel. The host shall not set this field in desired configuration. The SDK reads this to resolve thumbnail subscriptions keyed by channelId.
+	ThumbnailLocalPath *string `json:"thumbnailLocalPath,omitempty"`
 }
 
 type _ChannelConfiguration ChannelConfiguration
@@ -219,6 +221,38 @@ func (o *ChannelConfiguration) SetHealth(v Health) {
 	o.Health = &v
 }
 
+// GetThumbnailLocalPath returns the ThumbnailLocalPath field value if set, zero value otherwise.
+func (o *ChannelConfiguration) GetThumbnailLocalPath() string {
+	if o == nil || IsNil(o.ThumbnailLocalPath) {
+		var ret string
+		return ret
+	}
+	return *o.ThumbnailLocalPath
+}
+
+// GetThumbnailLocalPathOk returns a tuple with the ThumbnailLocalPath field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ChannelConfiguration) GetThumbnailLocalPathOk() (*string, bool) {
+	if o == nil || IsNil(o.ThumbnailLocalPath) {
+		return nil, false
+	}
+	return o.ThumbnailLocalPath, true
+}
+
+// HasThumbnailLocalPath returns a boolean if a field has been set.
+func (o *ChannelConfiguration) HasThumbnailLocalPath() bool {
+	if o != nil && !IsNil(o.ThumbnailLocalPath) {
+		return true
+	}
+
+	return false
+}
+
+// SetThumbnailLocalPath gets a reference to the given string and assigns it to the ThumbnailLocalPath field.
+func (o *ChannelConfiguration) SetThumbnailLocalPath(v string) {
+	o.ThumbnailLocalPath = &v
+}
+
 func (o ChannelConfiguration) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -240,6 +274,9 @@ func (o ChannelConfiguration) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Health) {
 		toSerialize["health"] = o.Health
+	}
+	if !IsNil(o.ThumbnailLocalPath) {
+		toSerialize["thumbnailLocalPath"] = o.ThumbnailLocalPath
 	}
 	return toSerialize, nil
 }

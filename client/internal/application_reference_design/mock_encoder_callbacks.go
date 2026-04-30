@@ -112,3 +112,7 @@ func (cb *ArdCallbacks) GetDeviceHealth() *cddsdkgo.Health {
 	h := cddsdkgo.HealthyAsHealth(cddsdkgo.NewHealthy(map[string]interface{}{}))
 	return &h
 }
+
+func (cb *ArdCallbacks) GetChannelThumbnailLocalPath(channelID string) (string, bool) {
+	return cb.Encoder.GetChannelThumbnailLocalPath(channelID)
+}

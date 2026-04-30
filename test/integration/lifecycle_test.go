@@ -115,9 +115,6 @@ func TestFullLifecycle(t *testing.T) {
 			ID             string        `json:"id"`
 			SimpleSettings []interface{} `json:"standardSettings"`
 		} `json:"channels"`
-		Thumbnails []struct {
-			ID string `json:"id"`
-		} `json:"thumbnails"`
 	}
 	if err := json.Unmarshal(detail.Registration, &reg); err != nil {
 		t.Fatalf("Phase 6: cannot parse registration: %v", err)
@@ -127,16 +124,6 @@ func TestFullLifecycle(t *testing.T) {
 	}
 	if len(reg.Channels[0].SimpleSettings) != 7 {
 		t.Fatalf("Phase 6: expected 7 standardSettings, got %d", len(reg.Channels[0].SimpleSettings))
-	}
-	if len(reg.Thumbnails) != 2 {
-		t.Fatalf("Phase 6: expected 2 thumbnails, got %d", len(reg.Thumbnails))
-	}
-	thumbIDs := map[string]bool{}
-	for _, th := range reg.Thumbnails {
-		thumbIDs[th.ID] = true
-	}
-	if !thumbIDs["SDI-1"] || !thumbIDs["HDMI-1"] {
-		t.Fatalf("Phase 6: expected thumbnail IDs SDI-1 and HDMI-1, got %v", thumbIDs)
 	}
 	if !detail.Online {
 		t.Fatal("Phase 6: expected online=true")
@@ -150,8 +137,8 @@ func TestFullLifecycle(t *testing.T) {
 	if detail.CertExpiration == "" {
 		t.Fatal("Phase 6: expected non-empty cert_expiration")
 	}
-	t.Logf("Phase 6: OK — registration channels=%d thumbnails=%d cert_expiration=%s",
-		len(reg.Channels), len(reg.Thumbnails), detail.CertExpiration)
+	t.Logf("Phase 6: OK — registration channels=%d cert_expiration=%s",
+		len(reg.Channels), detail.CertExpiration)
 
 	// ---------------------------------------------------------------
 	// Phase 7: Update Configuration
@@ -289,6 +276,14 @@ func TestFullLifecycle(t *testing.T) {
 		json.Unmarshal(fullConfig, &actualCfg)
 		actualCfg["configurationId"] = 0
 	}
+	// Inject thumbnailLocalPath per channel — the application sets this in actual config
+	if channels, ok := actualCfg["channels"].([]interface{}); ok {
+		for _, ch := range channels {
+			if chMap, ok := ch.(map[string]interface{}); ok {
+				chMap["thumbnailLocalPath"] = "/tmp/image_sdi.jpg"
+			}
+		}
+	}
 	cfgResp := env.sdkReportActualConfig(actualCfg)
 	if !cfgResp.Success {
 		t.Fatalf("Phase 8: report_actual_configuration failed: %s", cfgResp.Message)
@@ -322,7 +317,7 @@ func TestFullLifecycle(t *testing.T) {
 	var thumbCode int
 	// First call creates the subscription; may need to retry
 	for attempt := 0; attempt < 4; attempt++ {
-		thumbCode, thumbResp = env.hostGetThumbnail(deviceID, "SDI-1", token)
+		thumbCode, thumbResp = env.hostGetThumbnail(deviceID, "CH01", token)
 		if thumbCode == 200 && thumbResp.Image != nil && thumbResp.Image.Base64Image != "" {
 			break
 		}
@@ -1075,4 +1070,120 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 	t.Log("Push 3: OK — host bumped only device, actual config echoes correct IDs")
 
 	t.Log("=== TestARDConfigurationIdEchoBack PASSED ===")
+}
+
+// TestTwoChannelThumbnails verifies that thumbnails can be requested and
+// received for both channels on a 2-channel encoder using channelId-based
+// subscriptions.
+func TestTwoChannelThumbnails(t *testing.T) {
+	createTestJPEG(t, "/tmp/image_sdi.jpg")
+	createTestJPEG(t, "/tmp/image_hdmi.jpg")
+	t.Cleanup(func() {
+		_ = removeIfExists("/tmp/image_sdi.jpg")
+		_ = removeIfExists("/tmp/image_hdmi.jpg")
+	})
+
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-2ch-thumb-001")
+
+	registration := loadRegistrationFrom(t, "2_channel_encoder")
+
+	acct := env.hostRegisterAccount("thumbuser", "testpass123", "Thumb Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// Push config so SDK has a desired config, then report actual with thumbnailLocalPath
+	fullConfig := json.RawMessage(`{
+		"channels": [
+			{"id": "CH01", "state": "IDLE", "settings": {"standardSettings": [
+				{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
+				{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
+				{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
+				{"key": "IN01", "value": "SDI1"}
+			]}},
+			{"id": "CH02", "state": "IDLE", "settings": {"standardSettings": [
+				{"key": "RS01", "value": "1280x720"}, {"key": "FR01", "value": "30"},
+				{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
+				{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
+				{"key": "IN01", "value": "HDMI1"}
+			]}}
+		]
+	}`)
+	code, body := env.hostUpdateConfig(deviceID, token, fullConfig)
+	if code != 200 {
+		t.Fatalf("config push: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(3 * time.Second)
+
+	// Report actual config with thumbnailLocalPath per channel
+	sdkCfg := env.sdkGetConfiguration()
+	var actualCfg map[string]interface{}
+	if p, ok := sdkCfg.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &actualCfg)
+	}
+	if actualCfg == nil {
+		t.Fatal("could not extract config payload")
+	}
+	if channels, ok := actualCfg["channels"].([]interface{}); ok {
+		for _, ch := range channels {
+			if chMap, ok := ch.(map[string]interface{}); ok {
+				if chMap["id"] == "CH01" {
+					chMap["thumbnailLocalPath"] = "/tmp/image_sdi.jpg"
+				} else if chMap["id"] == "CH02" {
+					chMap["thumbnailLocalPath"] = "/tmp/image_hdmi.jpg"
+				}
+			}
+		}
+	}
+	cfgResp := env.sdkReportActualConfig(actualCfg)
+	if !cfgResp.Success {
+		t.Fatalf("report_actual_configuration failed: %s", cfgResp.Message)
+	}
+	time.Sleep(3 * time.Second)
+
+	// Request thumbnail for CH01
+	t.Log("Requesting thumbnail for CH01")
+	createTestJPEG(t, "/tmp/image_sdi.jpg")
+	var ch01Thumb thumbnailResponse
+	for attempt := 0; attempt < 4; attempt++ {
+		_, ch01Thumb = env.hostGetThumbnail(deviceID, "CH01", token)
+		if ch01Thumb.Image != nil && ch01Thumb.Image.Base64Image != "" {
+			break
+		}
+		createTestJPEG(t, "/tmp/image_sdi.jpg")
+		time.Sleep(5 * time.Second)
+	}
+	if ch01Thumb.Image == nil || ch01Thumb.Image.Base64Image == "" {
+		t.Fatal("CH01: no thumbnail received after retries")
+	}
+	t.Log("CH01: OK — thumbnail received")
+
+	// Request thumbnail for CH02
+	t.Log("Requesting thumbnail for CH02")
+	createTestJPEG(t, "/tmp/image_hdmi.jpg")
+	var ch02Thumb thumbnailResponse
+	for attempt := 0; attempt < 4; attempt++ {
+		_, ch02Thumb = env.hostGetThumbnail(deviceID, "CH02", token)
+		if ch02Thumb.Image != nil && ch02Thumb.Image.Base64Image != "" {
+			break
+		}
+		createTestJPEG(t, "/tmp/image_hdmi.jpg")
+		time.Sleep(5 * time.Second)
+	}
+	if ch02Thumb.Image == nil || ch02Thumb.Image.Base64Image == "" {
+		t.Fatal("CH02: no thumbnail received after retries")
+	}
+	t.Log("CH02: OK — thumbnail received")
+
+	t.Log("=== TestTwoChannelThumbnails PASSED ===")
 }

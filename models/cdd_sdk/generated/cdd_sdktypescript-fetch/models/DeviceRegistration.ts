@@ -27,13 +27,6 @@ import {
     SettingToJSON,
     SettingToJSONTyped,
 } from './Setting';
-import type { Thumbnail } from './Thumbnail';
-import {
-    ThumbnailFromJSON,
-    ThumbnailFromJSONTyped,
-    ThumbnailToJSON,
-    ThumbnailToJSONTyped,
-} from './Thumbnail';
 
 /**
  * 
@@ -53,12 +46,6 @@ export interface DeviceRegistration {
      * @memberof DeviceRegistration
      */
     standardSettings?: Array<Setting>;
-    /**
-     * 
-     * @type {Array<Thumbnail>}
-     * @memberof DeviceRegistration
-     */
-    thumbnails?: Array<Thumbnail>;
 }
 
 /**
@@ -81,7 +68,6 @@ export function DeviceRegistrationFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'channels': ((json['channels'] as Array<any>).map(ChannelFromJSON)),
         'standardSettings': json['standardSettings'] == null ? undefined : ((json['standardSettings'] as Array<any>).map(SettingFromJSON)),
-        'thumbnails': json['thumbnails'] == null ? undefined : ((json['thumbnails'] as Array<any>).map(ThumbnailFromJSON)),
     };
 }
 
@@ -98,7 +84,6 @@ export function DeviceRegistrationToJSONTyped(value?: DeviceRegistration | null,
         
         'channels': ((value['channels'] as Array<any>).map(ChannelToJSON)),
         'standardSettings': value['standardSettings'] == null ? undefined : ((value['standardSettings'] as Array<any>).map(SettingToJSON)),
-        'thumbnails': value['thumbnails'] == null ? undefined : ((value['thumbnails'] as Array<any>).map(ThumbnailToJSON)),
     };
 }
 

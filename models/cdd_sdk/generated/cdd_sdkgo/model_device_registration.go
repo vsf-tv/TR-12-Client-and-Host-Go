@@ -23,7 +23,6 @@ var _ MappedNullable = &DeviceRegistration{}
 type DeviceRegistration struct {
 	Channels []Channel `json:"channels"`
 	StandardSettings []Setting `json:"standardSettings,omitempty"`
-	Thumbnails []Thumbnail `json:"thumbnails,omitempty"`
 }
 
 type _DeviceRegistration DeviceRegistration
@@ -102,38 +101,6 @@ func (o *DeviceRegistration) SetStandardSettings(v []Setting) {
 	o.StandardSettings = v
 }
 
-// GetThumbnails returns the Thumbnails field value if set, zero value otherwise.
-func (o *DeviceRegistration) GetThumbnails() []Thumbnail {
-	if o == nil || IsNil(o.Thumbnails) {
-		var ret []Thumbnail
-		return ret
-	}
-	return o.Thumbnails
-}
-
-// GetThumbnailsOk returns a tuple with the Thumbnails field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *DeviceRegistration) GetThumbnailsOk() ([]Thumbnail, bool) {
-	if o == nil || IsNil(o.Thumbnails) {
-		return nil, false
-	}
-	return o.Thumbnails, true
-}
-
-// HasThumbnails returns a boolean if a field has been set.
-func (o *DeviceRegistration) HasThumbnails() bool {
-	if o != nil && !IsNil(o.Thumbnails) {
-		return true
-	}
-
-	return false
-}
-
-// SetThumbnails gets a reference to the given []Thumbnail and assigns it to the Thumbnails field.
-func (o *DeviceRegistration) SetThumbnails(v []Thumbnail) {
-	o.Thumbnails = v
-}
-
 func (o DeviceRegistration) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -147,9 +114,6 @@ func (o DeviceRegistration) ToMap() (map[string]interface{}, error) {
 	toSerialize["channels"] = o.Channels
 	if !IsNil(o.StandardSettings) {
 		toSerialize["standardSettings"] = o.StandardSettings
-	}
-	if !IsNil(o.Thumbnails) {
-		toSerialize["thumbnails"] = o.Thumbnails
 	}
 	return toSerialize, nil
 }

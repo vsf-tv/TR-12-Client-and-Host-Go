@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** |  | 
 **Id** | **string** |  | 
-**ChannelType** | Pointer to [**ChannelType**](ChannelType.md) |  | [optional] 
+**ChannelType** | [**ChannelType**](ChannelType.md) |  | 
 **StandardSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
 **Profiles** | Pointer to [**[]ProfileDefinition**](ProfileDefinition.md) |  | [optional] 
 **ConnectionProtocols** | Pointer to [**[]TransportProtocolName**](TransportProtocolName.md) |  | [optional] 
@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 
 ### NewChannel
 
-`func NewChannel(name string, id string, ) *Channel`
+`func NewChannel(name string, id string, channelType ChannelType, ) *Channel`
 
 NewChannel instantiates a new Channel object
 This constructor will assign default values to properties that have it defined,
@@ -89,11 +89,6 @@ and a boolean to check if the value has been set.
 
 SetChannelType sets ChannelType field to given value.
 
-### HasChannelType
-
-`func (o *Channel) HasChannelType() bool`
-
-HasChannelType returns a boolean if a field has been set.
 
 ### GetStandardSettings
 

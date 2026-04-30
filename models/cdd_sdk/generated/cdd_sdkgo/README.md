@@ -144,7 +144,6 @@ Class | Method | HTTP request | Description
  - [StatusValue](docs/StatusValue.md)
  - [StreamId](docs/StreamId.md)
  - [SynchronizationSource](docs/SynchronizationSource.md)
- - [Thumbnail](docs/Thumbnail.md)
  - [TransportProtocol](docs/TransportProtocol.md)
  - [TransportProtocolName](docs/TransportProtocolName.md)
  - [UnhealthyStateDescription](docs/UnhealthyStateDescription.md)

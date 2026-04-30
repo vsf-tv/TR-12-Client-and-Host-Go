@@ -75,4 +75,9 @@ type DeviceCallbacks interface {
 
 	// GetChannelStatus returns per-channel status values (bitrate, output state, etc.)
 	GetChannelStatus(channelID string) []cddsdkgo.StatusValue
+
+	// GetChannelThumbnailLocalPath returns the local filesystem path to the
+	// thumbnail image for the given channel based on the device's current
+	// input configuration. Returns ("", false) if no thumbnail is available.
+	GetChannelThumbnailLocalPath(channelID string) (string, bool)
 }

@@ -53,7 +53,6 @@ export * from '../models/StandardSettings';
 export * from '../models/StatusValue';
 export * from '../models/StreamId';
 export * from '../models/SynchronizationSource';
-export * from '../models/Thumbnail';
 export * from '../models/TransportProtocol';
 export * from '../models/TransportProtocolName';
 export * from '../models/UnhealthyStateDescription';
@@ -65,7 +64,7 @@ export * from '../models/ZixiPushTransportProtocol';
 import { Aes128 } from '../models/Aes128';
 import { Aes256 } from '../models/Aes256';
 import { Channel       } from '../models/Channel';
-import { ChannelConfiguration       } from '../models/ChannelConfiguration';
+import { ChannelConfiguration        } from '../models/ChannelConfiguration';
 import { ChannelProfile } from '../models/ChannelProfile';
 import { ChannelState } from '../models/ChannelState';
 import { ChannelStatus    } from '../models/ChannelStatus';
@@ -117,7 +116,6 @@ import { StandardSettings } from '../models/StandardSettings';
 import { StatusValue } from '../models/StatusValue';
 import { StreamId } from '../models/StreamId';
 import { SynchronizationSource } from '../models/SynchronizationSource';
-import { Thumbnail } from '../models/Thumbnail';
 import { TransportProtocolClass } from '../models/TransportProtocol';
 import { TransportProtocolName } from '../models/TransportProtocolName';
 import { UnhealthyStateDescription } from '../models/UnhealthyStateDescription';
@@ -198,7 +196,6 @@ let typeMap: {[index: string]: any} = {
     "StatusValue": StatusValue,
     "StreamId": StreamId,
     "SynchronizationSource": SynchronizationSource,
-    "Thumbnail": Thumbnail,
     "TransportProtocol": TransportProtocolClass,
     "UnhealthyStateDescription": UnhealthyStateDescription,
     "ZixiPull": ZixiPull,

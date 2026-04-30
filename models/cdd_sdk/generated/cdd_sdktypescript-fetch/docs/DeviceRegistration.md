@@ -8,7 +8,6 @@ Name | Type
 ------------ | -------------
 `channels` | [Array&lt;Channel&gt;](Channel.md)
 `standardSettings` | [Array&lt;Setting&gt;](Setting.md)
-`thumbnails` | [Array&lt;Thumbnail&gt;](Thumbnail.md)
 
 ## Example
 
@@ -19,7 +18,6 @@ import type { DeviceRegistration } from ''
 const example = {
   "channels": null,
   "standardSettings": null,
-  "thumbnails": null,
 } satisfies DeviceRegistration
 
 console.log(example)

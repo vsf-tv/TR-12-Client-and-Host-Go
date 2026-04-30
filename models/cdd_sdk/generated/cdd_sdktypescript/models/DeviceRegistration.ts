@@ -12,13 +12,11 @@
 
 import { Channel } from '../models/Channel';
 import { Setting } from '../models/Setting';
-import { Thumbnail } from '../models/Thumbnail';
 import { HttpFile } from '../http/http';
 
 export class DeviceRegistration {
     'channels': Array<Channel>;
     'standardSettings'?: Array<Setting>;
-    'thumbnails'?: Array<Thumbnail>;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -35,12 +33,6 @@ export class DeviceRegistration {
             "name": "standardSettings",
             "baseName": "standardSettings",
             "type": "Array<Setting>",
-            "format": ""
-        },
-        {
-            "name": "thumbnails",
-            "baseName": "thumbnails",
-            "type": "Array<Thumbnail>",
             "format": ""
         }    ];
 

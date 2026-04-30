@@ -58,7 +58,6 @@ import { StandardSettings } from '../models/StandardSettings';
 import { StatusValue } from '../models/StatusValue';
 import { StreamId } from '../models/StreamId';
 import { SynchronizationSource } from '../models/SynchronizationSource';
-import { Thumbnail } from '../models/Thumbnail';
 import { TransportProtocol } from '../models/TransportProtocol';
 import { TransportProtocolName } from '../models/TransportProtocolName';
 import { UnhealthyStateDescription } from '../models/UnhealthyStateDescription';

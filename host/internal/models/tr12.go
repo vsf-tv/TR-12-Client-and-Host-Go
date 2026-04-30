@@ -37,6 +37,7 @@ type RequestThumbnailRequestContent = tr12models.RequestThumbnailRequestContent
 type ThumbnailRequest = tr12models.ThumbnailRequest
 type RequestLogRequestContent = tr12models.RequestLogRequestContent
 type GetHostConfigResponseContent = tr12models.GetHostConfigResponseContent
+type ProtocolVersion = tr12models.ProtocolVersion
 
 // Re-export enum constants
 var (

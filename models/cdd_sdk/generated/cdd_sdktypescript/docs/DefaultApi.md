@@ -84,13 +84,6 @@ const request: DefaultApiConnectRequest = {
           },
         },
       ],
-      thumbnails: [
-        {
-          name: "name_example",
-          id: "id_example",
-          localPath: "localPath_example",
-        },
-      ],
     },
     hostId: "hostId_example",
   },
@@ -348,6 +341,7 @@ const request: DefaultApiReportActualConfigurationRequest = {
             transportProtocol: null,
           },
           health: null,
+          thumbnailLocalPath: "thumbnailLocalPath_example",
         },
       ],
       standardSettings: [

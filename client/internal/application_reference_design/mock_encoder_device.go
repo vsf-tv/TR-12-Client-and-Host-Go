@@ -349,3 +349,24 @@ func GetSimulatedBitrate() string {
 	ms := time.Now().UnixMilli()
 	return fmt.Sprintf("%d", int(math.Mod(float64(ms), 10000))+20000)
 }
+
+// inputThumbnailPaths maps selected_input values to thumbnail image paths.
+var inputThumbnailPaths = map[string]string{
+	"SDI1":  "/tmp/image_sdi.jpg",
+	"HDMI1": "/tmp/image_hdmi.jpg",
+}
+
+// GetChannelThumbnailLocalPath returns the thumbnail path for a channel based
+// on its current selected_input setting. Defaults to SDI1 if no config yet.
+func (e *Encoder) GetChannelThumbnailLocalPath(channelID string) (string, bool) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	selectedInput := "SDI1"
+	if settings, ok := e.channelSettings[channelID]; ok {
+		if v, ok := settings["IN01"]; ok {
+			selectedInput = v
+		}
+	}
+	path, ok := inputThumbnailPaths[selectedInput]
+	return path, ok
+}

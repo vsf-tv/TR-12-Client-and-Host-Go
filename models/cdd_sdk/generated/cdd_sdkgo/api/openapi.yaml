@@ -170,6 +170,7 @@ components:
             $ref: "#/components/schemas/TransportProtocolName"
           type: array
       required:
+      - channelType
       - id
       - name
       type: object
@@ -196,6 +197,7 @@ components:
         id: id
         configurationId: configurationId
         state: ACTIVE
+        thumbnailLocalPath: thumbnailLocalPath
       properties:
         id:
           type: string
@@ -210,6 +212,13 @@ components:
           $ref: "#/components/schemas/Connection"
         health:
           $ref: "#/components/schemas/Health"
+        thumbnailLocalPath:
+          description: |-
+            Device-side only. Set by the application to indicate the local filesystem
+            path to the thumbnail image for this channel. The host shall not set this
+            field in desired configuration. The SDK reads this to resolve thumbnail
+            subscriptions keyed by channelId.
+          type: string
       required:
       - configurationId
       - id
@@ -288,6 +297,7 @@ components:
             id: id
             configurationId: configurationId
             state: ACTIVE
+            thumbnailLocalPath: thumbnailLocalPath
           - settings:
               standardSettings:
               - value: value
@@ -309,6 +319,7 @@ components:
             id: id
             configurationId: configurationId
             state: ACTIVE
+            thumbnailLocalPath: thumbnailLocalPath
           health: null
           configurationId: configurationId
       properties:
@@ -423,13 +434,6 @@ components:
             connectionProtocols:
             - SRT_LISTENER
             - SRT_LISTENER
-          thumbnails:
-          - name: name
-            localPath: localPath
-            id: id
-          - name: name
-            localPath: localPath
-            id: id
       properties:
         registration:
           $ref: "#/components/schemas/DeviceRegistration"
@@ -541,6 +545,7 @@ components:
           id: id
           configurationId: configurationId
           state: ACTIVE
+          thumbnailLocalPath: thumbnailLocalPath
         - settings:
             standardSettings:
             - value: value
@@ -562,6 +567,7 @@ components:
           id: id
           configurationId: configurationId
           state: ACTIVE
+          thumbnailLocalPath: thumbnailLocalPath
         health: null
         configurationId: configurationId
       properties:
@@ -686,13 +692,6 @@ components:
           connectionProtocols:
           - SRT_LISTENER
           - SRT_LISTENER
-        thumbnails:
-        - name: name
-          localPath: localPath
-          id: id
-        - name: name
-          localPath: localPath
-          id: id
       properties:
         channels:
           items:
@@ -701,10 +700,6 @@ components:
         standardSettings:
           items:
             $ref: "#/components/schemas/Setting"
-          type: array
-        thumbnails:
-          items:
-            $ref: "#/components/schemas/Thumbnail"
           type: array
       required:
       - channels
@@ -868,6 +863,7 @@ components:
               id: id
               configurationId: configurationId
               state: ACTIVE
+              thumbnailLocalPath: thumbnailLocalPath
             - settings:
                 standardSettings:
                 - value: value
@@ -889,6 +885,7 @@ components:
               id: id
               configurationId: configurationId
               state: ACTIVE
+              thumbnailLocalPath: thumbnailLocalPath
             health: null
             configurationId: configurationId
         success: true
@@ -1025,6 +1022,7 @@ components:
             id: id
             configurationId: configurationId
             state: ACTIVE
+            thumbnailLocalPath: thumbnailLocalPath
           - settings:
               standardSettings:
               - value: value
@@ -1046,6 +1044,7 @@ components:
             id: id
             configurationId: configurationId
             state: ACTIVE
+            thumbnailLocalPath: thumbnailLocalPath
           health: null
           configurationId: configurationId
       properties:
@@ -1194,6 +1193,8 @@ components:
         address:
           type: string
         port:
+          maximum: 65535
+          minimum: 1024
           type: number
         rtpPayloadType:
           type: number
@@ -1203,6 +1204,8 @@ components:
         address:
           type: string
         port:
+          maximum: 65535
+          minimum: 1024
           type: number
         sourceAddressFilter:
           type: string
@@ -1309,23 +1312,6 @@ components:
       - info
       - name
       - value
-      type: object
-    Thumbnail:
-      example:
-        name: name
-        localPath: localPath
-        id: id
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        localPath:
-          type: string
-      required:
-      - id
-      - localPath
-      - name
       type: object
     TransportProtocol:
       oneOf:

@@ -13,6 +13,9 @@
 import { HttpFile } from '../http/http';
 
 export class EncryptionAes128 {
+    /**
+    * A 32-character hexadecimal string.
+    */
     'passphrase': string;
 
     static readonly discriminator: string | undefined = undefined;

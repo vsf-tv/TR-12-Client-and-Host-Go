@@ -29,7 +29,7 @@ type ThumbnailService struct {
 	store         *db.Store
 	mqtt          MQTTPublisher
 	cfg           *config.Config
-	subscriptions sync.Map // key: "deviceId:sourceId" → expiry time.Time
+	subscriptions sync.Map // key: "deviceId:channelId" → expiry time.Time
 }
 
 // NewThumbnailService creates a new ThumbnailService.
@@ -42,55 +42,24 @@ func (s *ThumbnailService) SetMQTT(mqtt MQTTPublisher) {
 	s.mqtt = mqtt
 }
 
-// lookupThumbnailLocalPath reads the device's registration JSON from the DB
-// and returns the localPath for the given sourceID from the thumbnails array.
-func (s *ThumbnailService) lookupThumbnailLocalPath(deviceID, sourceID string) string {
-	device, err := s.store.GetDevice(deviceID)
-	if err != nil || device == nil || device.Registration == nil {
-		log.Printf("[THUMB] no registration found for device %s", deviceID)
-		return ""
-	}
-	// Registration is stored as raw JSON; parse just the thumbnails array.
-	var reg struct {
-		Thumbnails []struct {
-			ID        string `json:"id"`
-			LocalPath string `json:"localPath"`
-		} `json:"thumbnails"`
-	}
-	if err := json.Unmarshal(device.Registration, &reg); err != nil {
-		log.Printf("[THUMB] failed to parse registration for %s: %v", deviceID, err)
-		return ""
-	}
-	for _, t := range reg.Thumbnails {
-		if t.ID == sourceID {
-			return t.LocalPath
-		}
-	}
-	log.Printf("[THUMB] no thumbnail entry for source %q in device %s registration", sourceID, deviceID)
-	return ""
-}
-
 // RequestThumbnail creates a subscription and publishes to the device.
-func (s *ThumbnailService) RequestThumbnail(deviceID, sourceID string) error {
+func (s *ThumbnailService) RequestThumbnail(deviceID, channelID string) error {
 	scheme := "http"
 	if s.cfg.HTTPS {
 		scheme = "https"
 	}
-	uploadURL := fmt.Sprintf("%s://%s:%d/upload/thumbnail/%s/%s", scheme, s.cfg.HostAddress, s.cfg.HTTPPort, deviceID, sourceID)
-	localPath := s.lookupThumbnailLocalPath(deviceID, sourceID)
+	uploadURL := fmt.Sprintf("%s://%s:%d/upload/thumbnail/%s/%s", scheme, s.cfg.HostAddress, s.cfg.HTTPPort, deviceID, channelID)
 	expiry := time.Now().Add(120 * time.Second)
 
 	period := float32(5)
 	maxSize := float32(500)
-	// Include Content-Type header required by S3 pre-signed PUT URLs
 	headers := map[string]string{"Content-Type": "image/jpeg"}
 	sub := models.RequestThumbnailRequestContent{
 		Requests: map[string]models.ThumbnailRequest{
-			sourceID: {
+			channelID: {
 				PeriodSeconds: &period,
 				ExpiresAt:     &expiry,
 				MaxSizeKB:     &maxSize,
-				LocalPath:     &localPath,
 				RemotePath:    &uploadURL,
 				Headers:       &headers,
 			},
@@ -98,16 +67,16 @@ func (s *ThumbnailService) RequestThumbnail(deviceID, sourceID string) error {
 	}
 	payload, _ := json.Marshal(sub)
 	topic := fmt.Sprintf("cdd/%s/thumbnail/subscription", deviceID)
-	log.Printf("[THUMB] requesting thumbnail for device=%s source=%s localPath=%s remotePath=%s", deviceID, sourceID, localPath, uploadURL)
-	s.subscriptions.Store(deviceID+":"+sourceID, expiry)
-	return s.mqtt.Publish(topic, payload, true) // retained — device picks up active subscription on reconnect
+	log.Printf("[THUMB] requesting thumbnail for device=%s channel=%s remotePath=%s", deviceID, channelID, uploadURL)
+	s.subscriptions.Store(deviceID+":"+channelID, expiry)
+	return s.mqtt.Publish(topic, payload, true)
 }
 
 // StoreThumbnail saves a thumbnail to the database.
-func (s *ThumbnailService) StoreThumbnail(deviceID, sourceID string, data []byte, imageType string) error {
+func (s *ThumbnailService) StoreThumbnail(deviceID, channelID string, data []byte, imageType string) error {
 	return s.store.UpsertThumbnail(&db.Thumbnail{
 		DeviceID:    deviceID,
-		SourceID:    sourceID,
+		ChannelID:   channelID,
 		ImageData:   data,
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		ImageType:   imageType,
@@ -116,22 +85,18 @@ func (s *ThumbnailService) StoreThumbnail(deviceID, sourceID string, data []byte
 }
 
 // GetThumbnail retrieves a thumbnail, requesting one if no subscription exists.
-func (s *ThumbnailService) GetThumbnail(deviceID, sourceID string) (*db.Thumbnail, bool, error) {
-	// Check if subscription is active
-	key := deviceID + ":" + sourceID
+func (s *ThumbnailService) GetThumbnail(deviceID, channelID string) (*db.Thumbnail, bool, error) {
+	key := deviceID + ":" + channelID
 	if val, ok := s.subscriptions.Load(key); ok {
 		if time.Now().Before(val.(time.Time)) {
-			// Subscription active, try to get thumbnail
-			t, err := s.store.GetThumbnail(deviceID, sourceID)
+			t, err := s.store.GetThumbnail(deviceID, channelID)
 			return t, true, err
 		}
 		s.subscriptions.Delete(key)
 	}
-	// No active subscription — request one
-	if err := s.RequestThumbnail(deviceID, sourceID); err != nil {
+	if err := s.RequestThumbnail(deviceID, channelID); err != nil {
 		return nil, false, err
 	}
-	// Try to return existing thumbnail if available
-	t, err := s.store.GetThumbnail(deviceID, sourceID)
+	t, err := s.store.GetThumbnail(deviceID, channelID)
 	return t, false, err
 }

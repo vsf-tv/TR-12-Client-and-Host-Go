@@ -62,7 +62,6 @@ docs/StandardSettings.md
 docs/StatusValue.md
 docs/StreamId.md
 docs/SynchronizationSource.md
-docs/Thumbnail.md
 docs/TransportProtocol.md
 docs/TransportProtocolName.md
 docs/UnhealthyStateDescription.md
@@ -128,7 +127,6 @@ model_standard_settings.go
 model_status_value.go
 model_stream_id.go
 model_synchronization_source.go
-model_thumbnail.go
 model_transport_protocol.go
 model_transport_protocol_name.go
 model_unhealthy_state_description.go

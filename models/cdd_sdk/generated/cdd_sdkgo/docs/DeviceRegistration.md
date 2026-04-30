@@ -6,7 +6,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Channels** | [**[]Channel**](Channel.md) |  | 
 **StandardSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
-**Thumbnails** | Pointer to [**[]Thumbnail**](Thumbnail.md) |  | [optional] 
 
 ## Methods
 
@@ -71,31 +70,6 @@ SetStandardSettings sets StandardSettings field to given value.
 `func (o *DeviceRegistration) HasStandardSettings() bool`
 
 HasStandardSettings returns a boolean if a field has been set.
-
-### GetThumbnails
-
-`func (o *DeviceRegistration) GetThumbnails() []Thumbnail`
-
-GetThumbnails returns the Thumbnails field if non-nil, zero value otherwise.
-
-### GetThumbnailsOk
-
-`func (o *DeviceRegistration) GetThumbnailsOk() (*[]Thumbnail, bool)`
-
-GetThumbnailsOk returns a tuple with the Thumbnails field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetThumbnails
-
-`func (o *DeviceRegistration) SetThumbnails(v []Thumbnail)`
-
-SetThumbnails sets Thumbnails field to given value.
-
-### HasThumbnails
-
-`func (o *DeviceRegistration) HasThumbnails() bool`
-
-HasThumbnails returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -246,11 +246,13 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 }
 
 // ReportConfiguration publishes an actual configuration payload to the host service.
-// ReportConfiguration publishes an actual configuration payload to the host service.
 func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.DeviceConfiguration) cddsdkgo.ReportActualConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Report Configuration")
+
+	// Store the actual configuration for thumbnail path resolution
+	s.actualConfig.Store(payload)
 
 	if err := s.canPublishNow(s.configThrottle); err != nil {
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())

@@ -49,7 +49,7 @@ func NewRouter(
 	r.POST("/account/login", accounts.Login)
 
 	// Upload endpoints (called by devices via generated URLs)
-	r.PUT("/upload/thumbnail/:deviceId/:sourceId", uploads.UploadThumbnail)
+	r.PUT("/upload/thumbnail/:deviceId/:channelId", uploads.UploadThumbnail)
 	r.PUT("/upload/log/:deviceId", uploads.UploadLog)
 
 	// Authenticated endpoints (JWT required)

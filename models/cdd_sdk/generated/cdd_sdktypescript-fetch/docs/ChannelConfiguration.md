@@ -12,6 +12,7 @@ Name | Type
 `settings` | [SettingsChoice](SettingsChoice.md)
 `connection` | [Connection](Connection.md)
 `health` | [Health](Health.md)
+`thumbnailLocalPath` | string
 
 ## Example
 
@@ -26,6 +27,7 @@ const example = {
   "settings": null,
   "connection": null,
   "health": null,
+  "thumbnailLocalPath": null,
 } satisfies ChannelConfiguration
 
 console.log(example)

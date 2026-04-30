@@ -93,7 +93,7 @@ func doPair(t *testing.T, svc *DeviceService) (deviceID, pairingCode, accessCode
 	csr := generateTestCSR(t)
 	resp, err := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
-		Version:    "1.0",
+		Version:    models.ProtocolVersion{Version: models.PtrString("1.0")},
 		DeviceType: "SOURCE",
 		CertificateSigningRequest: csr,
 	})
@@ -129,7 +129,7 @@ func TestPair_HostIDMismatch(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	resp, err := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "wrong-host",
-		Version:    "1.0",
+		Version:    models.ProtocolVersion{Version: models.PtrString("1.0")},
 		DeviceType: "SOURCE",
 		CertificateSigningRequest: generateTestCSR(t),
 	})
@@ -146,7 +146,7 @@ func TestPair_BadDeviceType(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	resp, _ := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
-		Version:    "1.0",
+		Version:    models.ProtocolVersion{Version: models.PtrString("1.0")},
 		DeviceType: "INVALID",
 		CertificateSigningRequest: generateTestCSR(t),
 	})
@@ -160,7 +160,7 @@ func TestPair_EmptyVersion(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	resp, _ := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
-		Version:    "",
+		Version:    models.ProtocolVersion{Version: models.PtrString("")},
 		DeviceType: "SOURCE",
 		CertificateSigningRequest: generateTestCSR(t),
 	})
@@ -430,7 +430,7 @@ func TestFullCleanup(t *testing.T) {
 	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	// Add thumbnail and log
-	store.UpsertThumbnail(&db.Thumbnail{DeviceID: deviceID, SourceID: "ch1", ImageData: []byte{1}, Timestamp: "now", ImageType: "jpeg", ImageSizeKB: 1})
+	store.UpsertThumbnail(&db.Thumbnail{DeviceID: deviceID, ChannelID: "ch1", ImageData: []byte{1}, Timestamp: "now", ImageType: "jpeg", ImageSizeKB: 1})
 	store.UpsertLog(&db.DeviceLog{DeviceID: deviceID, LogData: []byte("log"), UploadedAt: "now", LogSizeKB: 1})
 
 	if err := svc.FullCleanup(deviceID); err != nil {

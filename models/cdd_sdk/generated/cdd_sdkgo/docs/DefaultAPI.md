@@ -33,7 +33,7 @@ import (
 )
 
 func main() {
-	connectRequestContent := *openapiclient.NewConnectRequestContent(*openapiclient.NewDeviceRegistration([]openapiclient.Channel{*openapiclient.NewChannel("Name_example", "Id_example")}), "HostId_example") // ConnectRequestContent | 
+	connectRequestContent := *openapiclient.NewConnectRequestContent(*openapiclient.NewDeviceRegistration([]openapiclient.Channel{*openapiclient.NewChannel("Name_example", "Id_example", openapiclient.ChannelType("SOURCE"))}), "HostId_example") // ConnectRequestContent | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

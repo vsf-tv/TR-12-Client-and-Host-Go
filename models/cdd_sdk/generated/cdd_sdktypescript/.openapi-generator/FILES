@@ -69,7 +69,6 @@ models/StandardSettings.ts
 models/StatusValue.ts
 models/StreamId.ts
 models/SynchronizationSource.ts
-models/Thumbnail.ts
 models/TransportProtocol.ts
 models/TransportProtocolName.ts
 models/UnhealthyStateDescription.ts

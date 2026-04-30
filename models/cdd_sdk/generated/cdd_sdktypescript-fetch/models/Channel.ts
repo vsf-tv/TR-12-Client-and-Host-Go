@@ -65,7 +65,7 @@ export interface Channel {
      * @type {ChannelType}
      * @memberof Channel
      */
-    channelType?: ChannelType;
+    channelType: ChannelType;
     /**
      * 
      * @type {Array<Setting>}
@@ -94,6 +94,7 @@ export interface Channel {
 export function instanceOfChannel(value: object): value is Channel {
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('id' in value) || value['id'] === undefined) return false;
+    if (!('channelType' in value) || value['channelType'] === undefined) return false;
     return true;
 }
 
@@ -109,7 +110,7 @@ export function ChannelFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         
         'name': json['name'],
         'id': json['id'],
-        'channelType': json['channelType'] == null ? undefined : ChannelTypeFromJSON(json['channelType']),
+        'channelType': ChannelTypeFromJSON(json['channelType']),
         'standardSettings': json['standardSettings'] == null ? undefined : ((json['standardSettings'] as Array<any>).map(SettingFromJSON)),
         'profiles': json['profiles'] == null ? undefined : ((json['profiles'] as Array<any>).map(ProfileDefinitionFromJSON)),
         'connectionProtocols': json['connectionProtocols'] == null ? undefined : ((json['connectionProtocols'] as Array<any>).map(TransportProtocolNameFromJSON)),

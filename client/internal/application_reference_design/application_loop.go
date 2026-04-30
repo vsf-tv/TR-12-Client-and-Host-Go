@@ -102,6 +102,7 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		}
 
 		if resp.State == "CONNECTED" {
+			l.reportInitialActualConfig()
 			l.processConfiguration()
 			l.reportStatus()
 		}
@@ -195,6 +196,20 @@ func (l *ApplicationLoop) processConfiguration() {
 		return
 	}
 	l.logf("[LOOP] report_actual_configuration state=%s message=%s", reportResp.State, reportResp.Message)
+}
+
+
+// reportInitialActualConfig sends a default ActualConfiguration on first connect
+// so the SDK has thumbnailLocalPath available before any desired config arrives.
+func (l *ApplicationLoop) reportInitialActualConfig() {
+	if l.latestDeviceConfigId != "" {
+		return // already have a config, skip
+	}
+	actual := l.shim.GetActualConfiguration(l.registration, nil, l.latestChannelConfigIds)
+	l.logf("[LOOP] reporting initial actual configuration (pre-config defaults)")
+	if _, err := l.sdk.ReportActualConfiguration(actual); err != nil {
+		l.logf("[LOOP] initial report_actual_configuration error: %v", err)
+	}
 }
 
 func (l *ApplicationLoop) reportStatus() {

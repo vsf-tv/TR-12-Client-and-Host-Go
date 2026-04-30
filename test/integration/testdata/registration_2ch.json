@@ -12,7 +12,7 @@
   ],
   "channels": [
     {
-      "name": "Encoder Channel 1",
+      "name": "Channel 1",
       "id": "CH01",
       "channelType": "SOURCE",
       "connectionProtocols": ["SRT_CALLER", "SRT_LISTENER"],
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "name": "Encoder Channel 2",
+      "name": "Channel 2",
       "id": "CH02",
       "channelType": "SOURCE",
       "connectionProtocols": ["SRT_CALLER", "SRT_LISTENER"],
@@ -83,9 +83,5 @@
         }
       ]
     }
-  ],
-  "thumbnails": [
-    { "name": "Channel 1 Preview", "id": "SDI-1", "localPath": "/tmp/image_sdi.jpg" },
-    { "name": "Channel 2 Preview", "id": "SDI-2", "localPath": "/tmp/image_sdi2.jpg" }
   ]
 }

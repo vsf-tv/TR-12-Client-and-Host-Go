@@ -309,9 +309,9 @@ func (s *CddSdk) updateThumbnailSubscriptionCallback(_ mqtt.Client, msg mqtt.Mes
 		s.logger.Errorf("Could not process thumbnail subscription update: %v", err)
 		return
 	}
-	for src, req := range sub.Requests {
-		s.logger.Infof("[THUMB] source=%s localPath=%q remotePath=%q periodSeconds=%.0f expiresAt=%v maxSizeKB=%.0f",
-			src, req.GetLocalPath(), req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresAt(), req.GetMaxSizeKB())
+	for channelID, req := range sub.Requests {
+		s.logger.Infof("[THUMB] channel=%s remotePath=%q periodSeconds=%.0f expiresAt=%v maxSizeKB=%.0f",
+			channelID, req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresAt(), req.GetMaxSizeKB())
 	}
 	if err := s.thumbnailManager.UpdateThumbnail(&sub); err != nil {
 		s.logger.Errorf("Thumbnail subscription error: %v", err)

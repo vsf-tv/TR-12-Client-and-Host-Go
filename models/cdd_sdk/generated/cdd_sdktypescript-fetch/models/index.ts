@@ -55,7 +55,6 @@ export * from './StandardSettings';
 export * from './StatusValue';
 export * from './StreamId';
 export * from './SynchronizationSource';
-export * from './Thumbnail';
 export * from './TransportProtocol';
 export * from './TransportProtocolName';
 export * from './UnhealthyStateDescription';

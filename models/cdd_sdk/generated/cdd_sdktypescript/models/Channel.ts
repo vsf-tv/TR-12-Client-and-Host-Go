@@ -19,7 +19,7 @@ import { HttpFile } from '../http/http';
 export class Channel {
     'name': string;
     'id': string;
-    'channelType'?: ChannelType;
+    'channelType': ChannelType;
     'standardSettings'?: Array<Setting>;
     'profiles'?: Array<ProfileDefinition>;
     'connectionProtocols'?: Array<TransportProtocolName>;
