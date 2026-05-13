@@ -46,13 +46,12 @@ func writeTempJPEG(t *testing.T, sizeBytes int) string {
 	return f.Name()
 }
 
-func makeRequest(localPath, remotePath string, period float32, expires time.Time, maxSizeKB float32) tr12models.ThumbnailRequest {
-	p, m, lp, rp := period, maxSizeKB, localPath, remotePath
+func makeRequest(remotePath string, period float32, expires time.Time, maxSizeKB float32) tr12models.ThumbnailRequest {
+	p, m, rp := period, maxSizeKB, remotePath
 	return tr12models.ThumbnailRequest{
 		PeriodSeconds: &p,
 		ExpiresAt:     &expires,
 		MaxSizeKB:     &m,
-		LocalPath:     &lp,
 		RemotePath:    &rp,
 	}
 }
@@ -72,12 +71,11 @@ func TestUploadHappyPath(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	imgPath := writeTempJPEG(t, 1024) // 1KB
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1": makeRequest(imgPath, srv.URL+"/upload", 1, expires, 500),
+		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 
 	// Wait up to 3 seconds for at least one upload
@@ -104,12 +102,11 @@ func TestExpiredSubscriptionNotUploaded(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	imgPath := writeTempJPEG(t, 1024)
 	expires := time.Now().Add(-5 * time.Second) // already expired
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1": makeRequest(imgPath, srv.URL+"/upload", 1, expires, 500),
+		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 
 	time.Sleep(500 * time.Millisecond)
@@ -129,12 +126,11 @@ func TestOversizedImageNotUploaded(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	imgPath := writeTempJPEG(t, 600*1024) // 600KB
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1": makeRequest(imgPath, srv.URL+"/upload", 1, expires, 500), // max 500KB
+		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500), // max 500KB
 	}))
 
 	time.Sleep(1500 * time.Millisecond)
@@ -158,7 +154,7 @@ func TestMissingFileNotUploaded(t *testing.T) {
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1": makeRequest("/nonexistent/path/thumb.jpg", srv.URL+"/upload", 1, expires, 500),
+		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 
 	time.Sleep(1500 * time.Millisecond)
@@ -181,13 +177,12 @@ func TestSubscriptionReplacement(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	imgPath := writeTempJPEG(t, 1024)
 	expires := time.Now().Add(30 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	// Start first subscription with period=1s
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1": makeRequest(imgPath, srv.URL+"/upload", 1, expires, 500),
+		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 	time.Sleep(1500 * time.Millisecond)
 	countAfterFirst := atomic.LoadInt32(&uploadCount)
@@ -198,7 +193,7 @@ func TestSubscriptionReplacement(t *testing.T) {
 	// Replace with a new subscription pointing to a different (nonexistent) path
 	// — uploads should stop
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1": makeRequest("/nonexistent/replaced.jpg", srv.URL+"/upload", 1, expires, 500),
+		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 	time.Sleep(1500 * time.Millisecond)
 	countAfterReplace := atomic.LoadInt32(&uploadCount)
@@ -226,13 +221,12 @@ func TestMultipleSources(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	imgPath := writeTempJPEG(t, 1024)
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1":  makeRequest(imgPath, srv.URL+"/upload?src=SDI-1", 1, expires, 500),
-		"HDMI-1": makeRequest(imgPath, srv.URL+"/upload?src=HDMI-1", 1, expires, 500),
+		"SDI-1":  makeRequest(srv.URL+"/upload?src=SDI-1", 1, expires, 500),
+		"HDMI-1": makeRequest(srv.URL+"/upload?src=HDMI-1", 1, expires, 500),
 	}))
 
 	deadline := time.Now().Add(3 * time.Second)
@@ -261,13 +255,12 @@ func TestStopAll(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	imgPath := writeTempJPEG(t, 1024)
 	expires := time.Now().Add(60 * time.Second)
 	m := NewManager(newTestLogger(t))
 
 	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
-		"SDI-1":  makeRequest(imgPath, srv.URL+"/upload", 1, expires, 500),
-		"HDMI-1": makeRequest(imgPath, srv.URL+"/upload", 1, expires, 500),
+		"SDI-1":  makeRequest(srv.URL+"/upload", 1, expires, 500),
+		"HDMI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 	time.Sleep(1500 * time.Millisecond)
 	m.StopAll()

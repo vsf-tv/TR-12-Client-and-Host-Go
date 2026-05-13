@@ -18,8 +18,8 @@ import (
 
 // TransportProtocol - struct for TransportProtocol
 type TransportProtocol struct {
-	RistCaller *RistCaller
-	RistListener *RistListener
+	RistSimpleCaller *RistSimpleCaller
+	RistSimpleListener *RistSimpleListener
 	Rtp *Rtp
 	SrtCaller *SrtCaller
 	SrtListener *SrtListener
@@ -27,17 +27,17 @@ type TransportProtocol struct {
 	ZixiPush *ZixiPush
 }
 
-// RistCallerAsTransportProtocol is a convenience function that returns RistCaller wrapped in TransportProtocol
-func RistCallerAsTransportProtocol(v *RistCaller) TransportProtocol {
+// RistSimpleCallerAsTransportProtocol is a convenience function that returns RistSimpleCaller wrapped in TransportProtocol
+func RistSimpleCallerAsTransportProtocol(v *RistSimpleCaller) TransportProtocol {
 	return TransportProtocol{
-		RistCaller: v,
+		RistSimpleCaller: v,
 	}
 }
 
-// RistListenerAsTransportProtocol is a convenience function that returns RistListener wrapped in TransportProtocol
-func RistListenerAsTransportProtocol(v *RistListener) TransportProtocol {
+// RistSimpleListenerAsTransportProtocol is a convenience function that returns RistSimpleListener wrapped in TransportProtocol
+func RistSimpleListenerAsTransportProtocol(v *RistSimpleListener) TransportProtocol {
 	return TransportProtocol{
-		RistListener: v,
+		RistSimpleListener: v,
 	}
 }
 
@@ -81,38 +81,38 @@ func ZixiPushAsTransportProtocol(v *ZixiPush) TransportProtocol {
 func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 	var err error
 	match := 0
-	// try to unmarshal data into RistCaller
-	err = newStrictDecoder(data).Decode(&dst.RistCaller)
+	// try to unmarshal data into RistSimpleCaller
+	err = newStrictDecoder(data).Decode(&dst.RistSimpleCaller)
 	if err == nil {
-		jsonRistCaller, _ := json.Marshal(dst.RistCaller)
-		if string(jsonRistCaller) == "{}" { // empty struct
-			dst.RistCaller = nil
+		jsonRistSimpleCaller, _ := json.Marshal(dst.RistSimpleCaller)
+		if string(jsonRistSimpleCaller) == "{}" { // empty struct
+			dst.RistSimpleCaller = nil
 		} else {
-			if err = validator.Validate(dst.RistCaller); err != nil {
-				dst.RistCaller = nil
+			if err = validator.Validate(dst.RistSimpleCaller); err != nil {
+				dst.RistSimpleCaller = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.RistCaller = nil
+		dst.RistSimpleCaller = nil
 	}
 
-	// try to unmarshal data into RistListener
-	err = newStrictDecoder(data).Decode(&dst.RistListener)
+	// try to unmarshal data into RistSimpleListener
+	err = newStrictDecoder(data).Decode(&dst.RistSimpleListener)
 	if err == nil {
-		jsonRistListener, _ := json.Marshal(dst.RistListener)
-		if string(jsonRistListener) == "{}" { // empty struct
-			dst.RistListener = nil
+		jsonRistSimpleListener, _ := json.Marshal(dst.RistSimpleListener)
+		if string(jsonRistSimpleListener) == "{}" { // empty struct
+			dst.RistSimpleListener = nil
 		} else {
-			if err = validator.Validate(dst.RistListener); err != nil {
-				dst.RistListener = nil
+			if err = validator.Validate(dst.RistSimpleListener); err != nil {
+				dst.RistSimpleListener = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.RistListener = nil
+		dst.RistSimpleListener = nil
 	}
 
 	// try to unmarshal data into Rtp
@@ -202,8 +202,8 @@ func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 
 	if match > 1 { // more than 1 match
 		// reset to nil
-		dst.RistCaller = nil
-		dst.RistListener = nil
+		dst.RistSimpleCaller = nil
+		dst.RistSimpleListener = nil
 		dst.Rtp = nil
 		dst.SrtCaller = nil
 		dst.SrtListener = nil
@@ -220,12 +220,12 @@ func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 
 // Marshal data from the first non-nil pointers in the struct to JSON
 func (src TransportProtocol) MarshalJSON() ([]byte, error) {
-	if src.RistCaller != nil {
-		return json.Marshal(&src.RistCaller)
+	if src.RistSimpleCaller != nil {
+		return json.Marshal(&src.RistSimpleCaller)
 	}
 
-	if src.RistListener != nil {
-		return json.Marshal(&src.RistListener)
+	if src.RistSimpleListener != nil {
+		return json.Marshal(&src.RistSimpleListener)
 	}
 
 	if src.Rtp != nil {
@@ -256,12 +256,12 @@ func (obj *TransportProtocol) GetActualInstance() (interface{}) {
 	if obj == nil {
 		return nil
 	}
-	if obj.RistCaller != nil {
-		return obj.RistCaller
+	if obj.RistSimpleCaller != nil {
+		return obj.RistSimpleCaller
 	}
 
-	if obj.RistListener != nil {
-		return obj.RistListener
+	if obj.RistSimpleListener != nil {
+		return obj.RistSimpleListener
 	}
 
 	if obj.Rtp != nil {
@@ -290,12 +290,12 @@ func (obj *TransportProtocol) GetActualInstance() (interface{}) {
 
 // Get the actual instance value
 func (obj TransportProtocol) GetActualInstanceValue() (interface{}) {
-	if obj.RistCaller != nil {
-		return *obj.RistCaller
+	if obj.RistSimpleCaller != nil {
+		return *obj.RistSimpleCaller
 	}
 
-	if obj.RistListener != nil {
-		return *obj.RistListener
+	if obj.RistSimpleListener != nil {
+		return *obj.RistSimpleListener
 	}
 
 	if obj.Rtp != nil {

@@ -16,76 +16,43 @@ import (
 	"fmt"
 )
 
-// checks if the RistListenerTransportProtocol type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &RistListenerTransportProtocol{}
+// checks if the RistSimpleListenerTransportProtocol type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &RistSimpleListenerTransportProtocol{}
 
-// RistListenerTransportProtocol struct for RistListenerTransportProtocol
-type RistListenerTransportProtocol struct {
-	StreamId *RistStreamIdentifier `json:"streamId,omitempty"`
+// RistSimpleListenerTransportProtocol struct for RistSimpleListenerTransportProtocol
+type RistSimpleListenerTransportProtocol struct {
 	Port float32 `json:"port"`
 	MinimumLatencyMilliseconds *float32 `json:"minimumLatencyMilliseconds,omitempty"`
 	Encryption *EncryptionAes `json:"encryption,omitempty"`
 	Interface *string `json:"interface,omitempty"`
 }
 
-type _RistListenerTransportProtocol RistListenerTransportProtocol
+type _RistSimpleListenerTransportProtocol RistSimpleListenerTransportProtocol
 
-// NewRistListenerTransportProtocol instantiates a new RistListenerTransportProtocol object
+// NewRistSimpleListenerTransportProtocol instantiates a new RistSimpleListenerTransportProtocol object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRistListenerTransportProtocol(port float32) *RistListenerTransportProtocol {
-	this := RistListenerTransportProtocol{}
+func NewRistSimpleListenerTransportProtocol(port float32) *RistSimpleListenerTransportProtocol {
+	this := RistSimpleListenerTransportProtocol{}
 	this.Port = port
 	var minimumLatencyMilliseconds float32 = 1000
 	this.MinimumLatencyMilliseconds = &minimumLatencyMilliseconds
 	return &this
 }
 
-// NewRistListenerTransportProtocolWithDefaults instantiates a new RistListenerTransportProtocol object
+// NewRistSimpleListenerTransportProtocolWithDefaults instantiates a new RistSimpleListenerTransportProtocol object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewRistListenerTransportProtocolWithDefaults() *RistListenerTransportProtocol {
-	this := RistListenerTransportProtocol{}
+func NewRistSimpleListenerTransportProtocolWithDefaults() *RistSimpleListenerTransportProtocol {
+	this := RistSimpleListenerTransportProtocol{}
 	var minimumLatencyMilliseconds float32 = 1000
 	this.MinimumLatencyMilliseconds = &minimumLatencyMilliseconds
 	return &this
 }
 
-// GetStreamId returns the StreamId field value if set, zero value otherwise.
-func (o *RistListenerTransportProtocol) GetStreamId() RistStreamIdentifier {
-	if o == nil || IsNil(o.StreamId) {
-		var ret RistStreamIdentifier
-		return ret
-	}
-	return *o.StreamId
-}
-
-// GetStreamIdOk returns a tuple with the StreamId field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *RistListenerTransportProtocol) GetStreamIdOk() (*RistStreamIdentifier, bool) {
-	if o == nil || IsNil(o.StreamId) {
-		return nil, false
-	}
-	return o.StreamId, true
-}
-
-// HasStreamId returns a boolean if a field has been set.
-func (o *RistListenerTransportProtocol) HasStreamId() bool {
-	if o != nil && !IsNil(o.StreamId) {
-		return true
-	}
-
-	return false
-}
-
-// SetStreamId gets a reference to the given RistStreamIdentifier and assigns it to the StreamId field.
-func (o *RistListenerTransportProtocol) SetStreamId(v RistStreamIdentifier) {
-	o.StreamId = &v
-}
-
 // GetPort returns the Port field value
-func (o *RistListenerTransportProtocol) GetPort() float32 {
+func (o *RistSimpleListenerTransportProtocol) GetPort() float32 {
 	if o == nil {
 		var ret float32
 		return ret
@@ -96,7 +63,7 @@ func (o *RistListenerTransportProtocol) GetPort() float32 {
 
 // GetPortOk returns a tuple with the Port field value
 // and a boolean to check if the value has been set.
-func (o *RistListenerTransportProtocol) GetPortOk() (*float32, bool) {
+func (o *RistSimpleListenerTransportProtocol) GetPortOk() (*float32, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -104,12 +71,12 @@ func (o *RistListenerTransportProtocol) GetPortOk() (*float32, bool) {
 }
 
 // SetPort sets field value
-func (o *RistListenerTransportProtocol) SetPort(v float32) {
+func (o *RistSimpleListenerTransportProtocol) SetPort(v float32) {
 	o.Port = v
 }
 
 // GetMinimumLatencyMilliseconds returns the MinimumLatencyMilliseconds field value if set, zero value otherwise.
-func (o *RistListenerTransportProtocol) GetMinimumLatencyMilliseconds() float32 {
+func (o *RistSimpleListenerTransportProtocol) GetMinimumLatencyMilliseconds() float32 {
 	if o == nil || IsNil(o.MinimumLatencyMilliseconds) {
 		var ret float32
 		return ret
@@ -119,7 +86,7 @@ func (o *RistListenerTransportProtocol) GetMinimumLatencyMilliseconds() float32 
 
 // GetMinimumLatencyMillisecondsOk returns a tuple with the MinimumLatencyMilliseconds field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RistListenerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*float32, bool) {
+func (o *RistSimpleListenerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*float32, bool) {
 	if o == nil || IsNil(o.MinimumLatencyMilliseconds) {
 		return nil, false
 	}
@@ -127,7 +94,7 @@ func (o *RistListenerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*floa
 }
 
 // HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
-func (o *RistListenerTransportProtocol) HasMinimumLatencyMilliseconds() bool {
+func (o *RistSimpleListenerTransportProtocol) HasMinimumLatencyMilliseconds() bool {
 	if o != nil && !IsNil(o.MinimumLatencyMilliseconds) {
 		return true
 	}
@@ -136,12 +103,12 @@ func (o *RistListenerTransportProtocol) HasMinimumLatencyMilliseconds() bool {
 }
 
 // SetMinimumLatencyMilliseconds gets a reference to the given float32 and assigns it to the MinimumLatencyMilliseconds field.
-func (o *RistListenerTransportProtocol) SetMinimumLatencyMilliseconds(v float32) {
+func (o *RistSimpleListenerTransportProtocol) SetMinimumLatencyMilliseconds(v float32) {
 	o.MinimumLatencyMilliseconds = &v
 }
 
 // GetEncryption returns the Encryption field value if set, zero value otherwise.
-func (o *RistListenerTransportProtocol) GetEncryption() EncryptionAes {
+func (o *RistSimpleListenerTransportProtocol) GetEncryption() EncryptionAes {
 	if o == nil || IsNil(o.Encryption) {
 		var ret EncryptionAes
 		return ret
@@ -151,7 +118,7 @@ func (o *RistListenerTransportProtocol) GetEncryption() EncryptionAes {
 
 // GetEncryptionOk returns a tuple with the Encryption field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RistListenerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool) {
+func (o *RistSimpleListenerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool) {
 	if o == nil || IsNil(o.Encryption) {
 		return nil, false
 	}
@@ -159,7 +126,7 @@ func (o *RistListenerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool)
 }
 
 // HasEncryption returns a boolean if a field has been set.
-func (o *RistListenerTransportProtocol) HasEncryption() bool {
+func (o *RistSimpleListenerTransportProtocol) HasEncryption() bool {
 	if o != nil && !IsNil(o.Encryption) {
 		return true
 	}
@@ -168,12 +135,12 @@ func (o *RistListenerTransportProtocol) HasEncryption() bool {
 }
 
 // SetEncryption gets a reference to the given EncryptionAes and assigns it to the Encryption field.
-func (o *RistListenerTransportProtocol) SetEncryption(v EncryptionAes) {
+func (o *RistSimpleListenerTransportProtocol) SetEncryption(v EncryptionAes) {
 	o.Encryption = &v
 }
 
 // GetInterface returns the Interface field value if set, zero value otherwise.
-func (o *RistListenerTransportProtocol) GetInterface() string {
+func (o *RistSimpleListenerTransportProtocol) GetInterface() string {
 	if o == nil || IsNil(o.Interface) {
 		var ret string
 		return ret
@@ -183,7 +150,7 @@ func (o *RistListenerTransportProtocol) GetInterface() string {
 
 // GetInterfaceOk returns a tuple with the Interface field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RistListenerTransportProtocol) GetInterfaceOk() (*string, bool) {
+func (o *RistSimpleListenerTransportProtocol) GetInterfaceOk() (*string, bool) {
 	if o == nil || IsNil(o.Interface) {
 		return nil, false
 	}
@@ -191,7 +158,7 @@ func (o *RistListenerTransportProtocol) GetInterfaceOk() (*string, bool) {
 }
 
 // HasInterface returns a boolean if a field has been set.
-func (o *RistListenerTransportProtocol) HasInterface() bool {
+func (o *RistSimpleListenerTransportProtocol) HasInterface() bool {
 	if o != nil && !IsNil(o.Interface) {
 		return true
 	}
@@ -200,11 +167,11 @@ func (o *RistListenerTransportProtocol) HasInterface() bool {
 }
 
 // SetInterface gets a reference to the given string and assigns it to the Interface field.
-func (o *RistListenerTransportProtocol) SetInterface(v string) {
+func (o *RistSimpleListenerTransportProtocol) SetInterface(v string) {
 	o.Interface = &v
 }
 
-func (o RistListenerTransportProtocol) MarshalJSON() ([]byte, error) {
+func (o RistSimpleListenerTransportProtocol) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -212,11 +179,8 @@ func (o RistListenerTransportProtocol) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o RistListenerTransportProtocol) ToMap() (map[string]interface{}, error) {
+func (o RistSimpleListenerTransportProtocol) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.StreamId) {
-		toSerialize["streamId"] = o.StreamId
-	}
 	toSerialize["port"] = o.Port
 	if !IsNil(o.MinimumLatencyMilliseconds) {
 		toSerialize["minimumLatencyMilliseconds"] = o.MinimumLatencyMilliseconds
@@ -230,7 +194,7 @@ func (o RistListenerTransportProtocol) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *RistListenerTransportProtocol) UnmarshalJSON(data []byte) (err error) {
+func (o *RistSimpleListenerTransportProtocol) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -252,53 +216,53 @@ func (o *RistListenerTransportProtocol) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varRistListenerTransportProtocol := _RistListenerTransportProtocol{}
+	varRistSimpleListenerTransportProtocol := _RistSimpleListenerTransportProtocol{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varRistListenerTransportProtocol)
+	err = decoder.Decode(&varRistSimpleListenerTransportProtocol)
 
 	if err != nil {
 		return err
 	}
 
-	*o = RistListenerTransportProtocol(varRistListenerTransportProtocol)
+	*o = RistSimpleListenerTransportProtocol(varRistSimpleListenerTransportProtocol)
 
 	return err
 }
 
-type NullableRistListenerTransportProtocol struct {
-	value *RistListenerTransportProtocol
+type NullableRistSimpleListenerTransportProtocol struct {
+	value *RistSimpleListenerTransportProtocol
 	isSet bool
 }
 
-func (v NullableRistListenerTransportProtocol) Get() *RistListenerTransportProtocol {
+func (v NullableRistSimpleListenerTransportProtocol) Get() *RistSimpleListenerTransportProtocol {
 	return v.value
 }
 
-func (v *NullableRistListenerTransportProtocol) Set(val *RistListenerTransportProtocol) {
+func (v *NullableRistSimpleListenerTransportProtocol) Set(val *RistSimpleListenerTransportProtocol) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableRistListenerTransportProtocol) IsSet() bool {
+func (v NullableRistSimpleListenerTransportProtocol) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableRistListenerTransportProtocol) Unset() {
+func (v *NullableRistSimpleListenerTransportProtocol) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableRistListenerTransportProtocol(val *RistListenerTransportProtocol) *NullableRistListenerTransportProtocol {
-	return &NullableRistListenerTransportProtocol{value: val, isSet: true}
+func NewNullableRistSimpleListenerTransportProtocol(val *RistSimpleListenerTransportProtocol) *NullableRistSimpleListenerTransportProtocol {
+	return &NullableRistSimpleListenerTransportProtocol{value: val, isSet: true}
 }
 
-func (v NullableRistListenerTransportProtocol) MarshalJSON() ([]byte, error) {
+func (v NullableRistSimpleListenerTransportProtocol) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableRistListenerTransportProtocol) UnmarshalJSON(src []byte) error {
+func (v *NullableRistSimpleListenerTransportProtocol) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

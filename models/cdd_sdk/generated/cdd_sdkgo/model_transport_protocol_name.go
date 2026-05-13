@@ -24,8 +24,8 @@ const (
 	SRT_CALLER TransportProtocolName = "SRT_CALLER"
 	ZIXI_PUSH TransportProtocolName = "ZIXI_PUSH"
 	ZIXI_PULL TransportProtocolName = "ZIXI_PULL"
-	RIST_CALLER TransportProtocolName = "RIST_CALLER"
-	RIST_LISTENER TransportProtocolName = "RIST_LISTENER"
+	RIST_SIMPLE_CALLER TransportProtocolName = "RIST_SIMPLE_CALLER"
+	RIST_SIMPLE_LISTENER TransportProtocolName = "RIST_SIMPLE_LISTENER"
 	RTP TransportProtocolName = "RTP"
 )
 
@@ -35,8 +35,8 @@ var AllowedTransportProtocolNameEnumValues = []TransportProtocolName{
 	"SRT_CALLER",
 	"ZIXI_PUSH",
 	"ZIXI_PULL",
-	"RIST_CALLER",
-	"RIST_LISTENER",
+	"RIST_SIMPLE_CALLER",
+	"RIST_SIMPLE_LISTENER",
 	"RTP",
 }
 

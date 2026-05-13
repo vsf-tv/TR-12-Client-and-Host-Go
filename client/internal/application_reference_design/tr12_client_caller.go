@@ -53,10 +53,11 @@ func (c *SDKClient) Disconnect() (*cddsdkgo.DisconnectResponseContent, error) {
 }
 
 // Deprovision calls PUT /deprovision on the SDK daemon, which informs the host,
-// deletes credentials, and resets SDK state.
+// deletes credentials, and resets SDK state. Always uses force=true so certs
+// are deleted regardless of current connection state.
 func (c *SDKClient) Deprovision(hostID string) (*cddsdkgo.DeprovisionResponseContent, error) {
 	body := map[string]string{"hostId": hostID}
-	return doTypedPUT[cddsdkgo.DeprovisionResponseContent](c, "/deprovision", body)
+	return doTypedPUT[cddsdkgo.DeprovisionResponseContent](c, "/deprovision?force=true", body)
 }
 
 // GetState calls GET /get_state.

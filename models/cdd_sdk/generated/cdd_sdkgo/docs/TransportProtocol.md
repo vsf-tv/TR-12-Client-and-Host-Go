@@ -6,8 +6,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **SrtListener** | [**SrtListenerTransportProtocol**](SrtListenerTransportProtocol.md) |  | 
 **SrtCaller** | [**SrtCallerTransportProtocol**](SrtCallerTransportProtocol.md) |  | 
-**RistListener** | [**RistListenerTransportProtocol**](RistListenerTransportProtocol.md) |  | 
-**RistCaller** | [**RistCallerTransportProtocol**](RistCallerTransportProtocol.md) |  | 
+**RistSimpleListener** | [**RistSimpleListenerTransportProtocol**](RistSimpleListenerTransportProtocol.md) |  | 
+**RistSimpleCaller** | [**RistSimpleCallerTransportProtocol**](RistSimpleCallerTransportProtocol.md) |  | 
 **ZixiPush** | [**ZixiPushTransportProtocol**](ZixiPushTransportProtocol.md) |  | 
 **ZixiPull** | [**ZixiPullTransportProtocol**](ZixiPullTransportProtocol.md) |  | 
 **Rtp** | [**RtpTransportProtocol**](RtpTransportProtocol.md) |  | 
@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 
 ### NewTransportProtocol
 
-`func NewTransportProtocol(srtListener SrtListenerTransportProtocol, srtCaller SrtCallerTransportProtocol, ristListener RistListenerTransportProtocol, ristCaller RistCallerTransportProtocol, zixiPush ZixiPushTransportProtocol, zixiPull ZixiPullTransportProtocol, rtp RtpTransportProtocol, ) *TransportProtocol`
+`func NewTransportProtocol(srtListener SrtListenerTransportProtocol, srtCaller SrtCallerTransportProtocol, ristSimpleListener RistSimpleListenerTransportProtocol, ristSimpleCaller RistSimpleCallerTransportProtocol, zixiPush ZixiPushTransportProtocol, zixiPull ZixiPullTransportProtocol, rtp RtpTransportProtocol, ) *TransportProtocol`
 
 NewTransportProtocol instantiates a new TransportProtocol object
 This constructor will assign default values to properties that have it defined,
@@ -71,44 +71,44 @@ and a boolean to check if the value has been set.
 SetSrtCaller sets SrtCaller field to given value.
 
 
-### GetRistListener
+### GetRistSimpleListener
 
-`func (o *TransportProtocol) GetRistListener() RistListenerTransportProtocol`
+`func (o *TransportProtocol) GetRistSimpleListener() RistSimpleListenerTransportProtocol`
 
-GetRistListener returns the RistListener field if non-nil, zero value otherwise.
+GetRistSimpleListener returns the RistSimpleListener field if non-nil, zero value otherwise.
 
-### GetRistListenerOk
+### GetRistSimpleListenerOk
 
-`func (o *TransportProtocol) GetRistListenerOk() (*RistListenerTransportProtocol, bool)`
+`func (o *TransportProtocol) GetRistSimpleListenerOk() (*RistSimpleListenerTransportProtocol, bool)`
 
-GetRistListenerOk returns a tuple with the RistListener field if it's non-nil, zero value otherwise
+GetRistSimpleListenerOk returns a tuple with the RistSimpleListener field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRistListener
+### SetRistSimpleListener
 
-`func (o *TransportProtocol) SetRistListener(v RistListenerTransportProtocol)`
+`func (o *TransportProtocol) SetRistSimpleListener(v RistSimpleListenerTransportProtocol)`
 
-SetRistListener sets RistListener field to given value.
+SetRistSimpleListener sets RistSimpleListener field to given value.
 
 
-### GetRistCaller
+### GetRistSimpleCaller
 
-`func (o *TransportProtocol) GetRistCaller() RistCallerTransportProtocol`
+`func (o *TransportProtocol) GetRistSimpleCaller() RistSimpleCallerTransportProtocol`
 
-GetRistCaller returns the RistCaller field if non-nil, zero value otherwise.
+GetRistSimpleCaller returns the RistSimpleCaller field if non-nil, zero value otherwise.
 
-### GetRistCallerOk
+### GetRistSimpleCallerOk
 
-`func (o *TransportProtocol) GetRistCallerOk() (*RistCallerTransportProtocol, bool)`
+`func (o *TransportProtocol) GetRistSimpleCallerOk() (*RistSimpleCallerTransportProtocol, bool)`
 
-GetRistCallerOk returns a tuple with the RistCaller field if it's non-nil, zero value otherwise
+GetRistSimpleCallerOk returns a tuple with the RistSimpleCaller field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRistCaller
+### SetRistSimpleCaller
 
-`func (o *TransportProtocol) SetRistCaller(v RistCallerTransportProtocol)`
+`func (o *TransportProtocol) SetRistSimpleCaller(v RistSimpleCallerTransportProtocol)`
 
-SetRistCaller sets RistCaller field to given value.
+SetRistSimpleCaller sets RistSimpleCaller field to given value.
 
 
 ### GetZixiPush

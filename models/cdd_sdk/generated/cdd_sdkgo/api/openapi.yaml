@@ -1134,10 +1134,8 @@ components:
       - state
       - success
       type: object
-    RistCallerTransportProtocol:
+    RistSimpleCallerTransportProtocol:
       properties:
-        streamId:
-          $ref: "#/components/schemas/RistStreamIdentifier"
         address:
           type: string
         port:
@@ -1153,10 +1151,8 @@ components:
       - address
       - port
       type: object
-    RistListenerTransportProtocol:
+    RistSimpleListenerTransportProtocol:
       properties:
-        streamId:
-          $ref: "#/components/schemas/RistStreamIdentifier"
         port:
           maximum: 65535
           minimum: 1024
@@ -1171,10 +1167,6 @@ components:
       required:
       - port
       type: object
-    RistStreamIdentifier:
-      oneOf:
-      - $ref: "#/components/schemas/synchronizationSource"
-      - $ref: "#/components/schemas/streamId"
     RtpFecConfiguration:
       properties:
         columnFec:
@@ -1317,8 +1309,8 @@ components:
       oneOf:
       - $ref: "#/components/schemas/srtListener"
       - $ref: "#/components/schemas/srtCaller"
-      - $ref: "#/components/schemas/ristListener"
-      - $ref: "#/components/schemas/ristCaller"
+      - $ref: "#/components/schemas/ristSimpleListener"
+      - $ref: "#/components/schemas/ristSimpleCaller"
       - $ref: "#/components/schemas/zixiPush"
       - $ref: "#/components/schemas/zixiPull"
       - $ref: "#/components/schemas/rtp"
@@ -1328,8 +1320,8 @@ components:
       - SRT_CALLER
       - ZIXI_PUSH
       - ZIXI_PULL
-      - RIST_CALLER
-      - RIST_LISTENER
+      - RIST_SIMPLE_CALLER
+      - RIST_SIMPLE_LISTENER
       - RTP
       type: string
     UnhealthyStateDescription:
@@ -1433,22 +1425,6 @@ components:
       - critical
       title: critical
       type: object
-    synchronizationSource:
-      properties:
-        synchronizationSource:
-          type: number
-      required:
-      - synchronizationSource
-      title: synchronizationSource
-      type: object
-    streamId:
-      properties:
-        streamId:
-          type: string
-      required:
-      - streamId
-      title: streamId
-      type: object
     standardSettings:
       example:
         standardSettings:
@@ -1498,21 +1474,21 @@ components:
       - srtCaller
       title: srtCaller
       type: object
-    ristListener:
+    ristSimpleListener:
       properties:
-        ristListener:
-          $ref: "#/components/schemas/RistListenerTransportProtocol"
+        ristSimpleListener:
+          $ref: "#/components/schemas/RistSimpleListenerTransportProtocol"
       required:
-      - ristListener
-      title: ristListener
+      - ristSimpleListener
+      title: ristSimpleListener
       type: object
-    ristCaller:
+    ristSimpleCaller:
       properties:
-        ristCaller:
-          $ref: "#/components/schemas/RistCallerTransportProtocol"
+        ristSimpleCaller:
+          $ref: "#/components/schemas/RistSimpleCallerTransportProtocol"
       required:
-      - ristCaller
-      title: ristCaller
+      - ristSimpleCaller
+      title: ristSimpleCaller
       type: object
     zixiPush:
       properties:

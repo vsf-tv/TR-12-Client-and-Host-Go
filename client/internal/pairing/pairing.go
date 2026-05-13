@@ -114,7 +114,7 @@ func (p *Pairing) GetNewPairingCode() error {
 		DeviceType:                tr12models.DeviceType(p.DeviceType),
 		HostId:                    p.HostID,
 		CertificateSigningRequest: p.Certs.CSR,
-		Version:                   tr12models.ProtocolVersion{Version: tr12models.PtrString(models.ProtocolVersionString)},
+		Version:                   *tr12models.NewProtocolVersionWithDefaults(),
 	}
 	body, _ := json.Marshal(reqBody)
 	log.Printf("[PAIR] POST %s/pair  body=%s", p.PairingURL, string(body))

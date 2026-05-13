@@ -521,7 +521,7 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 	}
 
 	mqttURI := fmt.Sprintf("tls://%s:%d", s.cfg.HostAddress, s.cfg.MQTTPort)
-	rotate := tr12models.RotateCertificatesRequestContent{
+	rotate := tr12models.DeviceSubscribesToCertificateRotationRequestContent{
 		MqttUri:           mqttURI,
 		DeviceCertificate: string(newCert),
 		RegionName:        tr12models.PtrString("local"),
@@ -550,7 +550,6 @@ func buildHostSettings(deviceID string, pairingTimeout int) *models.HostSettings
 		30,
 		fmt.Sprintf("cdd/%s/config/update", deviceID),
 		fmt.Sprintf("cdd/%s/thumbnail/subscription", deviceID),
-		fmt.Sprintf("cdd/%s/schema/report", deviceID),
 		fmt.Sprintf("cdd/%s/registration/report", deviceID),
 		fmt.Sprintf("cdd/%s/status/report", deviceID),
 		fmt.Sprintf("cdd/%s/config/actual/report", deviceID),
@@ -559,7 +558,7 @@ func buildHostSettings(deviceID string, pairingTimeout int) *models.HostSettings
 		fmt.Sprintf("cdd/%s/deprovision", deviceID),
 		fmt.Sprintf("cdd/%s/log/subscription", deviceID),
 	)
-	log.Printf("[HOST buildHostSettings] deviceID=%s subUpdateTopic=%q", deviceID, hs.SubUpdateTopic)
+	log.Printf("[HOST buildHostSettings] deviceID=%s desiredConfigTopic=%q", deviceID, hs.DeviceSubscribesToDesiredConfigurationTopic)
 	return hs
 }
 
@@ -749,66 +748,64 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 // Required fields are marked true, optional fields are marked false.
 var protocolFieldMap = map[string]map[string]bool{
 	"srtCaller": {
-		"address":                     true,
-		"port":                        true,
-		"minimumLatencyMilliseconds":  false,
-		"streamId":                    false,
-		"encryption":                  false,
+		"address":                    true,
+		"port":                       true,
+		"minimumLatencyMilliseconds": false,
+		"streamId":                   false,
+		"encryption":                 false,
 	},
 	"srtListener": {
-		"port":                        true,
-		"minimumLatencyMilliseconds":  false,
-		"streamId":                    false,
-		"encryption":                  false,
-		"interface":                   false,
+		"port":                       true,
+		"minimumLatencyMilliseconds": false,
+		"streamId":                   false,
+		"encryption":                 false,
+		"interface":                  false,
 	},
-	"ristCaller": {
-		"address":                     true,
-		"port":                        true,
-		"minimumLatencyMilliseconds":  false,
-		"streamId":                    false,
-		"encryption":                  false,
+	"ristSimpleCaller": {
+		"address":                    true,
+		"port":                       true,
+		"minimumLatencyMilliseconds": false,
+		"encryption":                 false,
 	},
-	"ristListener": {
-		"port":                        true,
-		"minimumLatencyMilliseconds":  false,
-		"streamId":                    false,
-		"encryption":                  false,
-		"interface":                   false,
+	"ristSimpleListener": {
+		"port":                       true,
+		"minimumLatencyMilliseconds": false,
+		"encryption":                 false,
+		"interface":                  false,
 	},
 	"zixiPush": {
-		"streamId":                    false,
-		"address":                     true,
-		"port":                        true,
-		"minimumLatencyMilliseconds":  false,
-		"encryption":                  false,
+		"streamId":                   false,
+		"address":                    true,
+		"port":                       true,
+		"minimumLatencyMilliseconds": false,
+		"encryption":                 false,
 	},
 	"zixiPull": {
-		"streamId":                    false,
-		"address":                     true,
-		"port":                        true,
-		"minimumLatencyMilliseconds":  false,
-		"encryption":                  false,
+		"streamId":                   false,
+		"address":                    true,
+		"port":                       true,
+		"minimumLatencyMilliseconds": false,
+		"encryption":                 false,
 	},
 	"rtp": {
-		"address":                     true,
-		"port":                        true,
-		"sourceAddressFilter":         false,
-		"rtpPayloadType":              false,
-		"fecConfig":                   false,
+		"address":             true,
+		"port":                true,
+		"sourceAddressFilter": false,
+		"rtpPayloadType":      false,
+		"fecConfig":           false,
 	},
 }
 
 // protocolKeyToRegistration maps the JSON union key (e.g. "srtCaller") to the
 // TransportProtocolName enum value in the registration (e.g. "SRT_CALLER").
 var protocolKeyToRegistration = map[string]string{
-	"srtCaller":    "SRT_CALLER",
-	"srtListener":  "SRT_LISTENER",
-	"ristCaller":   "RIST_CALLER",
-	"ristListener": "RIST_LISTENER",
-	"zixiPush":     "ZIXI_PUSH",
-	"zixiPull":     "ZIXI_PULL",
-	"rtp":          "RTP",
+	"srtCaller":          "SRT_CALLER",
+	"srtListener":        "SRT_LISTENER",
+	"ristSimpleCaller":   "RIST_SIMPLE_CALLER",
+	"ristSimpleListener": "RIST_SIMPLE_LISTENER",
+	"zixiPush":           "ZIXI_PUSH",
+	"zixiPull":           "ZIXI_PULL",
+	"rtp":                "RTP",
 }
 
 func validateConnection(connJSON json.RawMessage, registeredProtocols []string, channelID string) error {

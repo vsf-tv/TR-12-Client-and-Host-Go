@@ -1,10 +1,9 @@
-# RistCallerTransportProtocol
+# RistSimpleCallerTransportProtocol
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**StreamId** | Pointer to [**RistStreamIdentifier**](RistStreamIdentifier.md) |  | [optional] 
 **Address** | **string** |  | 
 **Port** | **float32** |  | 
 **MinimumLatencyMilliseconds** | Pointer to **float32** |  | [optional] [default to 1000]
@@ -12,135 +11,110 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewRistCallerTransportProtocol
+### NewRistSimpleCallerTransportProtocol
 
-`func NewRistCallerTransportProtocol(address string, port float32, ) *RistCallerTransportProtocol`
+`func NewRistSimpleCallerTransportProtocol(address string, port float32, ) *RistSimpleCallerTransportProtocol`
 
-NewRistCallerTransportProtocol instantiates a new RistCallerTransportProtocol object
+NewRistSimpleCallerTransportProtocol instantiates a new RistSimpleCallerTransportProtocol object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewRistCallerTransportProtocolWithDefaults
+### NewRistSimpleCallerTransportProtocolWithDefaults
 
-`func NewRistCallerTransportProtocolWithDefaults() *RistCallerTransportProtocol`
+`func NewRistSimpleCallerTransportProtocolWithDefaults() *RistSimpleCallerTransportProtocol`
 
-NewRistCallerTransportProtocolWithDefaults instantiates a new RistCallerTransportProtocol object
+NewRistSimpleCallerTransportProtocolWithDefaults instantiates a new RistSimpleCallerTransportProtocol object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetStreamId
-
-`func (o *RistCallerTransportProtocol) GetStreamId() RistStreamIdentifier`
-
-GetStreamId returns the StreamId field if non-nil, zero value otherwise.
-
-### GetStreamIdOk
-
-`func (o *RistCallerTransportProtocol) GetStreamIdOk() (*RistStreamIdentifier, bool)`
-
-GetStreamIdOk returns a tuple with the StreamId field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetStreamId
-
-`func (o *RistCallerTransportProtocol) SetStreamId(v RistStreamIdentifier)`
-
-SetStreamId sets StreamId field to given value.
-
-### HasStreamId
-
-`func (o *RistCallerTransportProtocol) HasStreamId() bool`
-
-HasStreamId returns a boolean if a field has been set.
-
 ### GetAddress
 
-`func (o *RistCallerTransportProtocol) GetAddress() string`
+`func (o *RistSimpleCallerTransportProtocol) GetAddress() string`
 
 GetAddress returns the Address field if non-nil, zero value otherwise.
 
 ### GetAddressOk
 
-`func (o *RistCallerTransportProtocol) GetAddressOk() (*string, bool)`
+`func (o *RistSimpleCallerTransportProtocol) GetAddressOk() (*string, bool)`
 
 GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAddress
 
-`func (o *RistCallerTransportProtocol) SetAddress(v string)`
+`func (o *RistSimpleCallerTransportProtocol) SetAddress(v string)`
 
 SetAddress sets Address field to given value.
 
 
 ### GetPort
 
-`func (o *RistCallerTransportProtocol) GetPort() float32`
+`func (o *RistSimpleCallerTransportProtocol) GetPort() float32`
 
 GetPort returns the Port field if non-nil, zero value otherwise.
 
 ### GetPortOk
 
-`func (o *RistCallerTransportProtocol) GetPortOk() (*float32, bool)`
+`func (o *RistSimpleCallerTransportProtocol) GetPortOk() (*float32, bool)`
 
 GetPortOk returns a tuple with the Port field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetPort
 
-`func (o *RistCallerTransportProtocol) SetPort(v float32)`
+`func (o *RistSimpleCallerTransportProtocol) SetPort(v float32)`
 
 SetPort sets Port field to given value.
 
 
 ### GetMinimumLatencyMilliseconds
 
-`func (o *RistCallerTransportProtocol) GetMinimumLatencyMilliseconds() float32`
+`func (o *RistSimpleCallerTransportProtocol) GetMinimumLatencyMilliseconds() float32`
 
 GetMinimumLatencyMilliseconds returns the MinimumLatencyMilliseconds field if non-nil, zero value otherwise.
 
 ### GetMinimumLatencyMillisecondsOk
 
-`func (o *RistCallerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*float32, bool)`
+`func (o *RistSimpleCallerTransportProtocol) GetMinimumLatencyMillisecondsOk() (*float32, bool)`
 
 GetMinimumLatencyMillisecondsOk returns a tuple with the MinimumLatencyMilliseconds field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetMinimumLatencyMilliseconds
 
-`func (o *RistCallerTransportProtocol) SetMinimumLatencyMilliseconds(v float32)`
+`func (o *RistSimpleCallerTransportProtocol) SetMinimumLatencyMilliseconds(v float32)`
 
 SetMinimumLatencyMilliseconds sets MinimumLatencyMilliseconds field to given value.
 
 ### HasMinimumLatencyMilliseconds
 
-`func (o *RistCallerTransportProtocol) HasMinimumLatencyMilliseconds() bool`
+`func (o *RistSimpleCallerTransportProtocol) HasMinimumLatencyMilliseconds() bool`
 
 HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
 
 ### GetEncryption
 
-`func (o *RistCallerTransportProtocol) GetEncryption() EncryptionAes`
+`func (o *RistSimpleCallerTransportProtocol) GetEncryption() EncryptionAes`
 
 GetEncryption returns the Encryption field if non-nil, zero value otherwise.
 
 ### GetEncryptionOk
 
-`func (o *RistCallerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool)`
+`func (o *RistSimpleCallerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool)`
 
 GetEncryptionOk returns a tuple with the Encryption field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetEncryption
 
-`func (o *RistCallerTransportProtocol) SetEncryption(v EncryptionAes)`
+`func (o *RistSimpleCallerTransportProtocol) SetEncryption(v EncryptionAes)`
 
 SetEncryption sets Encryption field to given value.
 
 ### HasEncryption
 
-`func (o *RistCallerTransportProtocol) HasEncryption() bool`
+`func (o *RistSimpleCallerTransportProtocol) HasEncryption() bool`
 
 HasEncryption returns a boolean if a field has been set.
 

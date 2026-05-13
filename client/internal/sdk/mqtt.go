@@ -140,16 +140,16 @@ func (s *CddSdk) onConnect(client mqtt.Client) {
 		return
 	}
 
-	s.logger.Infof("[MQTT] HostSettings dump: SubUpdateTopic=%q SubUpdateCertsTopic=%q SubUpdateThumbnailSubscriptionTopic=%q SubDeprovisionTopic=%q SubUpdateLogSubscriptionTopic=%q",
-		hs.SubUpdateTopic, hs.SubUpdateCertsTopic, hs.SubUpdateThumbnailSubscriptionTopic, hs.SubDeprovisionTopic, hs.SubUpdateLogSubscriptionTopic)
+	s.logger.Infof("[MQTT] HostSettings dump: desiredConfigTopic=%q certRotationTopic=%q thumbnailTopic=%q deprovisionTopic=%q logSubscriptionTopic=%q",
+		hs.DeviceSubscribesToDesiredConfigurationTopic, hs.DeviceSubscribesToCertificateRotationTopic, hs.DeviceSubscribesToThumbnailSubscriptionTopic, hs.DeviceSubscribesToDeprovisionTopic, hs.DeviceSubscribesToLogSubscriptionTopic)
 	s.logger.Infof("[MQTT] DeviceID=%q from certs store", s.certs.GetDeviceID())
 
 	subscriptions := map[string]mqtt.MessageHandler{
-		hs.SubUpdateTopic:                      s.updateConfigurationCallback,
-		hs.SubUpdateCertsTopic:                 s.updateCertsCallback,
-		hs.SubUpdateThumbnailSubscriptionTopic: s.updateThumbnailSubscriptionCallback,
-		hs.SubDeprovisionTopic:                 s.deprovisionDeviceCallback,
-		hs.SubUpdateLogSubscriptionTopic:       s.updateLogSubscriptionCallback,
+		hs.DeviceSubscribesToDesiredConfigurationTopic:  s.updateConfigurationCallback,
+		hs.DeviceSubscribesToCertificateRotationTopic:   s.updateCertsCallback,
+		hs.DeviceSubscribesToThumbnailSubscriptionTopic: s.updateThumbnailSubscriptionCallback,
+		hs.DeviceSubscribesToDeprovisionTopic:           s.deprovisionDeviceCallback,
+		hs.DeviceSubscribesToLogSubscriptionTopic:       s.updateLogSubscriptionCallback,
 	}
 	for topic, handler := range subscriptions {
 		s.logger.Infof("[MQTT] Subscribing to topic: %s", topic)
@@ -219,7 +219,7 @@ func (s *CddSdk) reportRegistration() {
 		return
 	}
 	s.logger.Info("Reporting Registration")
-	token := s.mqttClient.Publish(hs.PublishReportRegistrationTopic, 1, false, data)
+	token := s.mqttClient.Publish(hs.DevicePublishesRegistrationTopic, 1, false, data)
 	if token.WaitTimeout(5*time.Second) && token.Error() != nil {
 		s.logger.Errorf("Failed to publish registration: %v", token.Error())
 		return
@@ -274,7 +274,7 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 }
 
 func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
-	var rotate tr12models.RotateCertificatesRequestContent
+	var rotate tr12models.DeviceSubscribesToCertificateRotationRequestContent
 	if err := json.Unmarshal(msg.Payload(), &rotate); err != nil {
 		s.logger.Errorf("[CERTS] Could not parse credential update: %v", err)
 		return
@@ -284,7 +284,7 @@ func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
 	if len(certSnip) > 80 {
 		certSnip = certSnip[:80]
 	}
-	s.logger.Infof("[CERTS] Got rotate message. mqttUri=%q regionName=%q certStart=%q", rotate.MqttUri, rotate.RegionName, certSnip)
+	s.logger.Infof("[CERTS] Got rotate message. mqttUri=%q regionName=%q certStart=%q", rotate.MqttUri, rotate.GetRegionName(), certSnip)
 	updated, err := s.certs.RotateCerts(&rotate)
 	if err != nil {
 		s.logger.Errorf("[CERTS] Could not process credential update: %v", err)
@@ -319,7 +319,7 @@ func (s *CddSdk) updateThumbnailSubscriptionCallback(_ mqtt.Client, msg mqtt.Mes
 }
 
 func (s *CddSdk) deprovisionDeviceCallback(_ mqtt.Client, msg mqtt.Message) {
-	var deprov tr12models.DeprovisionDeviceRequestContent
+	var deprov tr12models.DeviceSubscribesToDeprovisionRequestContent
 	if err := json.Unmarshal(msg.Payload(), &deprov); err != nil {
 		s.logger.Errorf("Could not parse deprovision update. Deprovisioning anyway: %v", err)
 	} else {
@@ -331,7 +331,7 @@ func (s *CddSdk) deprovisionDeviceCallback(_ mqtt.Client, msg mqtt.Message) {
 }
 
 func (s *CddSdk) updateLogSubscriptionCallback(_ mqtt.Client, msg mqtt.Message) {
-	var logReq tr12models.RequestLogRequestContent
+	var logReq tr12models.DeviceSubscribesToLogSubscriptionRequestContent
 	if err := json.Unmarshal(msg.Payload(), &logReq); err != nil {
 		s.logger.Errorf("Could not process logger update: %v", err)
 		return

@@ -30,12 +30,12 @@ type AuthenticatePairingCodeRequestContent = tr12models.AuthenticatePairingCodeR
 type AuthenticatePairingCodeResponseContent = tr12models.AuthenticatePairingCodeResponseContent
 type AuthStatus = tr12models.PairingCodeAuthorizedStatus
 type HostSettings = tr12models.HostSettings
-type RotateCertificatesRequestContent = tr12models.RotateCertificatesRequestContent
-type DeprovisionRequest = tr12models.DeprovisionDeviceRequestContent
+type RotateCertificatesRequestContent = tr12models.DeviceSubscribesToCertificateRotationRequestContent
+type DeprovisionRequest = tr12models.DeviceSubscribesToDeprovisionRequestContent
 type DeprovisionReason = tr12models.DeprovisionReason
-type RequestThumbnailRequestContent = tr12models.RequestThumbnailRequestContent
+type RequestThumbnailRequestContent = tr12models.DeviceSubscribesToThumbnailSubscriptionRequestContent
 type ThumbnailRequest = tr12models.ThumbnailRequest
-type RequestLogRequestContent = tr12models.RequestLogRequestContent
+type RequestLogRequestContent = tr12models.DeviceSubscribesToLogSubscriptionRequestContent
 type GetHostConfigResponseContent = tr12models.GetHostConfigResponseContent
 type ProtocolVersion = tr12models.ProtocolVersion
 

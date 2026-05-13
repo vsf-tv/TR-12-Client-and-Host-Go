@@ -198,7 +198,7 @@ func (s *Store) WriteToFilesystem(deviceID string, auth *tr12models.Authenticate
 }
 
 // RotateCerts updates the device cert and connection settings if changed. Returns true if updated.
-func (s *Store) RotateCerts(rotate *tr12models.RotateCertificatesRequestContent) (bool, error) {
+func (s *Store) RotateCerts(rotate *tr12models.DeviceSubscribesToCertificateRotationRequestContent) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

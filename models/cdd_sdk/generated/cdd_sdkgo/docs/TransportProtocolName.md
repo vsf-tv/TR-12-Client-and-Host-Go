@@ -11,9 +11,9 @@
 
 * `ZIXI_PULL` (value: `"ZIXI_PULL"`)
 
-* `RIST_CALLER` (value: `"RIST_CALLER"`)
+* `RIST_SIMPLE_CALLER` (value: `"RIST_SIMPLE_CALLER"`)
 
-* `RIST_LISTENER` (value: `"RIST_LISTENER"`)
+* `RIST_SIMPLE_LISTENER` (value: `"RIST_SIMPLE_LISTENER"`)
 
 * `RTP` (value: `"RTP"`)
 

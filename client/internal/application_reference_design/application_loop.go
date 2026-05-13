@@ -37,6 +37,10 @@ type ApplicationLoop struct {
 	// Each channel's ID bumps independently when that channel's state/settings/connection change.
 	latestChannelConfigIds map[string]string
 
+	// reportedInitialActualConfig tracks whether the initial actual config has been
+	// reported since the last CONNECTED state. Reset on any transition away from CONNECTED.
+	reportedInitialActualConfig bool
+
 	log *cddlogger.CDDLogger
 
 	// StateCallback is called after each connect response with the current state details.
@@ -73,6 +77,7 @@ func (l *ApplicationLoop) logf(format string, args ...interface{}) {
 
 // Run executes the loop until ctx is cancelled.
 func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
+	wasConnected := false
 	for {
 		select {
 		case <-ctx.Done():
@@ -83,6 +88,11 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		resp, err := l.sdk.Connect(hostID, l.registration)
 		if err != nil {
 			l.logf("[LOOP] connect error: %v", err)
+			if wasConnected {
+				l.logf("[LOOP] lost connection — resetting config state")
+				l.resetConfigState()
+				wasConnected = false
+			}
 			select {
 			case <-ctx.Done():
 				return
@@ -102,9 +112,15 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		}
 
 		if resp.State == "CONNECTED" {
+			wasConnected = true
 			l.reportInitialActualConfig()
 			l.processConfiguration()
 			l.reportStatus()
+		} else if wasConnected {
+			// Transitioned away from CONNECTED — reset so next CONNECTED starts fresh
+			l.logf("[LOOP] transitioned away from CONNECTED (now %s) — resetting config state", resp.State)
+			l.resetConfigState()
+			wasConnected = false
 		}
 
 		select {
@@ -113,6 +129,14 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		case <-time.After(3 * time.Second):
 		}
 	}
+}
+
+// resetConfigState clears all tracked configuration IDs so the next CONNECTED
+// iteration starts fresh — reports initial actual config and re-applies all channels.
+func (l *ApplicationLoop) resetConfigState() {
+	l.latestDeviceConfigId = ""
+	l.latestChannelConfigIds = make(map[string]string)
+	l.reportedInitialActualConfig = false
 }
 
 // Disconnect calls the SDK disconnect endpoint.
@@ -199,17 +223,20 @@ func (l *ApplicationLoop) processConfiguration() {
 }
 
 
-// reportInitialActualConfig sends a default ActualConfiguration on first connect
-// so the SDK has thumbnailLocalPath available before any desired config arrives.
+// reportInitialActualConfig sends the current device state as actual configuration
+// once per CONNECTED session, so the host always has current device state
+// even before any desired configuration has been applied.
 func (l *ApplicationLoop) reportInitialActualConfig() {
-	if l.latestDeviceConfigId != "" {
-		return // already have a config, skip
+	if l.reportedInitialActualConfig {
+		return
 	}
 	actual := l.shim.GetActualConfiguration(l.registration, nil, l.latestChannelConfigIds)
-	l.logf("[LOOP] reporting initial actual configuration (pre-config defaults)")
+	l.logf("[LOOP] reporting initial actual configuration")
 	if _, err := l.sdk.ReportActualConfiguration(actual); err != nil {
 		l.logf("[LOOP] initial report_actual_configuration error: %v", err)
+		return
 	}
+	l.reportedInitialActualConfig = true
 }
 
 func (l *ApplicationLoop) reportStatus() {

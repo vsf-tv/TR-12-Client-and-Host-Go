@@ -30,10 +30,10 @@ type AuthenticatePairingCodeResponseContent = tr12models.AuthenticatePairingCode
 type AuthStatus = tr12models.PairingCodeAuthorizedStatus
 type HostSettings = tr12models.HostSettings
 type GetHostConfigResponseContent = tr12models.GetHostConfigResponseContent
-type DeprovisionRequest = tr12models.DeprovisionDeviceRequestContent
+type DeprovisionRequest = tr12models.DeviceSubscribesToDeprovisionRequestContent
 type DeprovisionReason = tr12models.DeprovisionReason
-type RequestLogRequestContent = tr12models.RequestLogRequestContent
-type RotateCertificatesRequestContent = tr12models.RotateCertificatesRequestContent
+type RequestLogRequestContent = tr12models.DeviceSubscribesToLogSubscriptionRequestContent
+type RotateCertificatesRequestContent = tr12models.DeviceSubscribesToCertificateRotationRequestContent
 type ThumbnailRequest = tr12models.ThumbnailRequest
 type Success = tr12models.Success
 type Failure = tr12models.Failure
@@ -44,9 +44,6 @@ type RequestThumbnailRequestContent struct {
 }
 
 // ---- Convenience constants ----
-
-// ProtocolVersionString is the current protocol version sent during pairing.
-const ProtocolVersionString = "2.0.0"
 
 const (
 	StateDisconnected = "DISCONNECTED"

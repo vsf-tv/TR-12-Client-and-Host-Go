@@ -233,7 +233,7 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 			Error: utils.ExceptionToErrorDetails(err),
 		}
 	}
-	if err := s.doPublishMessage(payload, hs.PublishReportStatusTopic); err != nil {
+	if err := s.doPublishMessage(payload, hs.DevicePublishesStatusTopic); err != nil {
 		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state,
 			Message: fmt.Sprintf("Status update not sent: %v", err),
@@ -249,7 +249,13 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.DeviceConfiguration) cddsdkgo.ReportActualConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
-	s.logger.Info("Report Configuration")
+
+	// Log the full payload so we can verify what's being reported
+	if payloadBytes, err := json.Marshal(payload); err == nil {
+		s.logger.Infof("Report Configuration payload: %s", string(payloadBytes))
+	} else {
+		s.logger.Info("Report Configuration")
+	}
 
 	// Store the actual configuration for thumbnail path resolution
 	s.actualConfig.Store(payload)
@@ -263,7 +269,7 @@ func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.DeviceConfiguration) cdds
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())
 		return *resp
 	}
-	if err := s.doPublishMessage(payload, hs.PublishReportActualConfigurationTopic); err != nil {
+	if err := s.doPublishMessage(payload, hs.DevicePublishesActualConfigurationTopic); err != nil {
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, fmt.Sprintf("Configuration update not sent: %v", err))
 		return *resp
 	}
@@ -300,7 +306,7 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 	}
 	data, _ := json.Marshal(msg)
 	if s.mqttClient != nil {
-		token := s.mqttClient.Publish(hs.PublishDeprovisionTopic, 1, false, data)
+		token := s.mqttClient.Publish(hs.DevicePublishesDeprovisionAcknowledgementTopic, 1, false, data)
 		token.WaitTimeout(3 * time.Second)
 	}
 	// No sleep needed — WaitTimeout above ensures delivery before we proceed

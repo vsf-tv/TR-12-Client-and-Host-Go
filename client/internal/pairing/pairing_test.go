@@ -84,7 +84,6 @@ func authResponse(status tr12models.PairingCodeAuthorizedStatus, mqttURI, region
 	pubTopic := "cdd/dev1/registration/report"
 	statusTopic := "cdd/dev1/status/report"
 	actualTopic := "cdd/dev1/config/actual/report"
-	schemaTopic := "cdd/dev1/schema/report"
 	certsTopic := "cdd/dev1/certs/update"
 	deprovTopic := "cdd/dev1/deprovision"
 	pubDeprovTopic := "cdd/dev1/deprovision/ack"
@@ -96,20 +95,19 @@ func authResponse(status tr12models.PairingCodeAuthorizedStatus, mqttURI, region
 	keepalive := float32(30)
 
 	hs := &tr12models.HostSettings{
-		MqttAlpnProtocol:                    proto,
-		PairingTimeoutSeconds:               timeout,
-		MinimumIntervalPublishSeconds:       interval,
-		MqttKeepaliveSeconds:                keepalive,
-		SubUpdateTopic:                      subTopic,
-		PublishReportRegistrationTopic:      pubTopic,
-		PublishReportStatusTopic:            statusTopic,
-		PublishReportActualConfigurationTopic: actualTopic,
-		PublishReportSchemaTopic:            schemaTopic,
-		SubUpdateCertsTopic:                 certsTopic,
-		SubDeprovisionTopic:                 deprovTopic,
-		PublishDeprovisionTopic:             pubDeprovTopic,
-		SubUpdateThumbnailSubscriptionTopic: thumbTopic,
-		SubUpdateLogSubscriptionTopic:       logTopic,
+		MqttAlpnProtocol:                              proto,
+		PairingTimeoutSeconds:                         timeout,
+		MinimumIntervalPublishSeconds:                 interval,
+		MqttKeepaliveSeconds:                          keepalive,
+		DeviceSubscribesToDesiredConfigurationTopic:   subTopic,
+		DevicePublishesRegistrationTopic:              pubTopic,
+		DevicePublishesStatusTopic:                    statusTopic,
+		DevicePublishesActualConfigurationTopic:       actualTopic,
+		DeviceSubscribesToCertificateRotationTopic:    certsTopic,
+		DeviceSubscribesToDeprovisionTopic:            deprovTopic,
+		DevicePublishesDeprovisionAcknowledgementTopic: pubDeprovTopic,
+		DeviceSubscribesToThumbnailSubscriptionTopic:  thumbTopic,
+		DeviceSubscribesToLogSubscriptionTopic:        logTopic,
 	}
 
 	resp := tr12models.AuthenticatePairingCodeResponseContent{
