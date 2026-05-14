@@ -64,7 +64,7 @@ else
         -i "$OPENAPI_SPEC" \
         -g "$LANG" \
         -o "$OUTPUT_PATH" \
-        --additional-properties=projectName="${SMITHY_SERVICE}SDK",packageName=cdd_sdkgo \
+        --additional-properties=projectName="${SMITHY_SERVICE}SDK",packageName=cdd_sdkgo,enumClassPrefix=true \
         --git-user-id=vsf-tv \
         --git-repo-id=TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo
 fi

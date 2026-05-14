@@ -20,8 +20,8 @@ type ChannelState string
 
 // List of ChannelState
 const (
-	ACTIVE ChannelState = "ACTIVE"
-	IDLE ChannelState = "IDLE"
+	CHANNELSTATE_ACTIVE ChannelState = "ACTIVE"
+	CHANNELSTATE_IDLE ChannelState = "IDLE"
 )
 
 // All allowed values of ChannelState enum

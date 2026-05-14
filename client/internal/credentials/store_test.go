@@ -138,7 +138,7 @@ func TestWriteAndReadFromFilesystem(t *testing.T) {
 		"pub/status", "pub/config", "sub/certs", "sub/deprov",
 		"pub/deprov", "sub/log",
 	)
-	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
 	auth.SetCaCertificate("fake-ca-cert")
 	auth.SetDeviceCertificate("fake-device-cert")
 	auth.SetMqttUri("tls://localhost:8883")
@@ -182,7 +182,7 @@ func TestRotateCerts_Changed(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
-	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
 	auth.SetCaCertificate("ca")
 	auth.SetDeviceCertificate("old-cert")
 	auth.SetMqttUri("tls://old:8883")
@@ -224,7 +224,7 @@ func TestRotateCerts_NothingChanged(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
-	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
 	auth.SetCaCertificate("ca")
 	auth.SetDeviceCertificate("same-cert")
 	auth.SetMqttUri("tls://same:8883")
@@ -252,7 +252,7 @@ func TestDeprovision(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
-	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
 	auth.SetCaCertificate("ca")
 	auth.SetDeviceCertificate("cert")
 	auth.SetMqttUri("tls://x:8883")
@@ -276,7 +276,7 @@ func TestRotateCerts_SameCertNewURI(t *testing.T) {
 	s.PrivKey = "key"
 
 	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
-	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.CLAIMED)
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
 	auth.SetCaCertificate("ca")
 	auth.SetDeviceCertificate("same-cert")
 	auth.SetMqttUri("tls://old:8883")

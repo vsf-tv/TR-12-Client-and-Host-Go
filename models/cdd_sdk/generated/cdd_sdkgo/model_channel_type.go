@@ -20,8 +20,8 @@ type ChannelType string
 
 // List of ChannelType
 const (
-	SOURCE ChannelType = "SOURCE"
-	DESTINATION ChannelType = "DESTINATION"
+	CHANNELTYPE_SOURCE ChannelType = "SOURCE"
+	CHANNELTYPE_DESTINATION ChannelType = "DESTINATION"
 )
 
 // All allowed values of ChannelType enum

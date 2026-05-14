@@ -450,7 +450,7 @@ func (s *DeviceService) Deprovision(deviceID, accountID string) error {
 		return err
 	}
 
-	reason := tr12models.DEPROVISIONED
+	reason := tr12models.DEPROVISIONREASON_DEPROVISIONED
 	t := time.Now().UTC()
 	msg := models.DeprovisionRequest{Reason: &reason, Timestamp: t}
 	payload, _ := json.Marshal(msg)

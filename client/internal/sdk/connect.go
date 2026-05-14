@@ -298,7 +298,7 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 	if err != nil {
 		return
 	}
-	reason := tr12models.DEPROVISIONED
+	reason := tr12models.DEPROVISIONREASON_DEPROVISIONED
 	t := time.Now().UTC()
 	msg := models.DeprovisionRequest{
 		Reason:    &reason,

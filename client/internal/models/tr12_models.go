@@ -54,18 +54,18 @@ const (
 )
 
 var (
-	AuthStatusSTANDBY = tr12models.STANDBY
-	AuthStatusCLAIMED = tr12models.CLAIMED
+	AuthStatusSTANDBY = tr12models.PAIRINGCODEAUTHORIZEDSTATUS_STANDBY
+	AuthStatusCLAIMED = tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED
 )
 
 var (
-	PairFailureHostIDMismatch         = tr12models.HOST_ID_MISMATCH
-	PairFailureVersionNotSupported    = tr12models.VERSION_NOT_SUPPORTED
-	PairFailureDeviceTypeNotSupported = tr12models.DEVICE_TYPE_NOT_SUPPORTED
+	PairFailureHostIDMismatch         = tr12models.CREATEPAIRINGCODEFAILUREREASON_HOST_ID_MISMATCH
+	PairFailureVersionNotSupported    = tr12models.CREATEPAIRINGCODEFAILUREREASON_VERSION_NOT_SUPPORTED
+	PairFailureDeviceTypeNotSupported = tr12models.CREATEPAIRINGCODEFAILUREREASON_DEVICE_TYPE_NOT_SUPPORTED
 )
 
 var (
-	DeprovisionReasonDeprovisioned = tr12models.DEPROVISIONED
+	DeprovisionReasonDeprovisioned = tr12models.DEPROVISIONREASON_DEPROVISIONED
 )
 
 var (

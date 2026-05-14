@@ -139,11 +139,11 @@ func (p *Pairing) GetNewPairingCode() error {
 	if pairResp.Result.Failure != nil {
 		reason := pairResp.Result.Failure.Failure.Reason
 		switch reason {
-		case tr12models.VERSION_NOT_SUPPORTED:
+		case tr12models.CREATEPAIRINGCODEFAILUREREASON_VERSION_NOT_SUPPORTED:
 			return fmt.Errorf("TR-12 version not supported: %s", reason)
-		case tr12models.DEVICE_TYPE_NOT_SUPPORTED:
+		case tr12models.CREATEPAIRINGCODEFAILUREREASON_DEVICE_TYPE_NOT_SUPPORTED:
 			return fmt.Errorf("device type not supported: %s", reason)
-		case tr12models.HOST_ID_MISMATCH:
+		case tr12models.CREATEPAIRINGCODEFAILUREREASON_HOST_ID_MISMATCH:
 			return fmt.Errorf("host ID does not match the host endpoint: %s", reason)
 		default:
 			return fmt.Errorf("unknown pairing failure: %s", reason)
@@ -188,9 +188,9 @@ func (p *Pairing) AuthenticatePairingCode() (bool, error) {
 		authResp.HasHostSettings(), authResp.HasCaCertificate(), authResp.HasDeviceCertificate())
 
 	switch authResp.Status {
-	case tr12models.STANDBY:
+	case tr12models.PAIRINGCODEAUTHORIZEDSTATUS_STANDBY:
 		return false, nil
-	case tr12models.CLAIMED:
+	case tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED:
 		log.Printf("[AUTH] Device CLAIMED — writing certs to filesystem for deviceId=%s", sd.DeviceId)
 		if err := p.Certs.WriteToFilesystem(sd.DeviceId, &authResp); err != nil {
 			return false, fmt.Errorf("unable to write certs to disk: %w", err)

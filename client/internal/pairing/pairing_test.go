@@ -241,7 +241,7 @@ func TestGetNewPairingCode_Success(t *testing.T) {
 func TestGetNewPairingCode_HostIDMismatch(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(pairFailureResponse(tr12models.HOST_ID_MISMATCH))
+		w.Write(pairFailureResponse(tr12models.CREATEPAIRINGCODEFAILUREREASON_HOST_ID_MISMATCH))
 	}))
 	defer srv.Close()
 
@@ -258,7 +258,7 @@ func TestGetNewPairingCode_HostIDMismatch(t *testing.T) {
 func TestGetNewPairingCode_VersionNotSupported(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(pairFailureResponse(tr12models.VERSION_NOT_SUPPORTED))
+		w.Write(pairFailureResponse(tr12models.CREATEPAIRINGCODEFAILUREREASON_VERSION_NOT_SUPPORTED))
 	}))
 	defer srv.Close()
 
@@ -272,7 +272,7 @@ func TestGetNewPairingCode_VersionNotSupported(t *testing.T) {
 func TestGetNewPairingCode_DeviceTypeNotSupported(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(pairFailureResponse(tr12models.DEVICE_TYPE_NOT_SUPPORTED))
+		w.Write(pairFailureResponse(tr12models.CREATEPAIRINGCODEFAILUREREASON_DEVICE_TYPE_NOT_SUPPORTED))
 	}))
 	defer srv.Close()
 
@@ -331,7 +331,7 @@ func TestAuthenticatePairingCode_NoPairingCode(t *testing.T) {
 func TestAuthenticatePairingCode_Standby(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(authResponse(tr12models.STANDBY, "", ""))
+		w.Write(authResponse(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_STANDBY, "", ""))
 	}))
 	defer srv.Close()
 
@@ -363,7 +363,7 @@ func TestAuthenticatePairingCode_Standby(t *testing.T) {
 func TestAuthenticatePairingCode_Claimed(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(authResponse(tr12models.CLAIMED, "tls://127.0.0.1:8883", "local"))
+		w.Write(authResponse(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED, "tls://127.0.0.1:8883", "local"))
 	}))
 	defer srv.Close()
 

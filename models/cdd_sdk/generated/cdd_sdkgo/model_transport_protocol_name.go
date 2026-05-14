@@ -20,13 +20,13 @@ type TransportProtocolName string
 
 // List of TransportProtocolName
 const (
-	SRT_LISTENER TransportProtocolName = "SRT_LISTENER"
-	SRT_CALLER TransportProtocolName = "SRT_CALLER"
-	ZIXI_PUSH TransportProtocolName = "ZIXI_PUSH"
-	ZIXI_PULL TransportProtocolName = "ZIXI_PULL"
-	RIST_SIMPLE_CALLER TransportProtocolName = "RIST_SIMPLE_CALLER"
-	RIST_SIMPLE_LISTENER TransportProtocolName = "RIST_SIMPLE_LISTENER"
-	RTP TransportProtocolName = "RTP"
+	TRANSPORTPROTOCOLNAME_SRT_LISTENER TransportProtocolName = "SRT_LISTENER"
+	TRANSPORTPROTOCOLNAME_SRT_CALLER TransportProtocolName = "SRT_CALLER"
+	TRANSPORTPROTOCOLNAME_ZIXI_PUSH TransportProtocolName = "ZIXI_PUSH"
+	TRANSPORTPROTOCOLNAME_ZIXI_PULL TransportProtocolName = "ZIXI_PULL"
+	TRANSPORTPROTOCOLNAME_RIST_SIMPLE_CALLER TransportProtocolName = "RIST_SIMPLE_CALLER"
+	TRANSPORTPROTOCOLNAME_RIST_SIMPLE_LISTENER TransportProtocolName = "RIST_SIMPLE_LISTENER"
+	TRANSPORTPROTOCOLNAME_RTP TransportProtocolName = "RTP"
 )
 
 // All allowed values of TransportProtocolName enum

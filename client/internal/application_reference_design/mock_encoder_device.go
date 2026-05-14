@@ -237,10 +237,10 @@ func (e *Encoder) HandleTransportConfigChange(channelID string, connection *cdds
 // HandleUpdateState processes a channel state change (ACTIVE/IDLE).
 func (e *Encoder) HandleUpdateState(channelID string, state cddsdkgo.ChannelState) {
 	switch state {
-	case cddsdkgo.IDLE:
+	case cddsdkgo.CHANNELSTATE_IDLE:
 		fmt.Printf("[%s] Calling stop\n", channelID)
 		e.StopChannel(channelID)
-	case cddsdkgo.ACTIVE:
+	case cddsdkgo.CHANNELSTATE_ACTIVE:
 		e.mu.Lock()
 		ch := e.getOrCreateChannel(channelID)
 		ip, port, streamID := ch.srtIP, ch.srtPort, ch.srtStreamID
@@ -339,9 +339,9 @@ func (e *Encoder) GetChannelHealth(channelID string) *cddsdkgo.Health {
 // GetChannelState returns ACTIVE or IDLE for the given channel.
 func (e *Encoder) GetChannelState(channelID string) cddsdkgo.ChannelState {
 	if e.RunningChannel(channelID) {
-		return cddsdkgo.ACTIVE
+		return cddsdkgo.CHANNELSTATE_ACTIVE
 	}
-	return cddsdkgo.IDLE
+	return cddsdkgo.CHANNELSTATE_IDLE
 }
 
 // GetSimulatedBitrate returns a fake bitrate value.
