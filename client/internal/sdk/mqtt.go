@@ -331,12 +331,12 @@ func (s *CddSdk) deprovisionDeviceCallback(_ mqtt.Client, msg mqtt.Message) {
 }
 
 func (s *CddSdk) updateLogSubscriptionCallback(_ mqtt.Client, msg mqtt.Message) {
-	var logReq tr12models.DeviceSubscribesToLogSubscriptionRequestContent
-	if err := json.Unmarshal(msg.Payload(), &logReq); err != nil {
+	var logSub tr12models.DeviceSubscribesToLogSubscriptionRequestContent
+	if err := json.Unmarshal(msg.Payload(), &logSub); err != nil {
 		s.logger.Errorf("Could not process logger update: %v", err)
 		return
 	}
-	s.logRequest = logReq
+	s.logSubscription = logSub
 	s.logger.Info("Got new log request")
 	s.logger.Dump()
 }
@@ -354,9 +354,9 @@ func (s *CddSdk) reportLogs(logFilePath string) {
 		s.logger.Errorf("Log spew detected. Last at %d", s.logSpewDetected)
 		s.logSpewDetected = 0
 	}
-	remotePath := s.logRequest.GetRemotePath()
-	expires := s.logRequest.GetExpiresAt()
-	if remotePath != "" && s.logRequest.HasExpiresAt() && time.Now().Before(expires) {
+	remotePath := s.logSubscription.GetRemotePath()
+	expires := s.logSubscription.GetExpiresAt()
+	if remotePath != "" && s.logSubscription.HasExpiresAt() && time.Now().Before(expires) {
 		s.logger.Info("Pushing Logs")
 		if err := utils.UploadFile(logFilePath, remotePath, 5, "log", nil); err != nil {
 			s.logger.Errorf("Can't upload logs: %v", err)

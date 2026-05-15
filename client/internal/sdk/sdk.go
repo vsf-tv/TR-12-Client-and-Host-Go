@@ -53,7 +53,7 @@ type CddSdk struct {
 	statusThrottle     *utils.Throttle
 	configThrottle     *utils.Throttle
 	regDelivered       bool
-	logRequest         tr12models.DeviceSubscribesToLogSubscriptionRequestContent
+	logSubscription    tr12models.DeviceSubscribesToLogSubscriptionRequestContent
 	processingLogPut   bool
 	logSpewDetected    int64
 

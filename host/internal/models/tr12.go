@@ -35,7 +35,7 @@ type DeprovisionRequest = tr12models.DeviceSubscribesToDeprovisionRequestContent
 type DeprovisionReason = tr12models.DeprovisionReason
 type RequestThumbnailRequestContent = tr12models.DeviceSubscribesToThumbnailSubscriptionRequestContent
 type ThumbnailRequest = tr12models.ThumbnailRequest
-type RequestLogRequestContent = tr12models.DeviceSubscribesToLogSubscriptionRequestContent
+type RequestLogSubscriptionContent = tr12models.DeviceSubscribesToLogSubscriptionRequestContent
 type GetHostConfigResponseContent = tr12models.GetHostConfigResponseContent
 type ProtocolVersion = tr12models.ProtocolVersion
 
