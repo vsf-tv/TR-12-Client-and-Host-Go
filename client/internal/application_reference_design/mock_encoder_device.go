@@ -19,6 +19,7 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -208,18 +209,17 @@ func (e *Encoder) GetChannelSetting(channelID, key string) (string, bool) {
 }
 
 // HandleTransportConfigChange stores SRT config for the given channel.
-func (e *Encoder) HandleTransportConfigChange(channelID string, connection *cddsdkgo.Connection) {
-	if connection == nil || connection.TransportProtocol == nil {
+func (e *Encoder) HandleTransportConfigChange(channelID string, protocol *cddsdkgo.TransportProtocol) {
+	if protocol == nil {
 		fmt.Printf("[%s] Unsupported transport protocol format\n", channelID)
 		return
 	}
-	tp := connection.TransportProtocol
-	if tp.SrtCaller == nil {
+	if protocol.SrtCaller == nil {
 		fmt.Printf("[%s] No srtCaller in transport protocol — stopping channel\n", channelID)
 		e.StopChannel(channelID)
 		return
 	}
-	srt := tp.SrtCaller.SrtCaller
+	srt := protocol.SrtCaller.SrtCaller
 	ip := srt.Address
 	port := int(srt.Port)
 	streamID := srt.GetStreamId()
@@ -259,7 +259,7 @@ func (e *Encoder) HandleUpdateState(channelID string, state cddsdkgo.ChannelStat
 }
 
 // GetChannelConnection returns the current SRT connection config for the given channel.
-func (e *Encoder) GetChannelConnection(channelID string) *cddsdkgo.Connection {
+func (e *Encoder) GetChannelConnection(channelID string) *cddsdkgo.TransportProtocol {
 	e.mu.Lock()
 	ch := e.getOrCreateChannel(channelID)
 	ip, port, streamID, latencyMs := ch.srtIP, ch.srtPort, ch.srtStreamID, ch.srtMinLatencyMs
@@ -286,9 +286,7 @@ func (e *Encoder) GetChannelConnection(channelID string) *cddsdkgo.Connection {
 	latencyF := float32(latencyMs)
 	srtProto.MinimumLatencyMilliseconds = &latencyF
 	tp := cddsdkgo.SrtCallerAsTransportProtocol(cddsdkgo.NewSrtCaller(srtProto))
-	conn := cddsdkgo.NewConnection()
-	conn.SetTransportProtocol(tp)
-	return conn
+	return &tp
 }
 
 // SetChannelHealth stores health state for a channel.
@@ -298,20 +296,13 @@ func (e *Encoder) SetChannelHealth(channelID string, level string, messages []st
 	defer e.mu.Unlock()
 	ch := e.getOrCreateChannel(channelID)
 	now := time.Now().UTC()
-	componentName := "encoder-" + channelID
+	msg := strings.Join(messages, "; ")
+	errVal := cddsdkgo.Error{Message: msg, Timestamp: now}
 	var h cddsdkgo.Health
 	if level == "CRITICAL" {
-		h = cddsdkgo.CriticalAsHealth(cddsdkgo.NewCritical(cddsdkgo.UnhealthyStateDescription{
-			Messages:      messages,
-			Timestamp:     now,
-			ComponentName: componentName,
-		}))
+		h = cddsdkgo.CriticalAsHealth(cddsdkgo.NewCritical(errVal))
 	} else {
-		h = cddsdkgo.DegradedAsHealth(cddsdkgo.NewDegraded(cddsdkgo.UnhealthyStateDescription{
-			Messages:      messages,
-			Timestamp:     now,
-			ComponentName: componentName,
-		}))
+		h = cddsdkgo.DegradedAsHealth(cddsdkgo.NewDegraded(errVal))
 	}
 	ch.health = &h
 }

@@ -256,21 +256,21 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 		updateID = s.updateID.Get()
 	}
 
-	// Deserialize the payload (without updateId) into DeviceConfiguration
+	// Deserialize the payload (without updateId) into DesiredDeviceConfiguration
 	delete(envelope, "updateId")
 	payloadBytes, err := json.Marshal(envelope)
 	if err != nil {
 		s.logger.Errorf("Could not re-marshal config payload: %v", err)
 		return
 	}
-	var deviceConfig cddsdkgo.DeviceConfiguration
+	var deviceConfig cddsdkgo.DesiredDeviceConfiguration
 	if err := json.Unmarshal(payloadBytes, &deviceConfig); err != nil {
-		s.logger.Errorf("Could not deserialize DeviceConfiguration: %v", err)
+		s.logger.Errorf("Could not deserialize DesiredDeviceConfiguration: %v", err)
 		return
 	}
 
 	s.configPayload = &deviceConfig
-	s.logger.Infof("****** CONFIG UPDATE stored, configurationId=%s", deviceConfig.ConfigurationId)
+	s.logger.Infof("****** CONFIG UPDATE stored, version=%s", deviceConfig.Version)
 }
 
 func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {

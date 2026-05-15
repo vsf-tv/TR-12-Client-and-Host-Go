@@ -20,7 +20,7 @@ var _ MappedNullable = &ConfigurationData{}
 // ConfigurationData struct for ConfigurationData
 type ConfigurationData struct {
 	UpdateId *string `json:"updateId,omitempty"`
-	Payload *DeviceConfiguration `json:"payload,omitempty"`
+	Payload *DesiredDeviceConfiguration `json:"payload,omitempty"`
 }
 
 // NewConfigurationData instantiates a new ConfigurationData object
@@ -73,9 +73,9 @@ func (o *ConfigurationData) SetUpdateId(v string) {
 }
 
 // GetPayload returns the Payload field value if set, zero value otherwise.
-func (o *ConfigurationData) GetPayload() DeviceConfiguration {
+func (o *ConfigurationData) GetPayload() DesiredDeviceConfiguration {
 	if o == nil || IsNil(o.Payload) {
-		var ret DeviceConfiguration
+		var ret DesiredDeviceConfiguration
 		return ret
 	}
 	return *o.Payload
@@ -83,7 +83,7 @@ func (o *ConfigurationData) GetPayload() DeviceConfiguration {
 
 // GetPayloadOk returns a tuple with the Payload field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ConfigurationData) GetPayloadOk() (*DeviceConfiguration, bool) {
+func (o *ConfigurationData) GetPayloadOk() (*DesiredDeviceConfiguration, bool) {
 	if o == nil || IsNil(o.Payload) {
 		return nil, false
 	}
@@ -99,8 +99,8 @@ func (o *ConfigurationData) HasPayload() bool {
 	return false
 }
 
-// SetPayload gets a reference to the given DeviceConfiguration and assigns it to the Payload field.
-func (o *ConfigurationData) SetPayload(v DeviceConfiguration) {
+// SetPayload gets a reference to the given DesiredDeviceConfiguration and assigns it to the Payload field.
+func (o *ConfigurationData) SetPayload(v DesiredDeviceConfiguration) {
 	o.Payload = &v
 }
 

@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Channels** | [**[]Channel**](Channel.md) |  | 
-**StandardSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
+**DeviceRegistrationSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
 
 ## Methods
 
@@ -46,30 +46,30 @@ and a boolean to check if the value has been set.
 SetChannels sets Channels field to given value.
 
 
-### GetStandardSettings
+### GetDeviceRegistrationSettings
 
-`func (o *DeviceRegistration) GetStandardSettings() []Setting`
+`func (o *DeviceRegistration) GetDeviceRegistrationSettings() []Setting`
 
-GetStandardSettings returns the StandardSettings field if non-nil, zero value otherwise.
+GetDeviceRegistrationSettings returns the DeviceRegistrationSettings field if non-nil, zero value otherwise.
 
-### GetStandardSettingsOk
+### GetDeviceRegistrationSettingsOk
 
-`func (o *DeviceRegistration) GetStandardSettingsOk() (*[]Setting, bool)`
+`func (o *DeviceRegistration) GetDeviceRegistrationSettingsOk() (*[]Setting, bool)`
 
-GetStandardSettingsOk returns a tuple with the StandardSettings field if it's non-nil, zero value otherwise
+GetDeviceRegistrationSettingsOk returns a tuple with the DeviceRegistrationSettings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetStandardSettings
+### SetDeviceRegistrationSettings
 
-`func (o *DeviceRegistration) SetStandardSettings(v []Setting)`
+`func (o *DeviceRegistration) SetDeviceRegistrationSettings(v []Setting)`
 
-SetStandardSettings sets StandardSettings field to given value.
+SetDeviceRegistrationSettings sets DeviceRegistrationSettings field to given value.
 
-### HasStandardSettings
+### HasDeviceRegistrationSettings
 
-`func (o *DeviceRegistration) HasStandardSettings() bool`
+`func (o *DeviceRegistration) HasDeviceRegistrationSettings() bool`
 
-HasStandardSettings returns a boolean if a field has been set.
+HasDeviceRegistrationSettings returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

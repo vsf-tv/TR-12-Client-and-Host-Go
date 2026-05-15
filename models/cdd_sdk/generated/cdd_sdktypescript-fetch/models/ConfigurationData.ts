@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DeviceConfiguration } from './DeviceConfiguration';
+import type { DesiredDeviceConfiguration } from './DesiredDeviceConfiguration';
 import {
-    DeviceConfigurationFromJSON,
-    DeviceConfigurationFromJSONTyped,
-    DeviceConfigurationToJSON,
-    DeviceConfigurationToJSONTyped,
-} from './DeviceConfiguration';
+    DesiredDeviceConfigurationFromJSON,
+    DesiredDeviceConfigurationFromJSONTyped,
+    DesiredDeviceConfigurationToJSON,
+    DesiredDeviceConfigurationToJSONTyped,
+} from './DesiredDeviceConfiguration';
 
 /**
  * 
@@ -35,10 +35,10 @@ export interface ConfigurationData {
     updateId?: string;
     /**
      * 
-     * @type {DeviceConfiguration}
+     * @type {DesiredDeviceConfiguration}
      * @memberof ConfigurationData
      */
-    payload?: DeviceConfiguration;
+    payload?: DesiredDeviceConfiguration;
 }
 
 /**
@@ -59,7 +59,7 @@ export function ConfigurationDataFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'updateId': json['updateId'] == null ? undefined : json['updateId'],
-        'payload': json['payload'] == null ? undefined : DeviceConfigurationFromJSON(json['payload']),
+        'payload': json['payload'] == null ? undefined : DesiredDeviceConfigurationFromJSON(json['payload']),
     };
 }
 
@@ -75,7 +75,7 @@ export function ConfigurationDataToJSONTyped(value?: ConfigurationData | null, i
     return {
         
         'updateId': value['updateId'],
-        'payload': DeviceConfigurationToJSON(value['payload']),
+        'payload': DesiredDeviceConfigurationToJSON(value['payload']),
     };
 }
 

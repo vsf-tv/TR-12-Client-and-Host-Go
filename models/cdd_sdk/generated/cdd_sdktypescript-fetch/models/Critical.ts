@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { UnhealthyStateDescription } from './UnhealthyStateDescription';
-import {
-    UnhealthyStateDescriptionFromJSON,
-    UnhealthyStateDescriptionFromJSONTyped,
-    UnhealthyStateDescriptionToJSON,
-    UnhealthyStateDescriptionToJSONTyped,
-} from './UnhealthyStateDescription';
-
 /**
  * 
  * @export
@@ -29,10 +21,10 @@ import {
 export interface Critical {
     /**
      * 
-     * @type {UnhealthyStateDescription}
+     * @type {Error}
      * @memberof Critical
      */
-    critical: UnhealthyStateDescription;
+    critical: Error;
 }
 
 /**
@@ -53,7 +45,7 @@ export function CriticalFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'critical': UnhealthyStateDescriptionFromJSON(json['critical']),
+        'critical': json['critical'],
     };
 }
 
@@ -68,7 +60,7 @@ export function CriticalToJSONTyped(value?: Critical | null, ignoreDiscriminator
 
     return {
         
-        'critical': UnhealthyStateDescriptionToJSON(value['critical']),
+        'critical': value['critical'],
     };
 }
 

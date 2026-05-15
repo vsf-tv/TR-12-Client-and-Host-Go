@@ -47,8 +47,8 @@ type CddSdk struct {
 	state              string
 	hostID             string
 	registration       map[string]interface{}
-	configPayload      *cddsdkgo.DeviceConfiguration // deserialized MQTT config payload
-	actualConfig       atomic.Pointer[cddsdkgo.DeviceConfiguration]
+	configPayload      *cddsdkgo.DesiredDeviceConfiguration // deserialized MQTT config payload
+	actualConfig       atomic.Pointer[cddsdkgo.ActualDeviceConfiguration]
 	updateID           *utils.UpdateID
 	statusThrottle     *utils.Throttle
 	configThrottle     *utils.Throttle

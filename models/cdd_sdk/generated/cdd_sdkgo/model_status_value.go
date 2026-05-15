@@ -22,7 +22,7 @@ var _ MappedNullable = &StatusValue{}
 // StatusValue struct for StatusValue
 type StatusValue struct {
 	Name string `json:"name"`
-	Info string `json:"info"`
+	Description string `json:"description"`
 	Value string `json:"value"`
 }
 
@@ -32,10 +32,10 @@ type _StatusValue StatusValue
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewStatusValue(name string, info string, value string) *StatusValue {
+func NewStatusValue(name string, description string, value string) *StatusValue {
 	this := StatusValue{}
 	this.Name = name
-	this.Info = info
+	this.Description = description
 	this.Value = value
 	return &this
 }
@@ -72,28 +72,28 @@ func (o *StatusValue) SetName(v string) {
 	o.Name = v
 }
 
-// GetInfo returns the Info field value
-func (o *StatusValue) GetInfo() string {
+// GetDescription returns the Description field value
+func (o *StatusValue) GetDescription() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.Info
+	return o.Description
 }
 
-// GetInfoOk returns a tuple with the Info field value
+// GetDescriptionOk returns a tuple with the Description field value
 // and a boolean to check if the value has been set.
-func (o *StatusValue) GetInfoOk() (*string, bool) {
+func (o *StatusValue) GetDescriptionOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Info, true
+	return &o.Description, true
 }
 
-// SetInfo sets field value
-func (o *StatusValue) SetInfo(v string) {
-	o.Info = v
+// SetDescription sets field value
+func (o *StatusValue) SetDescription(v string) {
+	o.Description = v
 }
 
 // GetValue returns the Value field value
@@ -131,7 +131,7 @@ func (o StatusValue) MarshalJSON() ([]byte, error) {
 func (o StatusValue) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
-	toSerialize["info"] = o.Info
+	toSerialize["description"] = o.Description
 	toSerialize["value"] = o.Value
 	return toSerialize, nil
 }
@@ -142,7 +142,7 @@ func (o *StatusValue) UnmarshalJSON(data []byte) (err error) {
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
 		"name",
-		"info",
+		"description",
 		"value",
 	}
 

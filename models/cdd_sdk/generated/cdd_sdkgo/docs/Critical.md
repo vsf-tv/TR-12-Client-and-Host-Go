@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Critical** | [**UnhealthyStateDescription**](UnhealthyStateDescription.md) |  | 
+**Critical** | [**Error**](Error.md) |  | 
 
 ## Methods
 
 ### NewCritical
 
-`func NewCritical(critical UnhealthyStateDescription, ) *Critical`
+`func NewCritical(critical Error, ) *Critical`
 
 NewCritical instantiates a new Critical object
 This constructor will assign default values to properties that have it defined,
@@ -27,20 +27,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetCritical
 
-`func (o *Critical) GetCritical() UnhealthyStateDescription`
+`func (o *Critical) GetCritical() Error`
 
 GetCritical returns the Critical field if non-nil, zero value otherwise.
 
 ### GetCriticalOk
 
-`func (o *Critical) GetCriticalOk() (*UnhealthyStateDescription, bool)`
+`func (o *Critical) GetCriticalOk() (*Error, bool)`
 
 GetCriticalOk returns a tuple with the Critical field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCritical
 
-`func (o *Critical) SetCritical(v UnhealthyStateDescription)`
+`func (o *Critical) SetCritical(v Error)`
 
 SetCritical sets Critical field to given value.
 

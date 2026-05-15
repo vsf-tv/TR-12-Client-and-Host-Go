@@ -9,8 +9,7 @@ Name | Type
 `id` | string
 `name` | string
 `description` | string
-`enums` | [EnumValues](EnumValues.md)
-`ranges` | [RangeValues](RangeValues.md)
+`constraint` | [SettingConstraint](SettingConstraint.md)
 
 ## Example
 
@@ -22,8 +21,7 @@ const example = {
   "id": null,
   "name": null,
   "description": null,
-  "enums": null,
-  "ranges": null,
+  "constraint": null,
 } satisfies Setting
 
 console.log(example)

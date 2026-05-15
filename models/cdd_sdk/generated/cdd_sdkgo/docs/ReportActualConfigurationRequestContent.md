@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Configuration** | [**DeviceConfiguration**](DeviceConfiguration.md) |  | 
+**Configuration** | [**ActualDeviceConfiguration**](ActualDeviceConfiguration.md) |  | 
 
 ## Methods
 
 ### NewReportActualConfigurationRequestContent
 
-`func NewReportActualConfigurationRequestContent(configuration DeviceConfiguration, ) *ReportActualConfigurationRequestContent`
+`func NewReportActualConfigurationRequestContent(configuration ActualDeviceConfiguration, ) *ReportActualConfigurationRequestContent`
 
 NewReportActualConfigurationRequestContent instantiates a new ReportActualConfigurationRequestContent object
 This constructor will assign default values to properties that have it defined,
@@ -27,20 +27,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetConfiguration
 
-`func (o *ReportActualConfigurationRequestContent) GetConfiguration() DeviceConfiguration`
+`func (o *ReportActualConfigurationRequestContent) GetConfiguration() ActualDeviceConfiguration`
 
 GetConfiguration returns the Configuration field if non-nil, zero value otherwise.
 
 ### GetConfigurationOk
 
-`func (o *ReportActualConfigurationRequestContent) GetConfigurationOk() (*DeviceConfiguration, bool)`
+`func (o *ReportActualConfigurationRequestContent) GetConfigurationOk() (*ActualDeviceConfiguration, bool)`
 
 GetConfigurationOk returns a tuple with the Configuration field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetConfiguration
 
-`func (o *ReportActualConfigurationRequestContent) SetConfiguration(v DeviceConfiguration)`
+`func (o *ReportActualConfigurationRequestContent) SetConfiguration(v ActualDeviceConfiguration)`
 
 SetConfiguration sets Configuration field to given value.
 

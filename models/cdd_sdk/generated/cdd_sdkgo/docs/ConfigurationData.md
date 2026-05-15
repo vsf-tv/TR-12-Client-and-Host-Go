@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **UpdateId** | Pointer to **string** |  | [optional] 
-**Payload** | Pointer to [**DeviceConfiguration**](DeviceConfiguration.md) |  | [optional] 
+**Payload** | Pointer to [**DesiredDeviceConfiguration**](DesiredDeviceConfiguration.md) |  | [optional] 
 
 ## Methods
 
@@ -53,20 +53,20 @@ HasUpdateId returns a boolean if a field has been set.
 
 ### GetPayload
 
-`func (o *ConfigurationData) GetPayload() DeviceConfiguration`
+`func (o *ConfigurationData) GetPayload() DesiredDeviceConfiguration`
 
 GetPayload returns the Payload field if non-nil, zero value otherwise.
 
 ### GetPayloadOk
 
-`func (o *ConfigurationData) GetPayloadOk() (*DeviceConfiguration, bool)`
+`func (o *ConfigurationData) GetPayloadOk() (*DesiredDeviceConfiguration, bool)`
 
 GetPayloadOk returns a tuple with the Payload field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetPayload
 
-`func (o *ConfigurationData) SetPayload(v DeviceConfiguration)`
+`func (o *ConfigurationData) SetPayload(v DesiredDeviceConfiguration)`
 
 SetPayload sets Payload field to given value.
 

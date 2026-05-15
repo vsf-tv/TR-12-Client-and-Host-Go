@@ -22,7 +22,7 @@ var _ MappedNullable = &DeviceRegistration{}
 // DeviceRegistration struct for DeviceRegistration
 type DeviceRegistration struct {
 	Channels []Channel `json:"channels"`
-	StandardSettings []Setting `json:"standardSettings,omitempty"`
+	DeviceRegistrationSettings []Setting `json:"deviceRegistrationSettings,omitempty"`
 }
 
 type _DeviceRegistration DeviceRegistration
@@ -69,36 +69,36 @@ func (o *DeviceRegistration) SetChannels(v []Channel) {
 	o.Channels = v
 }
 
-// GetStandardSettings returns the StandardSettings field value if set, zero value otherwise.
-func (o *DeviceRegistration) GetStandardSettings() []Setting {
-	if o == nil || IsNil(o.StandardSettings) {
+// GetDeviceRegistrationSettings returns the DeviceRegistrationSettings field value if set, zero value otherwise.
+func (o *DeviceRegistration) GetDeviceRegistrationSettings() []Setting {
+	if o == nil || IsNil(o.DeviceRegistrationSettings) {
 		var ret []Setting
 		return ret
 	}
-	return o.StandardSettings
+	return o.DeviceRegistrationSettings
 }
 
-// GetStandardSettingsOk returns a tuple with the StandardSettings field value if set, nil otherwise
+// GetDeviceRegistrationSettingsOk returns a tuple with the DeviceRegistrationSettings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *DeviceRegistration) GetStandardSettingsOk() ([]Setting, bool) {
-	if o == nil || IsNil(o.StandardSettings) {
+func (o *DeviceRegistration) GetDeviceRegistrationSettingsOk() ([]Setting, bool) {
+	if o == nil || IsNil(o.DeviceRegistrationSettings) {
 		return nil, false
 	}
-	return o.StandardSettings, true
+	return o.DeviceRegistrationSettings, true
 }
 
-// HasStandardSettings returns a boolean if a field has been set.
-func (o *DeviceRegistration) HasStandardSettings() bool {
-	if o != nil && !IsNil(o.StandardSettings) {
+// HasDeviceRegistrationSettings returns a boolean if a field has been set.
+func (o *DeviceRegistration) HasDeviceRegistrationSettings() bool {
+	if o != nil && !IsNil(o.DeviceRegistrationSettings) {
 		return true
 	}
 
 	return false
 }
 
-// SetStandardSettings gets a reference to the given []Setting and assigns it to the StandardSettings field.
-func (o *DeviceRegistration) SetStandardSettings(v []Setting) {
-	o.StandardSettings = v
+// SetDeviceRegistrationSettings gets a reference to the given []Setting and assigns it to the DeviceRegistrationSettings field.
+func (o *DeviceRegistration) SetDeviceRegistrationSettings(v []Setting) {
+	o.DeviceRegistrationSettings = v
 }
 
 func (o DeviceRegistration) MarshalJSON() ([]byte, error) {
@@ -112,8 +112,8 @@ func (o DeviceRegistration) MarshalJSON() ([]byte, error) {
 func (o DeviceRegistration) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["channels"] = o.Channels
-	if !IsNil(o.StandardSettings) {
-		toSerialize["standardSettings"] = o.StandardSettings
+	if !IsNil(o.DeviceRegistrationSettings) {
+		toSerialize["deviceRegistrationSettings"] = o.DeviceRegistrationSettings
 	}
 	return toSerialize, nil
 }

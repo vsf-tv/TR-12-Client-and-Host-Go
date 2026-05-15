@@ -8,8 +8,8 @@ Name | Type
 ------------ | -------------
 `srtListener` | [SrtListenerTransportProtocol](SrtListenerTransportProtocol.md)
 `srtCaller` | [SrtCallerTransportProtocol](SrtCallerTransportProtocol.md)
-`ristListener` | [RistListenerTransportProtocol](RistListenerTransportProtocol.md)
-`ristCaller` | [RistCallerTransportProtocol](RistCallerTransportProtocol.md)
+`ristSimpleListener` | [RistSimpleListenerTransportProtocol](RistSimpleListenerTransportProtocol.md)
+`ristSimpleCaller` | [RistSimpleCallerTransportProtocol](RistSimpleCallerTransportProtocol.md)
 `zixiPush` | [ZixiPushTransportProtocol](ZixiPushTransportProtocol.md)
 `zixiPull` | [ZixiPullTransportProtocol](ZixiPullTransportProtocol.md)
 `rtp` | [RtpTransportProtocol](RtpTransportProtocol.md)
@@ -23,8 +23,8 @@ import type { TransportProtocol } from ''
 const example = {
   "srtListener": null,
   "srtCaller": null,
-  "ristListener": null,
-  "ristCaller": null,
+  "ristSimpleListener": null,
+  "ristSimpleCaller": null,
   "zixiPush": null,
   "zixiPull": null,
   "rtp": null,

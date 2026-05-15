@@ -72,7 +72,7 @@ func (c *SDKClient) ReportStatus(status *cddsdkgo.DeviceStatus) (*cddsdkgo.Repor
 }
 
 // ReportActualConfiguration calls PUT /report_actual_configuration.
-func (c *SDKClient) ReportActualConfiguration(config *cddsdkgo.DeviceConfiguration) (*cddsdkgo.ReportActualConfigurationResponseContent, error) {
+func (c *SDKClient) ReportActualConfiguration(config *cddsdkgo.ActualDeviceConfiguration) (*cddsdkgo.ReportActualConfigurationResponseContent, error) {
 	body := map[string]interface{}{"configuration": config}
 	return doTypedPUT[cddsdkgo.ReportActualConfigurationResponseContent](c, "/report_actual_configuration", body)
 }

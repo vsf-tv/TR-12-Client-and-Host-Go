@@ -30,7 +30,7 @@ export interface StatusValue {
      * @type {string}
      * @memberof StatusValue
      */
-    info: string;
+    description: string;
     /**
      * 
      * @type {string}
@@ -44,7 +44,7 @@ export interface StatusValue {
  */
 export function instanceOfStatusValue(value: object): value is StatusValue {
     if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('info' in value) || value['info'] === undefined) return false;
+    if (!('description' in value) || value['description'] === undefined) return false;
     if (!('value' in value) || value['value'] === undefined) return false;
     return true;
 }
@@ -60,7 +60,7 @@ export function StatusValueFromJSONTyped(json: any, ignoreDiscriminator: boolean
     return {
         
         'name': json['name'],
-        'info': json['info'],
+        'description': json['description'],
         'value': json['value'],
     };
 }
@@ -77,7 +77,7 @@ export function StatusValueToJSONTyped(value?: StatusValue | null, ignoreDiscrim
     return {
         
         'name': value['name'],
-        'info': value['info'],
+        'description': value['description'],
         'value': value['value'],
     };
 }

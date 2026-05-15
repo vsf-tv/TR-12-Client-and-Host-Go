@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`degraded` | [UnhealthyStateDescription](UnhealthyStateDescription.md)
+`degraded` | Error
 
 ## Example
 

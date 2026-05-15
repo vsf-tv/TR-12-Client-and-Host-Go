@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Degraded** | [**UnhealthyStateDescription**](UnhealthyStateDescription.md) |  | 
+**Degraded** | [**Error**](Error.md) |  | 
 
 ## Methods
 
 ### NewDegraded
 
-`func NewDegraded(degraded UnhealthyStateDescription, ) *Degraded`
+`func NewDegraded(degraded Error, ) *Degraded`
 
 NewDegraded instantiates a new Degraded object
 This constructor will assign default values to properties that have it defined,
@@ -27,20 +27,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetDegraded
 
-`func (o *Degraded) GetDegraded() UnhealthyStateDescription`
+`func (o *Degraded) GetDegraded() Error`
 
 GetDegraded returns the Degraded field if non-nil, zero value otherwise.
 
 ### GetDegradedOk
 
-`func (o *Degraded) GetDegradedOk() (*UnhealthyStateDescription, bool)`
+`func (o *Degraded) GetDegradedOk() (*Error, bool)`
 
 GetDegradedOk returns a tuple with the Degraded field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDegraded
 
-`func (o *Degraded) SetDegraded(v UnhealthyStateDescription)`
+`func (o *Degraded) SetDegraded(v Error)`
 
 SetDegraded sets Degraded field to given value.
 

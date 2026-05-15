@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { UnhealthyStateDescription } from './UnhealthyStateDescription';
-import {
-    UnhealthyStateDescriptionFromJSON,
-    UnhealthyStateDescriptionFromJSONTyped,
-    UnhealthyStateDescriptionToJSON,
-    UnhealthyStateDescriptionToJSONTyped,
-} from './UnhealthyStateDescription';
-
 /**
  * 
  * @export
@@ -29,10 +21,10 @@ import {
 export interface Degraded {
     /**
      * 
-     * @type {UnhealthyStateDescription}
+     * @type {Error}
      * @memberof Degraded
      */
-    degraded: UnhealthyStateDescription;
+    degraded: Error;
 }
 
 /**
@@ -53,7 +45,7 @@ export function DegradedFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'degraded': UnhealthyStateDescriptionFromJSON(json['degraded']),
+        'degraded': json['degraded'],
     };
 }
 
@@ -68,7 +60,7 @@ export function DegradedToJSONTyped(value?: Degraded | null, ignoreDiscriminator
 
     return {
         
-        'degraded': UnhealthyStateDescriptionToJSON(value['degraded']),
+        'degraded': value['degraded'],
     };
 }
 

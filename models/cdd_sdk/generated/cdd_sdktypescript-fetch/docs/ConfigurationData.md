@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `updateId` | string
-`payload` | [DeviceConfiguration](DeviceConfiguration.md)
+`payload` | [DesiredDeviceConfiguration](DesiredDeviceConfiguration.md)
 
 ## Example
 

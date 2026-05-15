@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`_configuration` | [DeviceConfiguration](DeviceConfiguration.md)
+`_configuration` | [ActualDeviceConfiguration](ActualDeviceConfiguration.md)
 
 ## Example
 

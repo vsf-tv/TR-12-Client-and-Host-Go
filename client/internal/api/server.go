@@ -115,7 +115,7 @@ func (s *Server) reportStatus(c *gin.Context) {
 
 func (s *Server) reportConfiguration(c *gin.Context) {
 	var req struct {
-		Configuration *cddsdkgo.DeviceConfiguration `json:"configuration"`
+		Configuration *cddsdkgo.ActualDeviceConfiguration `json:"configuration"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Configuration == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "configuration is required"})

@@ -1,7 +1,7 @@
 {
   "standardSettings": [
       {
-        "key": "sync_clock_source",
+        "id": "sync_clock_source",
         "value": "NTP"
       }
   ],
@@ -9,46 +9,44 @@
     {
       "id": "CH01",
       "state": "ACTIVE",
-      "settings": {
+      "channelSettings": {
         "standardSettings": [
           {
-            "key": "RS01",
+            "id": "RS01",
             "value": "1920x1080"
           },
           {
-            "key": "FR01",
+            "id": "FR01",
             "value": "60"
           },
           {
-            "key": "MB01",
+            "id": "MB01",
             "value": "60"
           },
           {
-            "key": "RC01",
+            "id": "RC01",
             "value": "CBR"
           },
           {
-            "key": "GP01",
+            "id": "GP01",
             "value": "30"
           },
           {
-            "key": "CO01",
+            "id": "CO01",
             "value": "H.264"
           },
           {
-            "key": "IN01",
+            "id": "IN01",
             "value": "SDI1"
           }
         ]
       },
-      "connection": {
-        "transportProtocol": {
-          "srtCaller": {
-            "address": "3.213.165.124",
-            "port": 2001,
-            "minimumLatencyMilliseconds": 150,
-            "streamId": "discovery1"
-          }
+      "protocol": {
+        "srtCaller": {
+          "address": "3.213.165.124",
+          "port": 2001,
+          "minimumLatencyMilliseconds": 150,
+          "streamId": "discovery1"
         }
       }
     }

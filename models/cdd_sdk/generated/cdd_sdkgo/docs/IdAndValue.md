@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Key** | **string** |  | 
+**Id** | **string** |  | 
 **Value** | **string** |  | 
 
 ## Methods
 
 ### NewIdAndValue
 
-`func NewIdAndValue(key string, value string, ) *IdAndValue`
+`func NewIdAndValue(id string, value string, ) *IdAndValue`
 
 NewIdAndValue instantiates a new IdAndValue object
 This constructor will assign default values to properties that have it defined,
@@ -26,24 +26,24 @@ NewIdAndValueWithDefaults instantiates a new IdAndValue object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetKey
+### GetId
 
-`func (o *IdAndValue) GetKey() string`
+`func (o *IdAndValue) GetId() string`
 
-GetKey returns the Key field if non-nil, zero value otherwise.
+GetId returns the Id field if non-nil, zero value otherwise.
 
-### GetKeyOk
+### GetIdOk
 
-`func (o *IdAndValue) GetKeyOk() (*string, bool)`
+`func (o *IdAndValue) GetIdOk() (*string, bool)`
 
-GetKeyOk returns a tuple with the Key field if it's non-nil, zero value otherwise
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetKey
+### SetId
 
-`func (o *IdAndValue) SetKey(v string)`
+`func (o *IdAndValue) SetId(v string)`
 
-SetKey sets Key field to given value.
+SetId sets Id field to given value.
 
 
 ### GetValue

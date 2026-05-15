@@ -29,11 +29,11 @@ type ApplicationLoop struct {
 	sdk            *SDKClient
 	registration   *cddsdkgo.DeviceRegistration
 
-	// latestDeviceConfigId tracks the last applied DeviceConfiguration.configurationId.
+	// latestDeviceConfigId tracks the last applied DeviceConfiguration.version.
 	// This ID only bumps when device-level simpleSettings change.
 	latestDeviceConfigId string
 
-	// latestChannelConfigIds tracks the last applied ChannelConfiguration.configurationId per channel.
+	// latestChannelConfigIds tracks the last applied ChannelConfiguration.version per channel.
 	// Each channel's ID bumps independently when that channel's state/settings/connection change.
 	latestChannelConfigIds map[string]string
 
@@ -146,11 +146,11 @@ func (l *ApplicationLoop) Disconnect() {
 	}
 }
 
-// processConfiguration checks DeviceConfiguration and each ChannelConfiguration independently
-// using their configurationId fields to determine what needs to be applied.
+// processConfiguration checks DesiredDeviceConfiguration and each DesiredChannelConfiguration independently
+// using their version fields to determine what needs to be applied.
 //
-// DeviceConfiguration.configurationId — bumped by host when device-level simpleSettings change.
-// ChannelConfiguration.configurationId — bumped by host when that channel's state/settings/connection change.
+// DesiredDeviceConfiguration.version — bumped by host when device-level simpleSettings change.
+// DesiredChannelConfiguration.version — bumped by host when that channel's state/settings/connection change.
 // Each is tracked and applied independently.
 func (l *ApplicationLoop) processConfiguration() {
 	resp, err := l.sdk.GetConfiguration()
@@ -165,35 +165,35 @@ func (l *ApplicationLoop) processConfiguration() {
 
 	cfg := resp.Configuration.Payload
 
-	l.logf("[LOOP] get_configuration deviceConfigId=%s latestDeviceConfigId=%s channels=%d",
-		cfg.ConfigurationId, l.latestDeviceConfigId, len(cfg.Channels))
+	l.logf("[LOOP] get_configuration deviceVersion=%s latestDeviceConfigId=%s channels=%d",
+		cfg.Version, l.latestDeviceConfigId, len(cfg.Channels))
 
 	anyApplied := false
 
-	// --- Per-channel: apply if ChannelConfiguration.configurationId changed ---
+	// --- Per-channel: apply if DesiredChannelConfiguration.version changed ---
 	for _, ch := range cfg.Channels {
 		lastId, seen := l.latestChannelConfigIds[ch.Id]
-		if seen && ch.ConfigurationId == lastId {
+		if seen && ch.Version == lastId {
 			continue
 		}
-		l.logf("[LOOP] applying channel %s configurationId=%s (was %s)", ch.Id, ch.ConfigurationId, lastId)
+		l.logf("[LOOP] applying channel %s version=%s (was %s)", ch.Id, ch.Version, lastId)
 		l.shim.applyChannel(ch)
-		l.latestChannelConfigIds[ch.Id] = ch.ConfigurationId
+		l.latestChannelConfigIds[ch.Id] = ch.Version
 		anyApplied = true
 	}
 
-	// --- Device-level: apply standardSettings if DeviceConfiguration.configurationId changed ---
-	if cfg.ConfigurationId != l.latestDeviceConfigId {
+	// --- Device-level: apply standardSettings if DesiredDeviceConfiguration.version changed ---
+	if cfg.Version != l.latestDeviceConfigId {
 		if len(cfg.StandardSettings) > 0 {
-			l.logf("[LOOP] applying device standardSettings (configurationId %s → %s)",
-				l.latestDeviceConfigId, cfg.ConfigurationId)
+			l.logf("[LOOP] applying device standardSettings (version %s → %s)",
+				l.latestDeviceConfigId, cfg.Version)
 			for _, kv := range cfg.StandardSettings {
-				l.callbacks.UpdateDeviceKeyValue(kv.Key, kv.Value)
+				l.callbacks.UpdateDeviceKeyValue(kv.Id, kv.Value)
 			}
 			anyApplied = true
 		}
-		// Always track the device configurationId so we don't re-process it
-		l.latestDeviceConfigId = cfg.ConfigurationId
+		// Always track the device version so we don't re-process it
+		l.latestDeviceConfigId = cfg.Version
 	}
 
 	if !anyApplied {
@@ -201,16 +201,16 @@ func (l *ApplicationLoop) processConfiguration() {
 	}
 
 	if l.ConfigAppliedCallback != nil {
-		// Build a composite ID from all applied configurationIds so the callback
+		// Build a composite ID from all applied versions so the callback
 		// fires whenever any entity (device or channel) was updated.
-		composite := cfg.ConfigurationId
+		composite := cfg.Version
 		for _, ch := range cfg.Channels {
-			composite += ":" + ch.ConfigurationId
+			composite += ":" + ch.Version
 		}
 		l.ConfigAppliedCallback(composite)
 	}
 
-	// Report actual configuration, echoing the configurationIds the ARD actually applied
+	// Report actual configuration, echoing the versions the ARD actually applied
 	actual := l.shim.GetActualConfiguration(l.registration, cfg, l.latestChannelConfigIds)
 	l.logf("[LOOP] reporting actual configuration")
 

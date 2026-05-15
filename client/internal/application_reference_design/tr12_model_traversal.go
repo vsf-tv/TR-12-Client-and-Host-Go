@@ -35,14 +35,14 @@ func NewTr12ShimWithCallbacks(cb DeviceCallbacks) *Tr12Shim {
 	return &Tr12Shim{CB: cb}
 }
 
-// ApplyDesiredConfiguration walks a desired DeviceConfiguration and pushes all values to the device.
+// ApplyDesiredConfiguration walks a DesiredDeviceConfiguration and pushes all values to the device.
 // For selective per-channel application, use applyChannel directly from ApplicationLoop.
-func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DeviceConfiguration) bool {
+func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DesiredDeviceConfiguration) bool {
 	if desired == nil {
 		return false
 	}
 	for _, kv := range desired.StandardSettings {
-		s.CB.UpdateDeviceKeyValue(kv.Key, kv.Value)
+		s.CB.UpdateDeviceKeyValue(kv.Id, kv.Value)
 	}
 	for _, ch := range desired.Channels {
 		s.applyChannel(ch)
@@ -51,39 +51,39 @@ func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DeviceConfigurati
 }
 
 // applyChannel applies a single channel's desired configuration to the device.
-func (s *Tr12Shim) applyChannel(chCfg cddsdkgo.ChannelConfiguration) {
+func (s *Tr12Shim) applyChannel(chCfg cddsdkgo.DesiredChannelConfiguration) {
 	chID := chCfg.Id
 
-	// Settings (StandardSettings or Profile via oneOf union)
-	if chCfg.Settings != nil {
-		settings := chCfg.Settings
+	// ChannelSettings (StandardSettings or Profile via oneOf union)
+	if chCfg.ChannelSettings != nil {
+		settings := chCfg.ChannelSettings
 		if settings.StandardSettings != nil {
 			for _, kv := range settings.StandardSettings.StandardSettings {
-				s.CB.UpdateChannelSettings(chID, kv.Key, kv.Value)
+				s.CB.UpdateChannelSettings(chID, kv.Id, kv.Value)
 			}
 		} else if settings.Profile != nil {
 			s.CB.UpdateChannelProfile(chID, settings.Profile.Profile.Id)
 		}
 	}
 
-	// Connection
-	if chCfg.Connection != nil {
-		s.CB.UpdateChannelConnection(chID, chCfg.Connection)
+	// Protocol
+	if chCfg.Protocol != nil {
+		s.CB.UpdateChannelConnection(chID, chCfg.Protocol)
 	}
 
-	// State (apply last so settings/connection are in place first)
+	// State (apply last so settings/protocol are in place first)
 	s.CB.UpdateChannelState(chID, chCfg.State)
 }
 
 // GetActualConfiguration reads back current values using the registration as a template.
-// appliedChannelIds contains the configurationId last applied per channel by the ARD.
-// The device-level configurationId is echoed from desired.
-func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistration, desired *cddsdkgo.DeviceConfiguration, appliedChannelIds map[string]string) *cddsdkgo.DeviceConfiguration {
-	result := &cddsdkgo.DeviceConfiguration{}
+// appliedChannelVersions contains the version last applied per channel by the ARD.
+// The device-level version is echoed from desired.
+func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistration, desired *cddsdkgo.DesiredDeviceConfiguration, appliedChannelVersions map[string]string) *cddsdkgo.ActualDeviceConfiguration {
+	result := &cddsdkgo.ActualDeviceConfiguration{}
 
-	// Echo device-level configurationId from desired
+	// Echo device-level version from desired
 	if desired != nil {
-		result.ConfigurationId = desired.ConfigurationId
+		result.Version = desired.Version
 	}
 
 	// Device-level health
@@ -93,10 +93,10 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 
 	// Device-level standard settings
 	var deviceSettings []cddsdkgo.IdAndValue
-	for _, setting := range registration.StandardSettings {
+	for _, setting := range registration.DeviceRegistrationSettings {
 		if val, found := s.CB.GetDeviceUpdatedValue(setting.Id); found {
 			deviceSettings = append(deviceSettings, cddsdkgo.IdAndValue{
-				Key: setting.Id, Value: val,
+				Id: setting.Id, Value: val,
 			})
 		}
 	}
@@ -104,20 +104,20 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		result.StandardSettings = deviceSettings
 	}
 
-	// Channels — echo back the configurationId the ARD actually applied per channel
-	var channels []cddsdkgo.ChannelConfiguration
+	// Channels — echo back the version the ARD actually applied per channel
+	var channels []cddsdkgo.ActualChannelConfiguration
 	for _, regCh := range registration.Channels {
 		chCfg := s.buildChannelConfig(regCh)
-		chCfg.ConfigurationId = appliedChannelIds[regCh.Id]
+		chCfg.Version = appliedChannelVersions[regCh.Id]
 		channels = append(channels, chCfg)
 	}
 	result.Channels = channels
 	return result
 }
 
-func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelConfiguration {
+func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ActualChannelConfiguration {
 	chID := regCh.Id
-	chCfg := cddsdkgo.ChannelConfiguration{
+	chCfg := cddsdkgo.ActualChannelConfiguration{
 		Id:    chID,
 		State: s.CB.GetChannelState(chID),
 	}
@@ -131,7 +131,7 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 	hasProfile := false
 	if len(regCh.Profiles) > 0 {
 		if profileID, found := s.CB.GetChannelProfileValue(chID); found {
-			chCfg.Settings = &cddsdkgo.SettingsChoice{
+			chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
 				Profile: &cddsdkgo.Profile{
 					Profile: cddsdkgo.ChannelProfile{Id: profileID},
 				},
@@ -141,17 +141,17 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 	}
 
 	// Standard settings if no profile
-	if !hasProfile && len(regCh.StandardSettings) > 0 {
+	if !hasProfile && len(regCh.ChannelSettings) > 0 {
 		var kvList []cddsdkgo.IdAndValue
-		for _, setting := range regCh.StandardSettings {
+		for _, setting := range regCh.ChannelSettings {
 			if val, found := s.CB.GetChannelUpdatedValue(chID, setting.Id); found {
 				kvList = append(kvList, cddsdkgo.IdAndValue{
-					Key: setting.Id, Value: val,
+					Id: setting.Id, Value: val,
 				})
 			}
 		}
 		if len(kvList) > 0 {
-			chCfg.Settings = &cddsdkgo.SettingsChoice{
+			chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
 				StandardSettings: &cddsdkgo.StandardSettings{
 					StandardSettings: kvList,
 				},
@@ -159,10 +159,10 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ChannelCo
 		}
 	}
 
-	// Connection
-	conn := s.CB.GetChannelConnection(chID)
-	if conn != nil {
-		chCfg.Connection = conn
+	// Protocol
+	proto := s.CB.GetChannelConnection(chID)
+	if proto != nil {
+		chCfg.Protocol = proto
 	}
 
 	// Thumbnail local path

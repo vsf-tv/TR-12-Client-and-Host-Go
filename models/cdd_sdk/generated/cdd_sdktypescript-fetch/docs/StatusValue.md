@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `name` | string
-`info` | string
+`description` | string
 `value` | string
 
 ## Example
@@ -18,7 +18,7 @@ import type { StatusValue } from ''
 // TODO: Update the object below with actual values
 const example = {
   "name": null,
-  "info": null,
+  "description": null,
   "value": null,
 } satisfies StatusValue
 

@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`critical` | [UnhealthyStateDescription](UnhealthyStateDescription.md)
+`critical` | Error
 
 ## Example
 

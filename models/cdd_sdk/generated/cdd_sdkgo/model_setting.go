@@ -24,8 +24,7 @@ type Setting struct {
 	Id string `json:"id"`
 	Name string `json:"name"`
 	Description string `json:"description"`
-	Enums *EnumValues `json:"enums,omitempty"`
-	Ranges *RangeValues `json:"ranges,omitempty"`
+	Constraint SettingConstraint `json:"constraint"`
 }
 
 type _Setting Setting
@@ -34,11 +33,12 @@ type _Setting Setting
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewSetting(id string, name string, description string) *Setting {
+func NewSetting(id string, name string, description string, constraint SettingConstraint) *Setting {
 	this := Setting{}
 	this.Id = id
 	this.Name = name
 	this.Description = description
+	this.Constraint = constraint
 	return &this
 }
 
@@ -122,68 +122,28 @@ func (o *Setting) SetDescription(v string) {
 	o.Description = v
 }
 
-// GetEnums returns the Enums field value if set, zero value otherwise.
-func (o *Setting) GetEnums() EnumValues {
-	if o == nil || IsNil(o.Enums) {
-		var ret EnumValues
+// GetConstraint returns the Constraint field value
+func (o *Setting) GetConstraint() SettingConstraint {
+	if o == nil {
+		var ret SettingConstraint
 		return ret
 	}
-	return *o.Enums
+
+	return o.Constraint
 }
 
-// GetEnumsOk returns a tuple with the Enums field value if set, nil otherwise
+// GetConstraintOk returns a tuple with the Constraint field value
 // and a boolean to check if the value has been set.
-func (o *Setting) GetEnumsOk() (*EnumValues, bool) {
-	if o == nil || IsNil(o.Enums) {
+func (o *Setting) GetConstraintOk() (*SettingConstraint, bool) {
+	if o == nil {
 		return nil, false
 	}
-	return o.Enums, true
+	return &o.Constraint, true
 }
 
-// HasEnums returns a boolean if a field has been set.
-func (o *Setting) HasEnums() bool {
-	if o != nil && !IsNil(o.Enums) {
-		return true
-	}
-
-	return false
-}
-
-// SetEnums gets a reference to the given EnumValues and assigns it to the Enums field.
-func (o *Setting) SetEnums(v EnumValues) {
-	o.Enums = &v
-}
-
-// GetRanges returns the Ranges field value if set, zero value otherwise.
-func (o *Setting) GetRanges() RangeValues {
-	if o == nil || IsNil(o.Ranges) {
-		var ret RangeValues
-		return ret
-	}
-	return *o.Ranges
-}
-
-// GetRangesOk returns a tuple with the Ranges field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *Setting) GetRangesOk() (*RangeValues, bool) {
-	if o == nil || IsNil(o.Ranges) {
-		return nil, false
-	}
-	return o.Ranges, true
-}
-
-// HasRanges returns a boolean if a field has been set.
-func (o *Setting) HasRanges() bool {
-	if o != nil && !IsNil(o.Ranges) {
-		return true
-	}
-
-	return false
-}
-
-// SetRanges gets a reference to the given RangeValues and assigns it to the Ranges field.
-func (o *Setting) SetRanges(v RangeValues) {
-	o.Ranges = &v
+// SetConstraint sets field value
+func (o *Setting) SetConstraint(v SettingConstraint) {
+	o.Constraint = v
 }
 
 func (o Setting) MarshalJSON() ([]byte, error) {
@@ -199,12 +159,7 @@ func (o Setting) ToMap() (map[string]interface{}, error) {
 	toSerialize["id"] = o.Id
 	toSerialize["name"] = o.Name
 	toSerialize["description"] = o.Description
-	if !IsNil(o.Enums) {
-		toSerialize["enums"] = o.Enums
-	}
-	if !IsNil(o.Ranges) {
-		toSerialize["ranges"] = o.Ranges
-	}
+	toSerialize["constraint"] = o.Constraint
 	return toSerialize, nil
 }
 
@@ -216,6 +171,7 @@ func (o *Setting) UnmarshalJSON(data []byte) (err error) {
 		"id",
 		"name",
 		"description",
+		"constraint",
 	}
 
 	allProperties := make(map[string]interface{})

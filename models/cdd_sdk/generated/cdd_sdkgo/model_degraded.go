@@ -21,7 +21,7 @@ var _ MappedNullable = &Degraded{}
 
 // Degraded struct for Degraded
 type Degraded struct {
-	Degraded UnhealthyStateDescription `json:"degraded"`
+	Degraded Error `json:"degraded"`
 }
 
 type _Degraded Degraded
@@ -30,7 +30,7 @@ type _Degraded Degraded
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDegraded(degraded UnhealthyStateDescription) *Degraded {
+func NewDegraded(degraded Error) *Degraded {
 	this := Degraded{}
 	this.Degraded = degraded
 	return &this
@@ -45,9 +45,9 @@ func NewDegradedWithDefaults() *Degraded {
 }
 
 // GetDegraded returns the Degraded field value
-func (o *Degraded) GetDegraded() UnhealthyStateDescription {
+func (o *Degraded) GetDegraded() Error {
 	if o == nil {
-		var ret UnhealthyStateDescription
+		var ret Error
 		return ret
 	}
 
@@ -56,7 +56,7 @@ func (o *Degraded) GetDegraded() UnhealthyStateDescription {
 
 // GetDegradedOk returns a tuple with the Degraded field value
 // and a boolean to check if the value has been set.
-func (o *Degraded) GetDegradedOk() (*UnhealthyStateDescription, bool) {
+func (o *Degraded) GetDegradedOk() (*Error, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -64,7 +64,7 @@ func (o *Degraded) GetDegradedOk() (*UnhealthyStateDescription, bool) {
 }
 
 // SetDegraded sets field value
-func (o *Degraded) SetDegraded(v UnhealthyStateDescription) {
+func (o *Degraded) SetDegraded(v Error) {
 	o.Degraded = v
 }
 

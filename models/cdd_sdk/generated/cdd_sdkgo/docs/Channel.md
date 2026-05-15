@@ -7,9 +7,9 @@ Name | Type | Description | Notes
 **Name** | **string** |  | 
 **Id** | **string** |  | 
 **ChannelType** | [**ChannelType**](ChannelType.md) |  | 
-**StandardSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
+**ChannelSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
 **Profiles** | Pointer to [**[]ProfileDefinition**](ProfileDefinition.md) |  | [optional] 
-**ConnectionProtocols** | Pointer to [**[]TransportProtocolName**](TransportProtocolName.md) |  | [optional] 
+**Protocols** | Pointer to [**[]TransportProtocolName**](TransportProtocolName.md) |  | [optional] 
 
 ## Methods
 
@@ -90,30 +90,30 @@ and a boolean to check if the value has been set.
 SetChannelType sets ChannelType field to given value.
 
 
-### GetStandardSettings
+### GetChannelSettings
 
-`func (o *Channel) GetStandardSettings() []Setting`
+`func (o *Channel) GetChannelSettings() []Setting`
 
-GetStandardSettings returns the StandardSettings field if non-nil, zero value otherwise.
+GetChannelSettings returns the ChannelSettings field if non-nil, zero value otherwise.
 
-### GetStandardSettingsOk
+### GetChannelSettingsOk
 
-`func (o *Channel) GetStandardSettingsOk() (*[]Setting, bool)`
+`func (o *Channel) GetChannelSettingsOk() (*[]Setting, bool)`
 
-GetStandardSettingsOk returns a tuple with the StandardSettings field if it's non-nil, zero value otherwise
+GetChannelSettingsOk returns a tuple with the ChannelSettings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetStandardSettings
+### SetChannelSettings
 
-`func (o *Channel) SetStandardSettings(v []Setting)`
+`func (o *Channel) SetChannelSettings(v []Setting)`
 
-SetStandardSettings sets StandardSettings field to given value.
+SetChannelSettings sets ChannelSettings field to given value.
 
-### HasStandardSettings
+### HasChannelSettings
 
-`func (o *Channel) HasStandardSettings() bool`
+`func (o *Channel) HasChannelSettings() bool`
 
-HasStandardSettings returns a boolean if a field has been set.
+HasChannelSettings returns a boolean if a field has been set.
 
 ### GetProfiles
 
@@ -140,30 +140,30 @@ SetProfiles sets Profiles field to given value.
 
 HasProfiles returns a boolean if a field has been set.
 
-### GetConnectionProtocols
+### GetProtocols
 
-`func (o *Channel) GetConnectionProtocols() []TransportProtocolName`
+`func (o *Channel) GetProtocols() []TransportProtocolName`
 
-GetConnectionProtocols returns the ConnectionProtocols field if non-nil, zero value otherwise.
+GetProtocols returns the Protocols field if non-nil, zero value otherwise.
 
-### GetConnectionProtocolsOk
+### GetProtocolsOk
 
-`func (o *Channel) GetConnectionProtocolsOk() (*[]TransportProtocolName, bool)`
+`func (o *Channel) GetProtocolsOk() (*[]TransportProtocolName, bool)`
 
-GetConnectionProtocolsOk returns a tuple with the ConnectionProtocols field if it's non-nil, zero value otherwise
+GetProtocolsOk returns a tuple with the Protocols field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetConnectionProtocols
+### SetProtocols
 
-`func (o *Channel) SetConnectionProtocols(v []TransportProtocolName)`
+`func (o *Channel) SetProtocols(v []TransportProtocolName)`
 
-SetConnectionProtocols sets ConnectionProtocols field to given value.
+SetProtocols sets Protocols field to given value.
 
-### HasConnectionProtocols
+### HasProtocols
 
-`func (o *Channel) HasConnectionProtocols() bool`
+`func (o *Channel) HasProtocols() bool`
 
-HasConnectionProtocols returns a boolean if a field has been set.
+HasProtocols returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

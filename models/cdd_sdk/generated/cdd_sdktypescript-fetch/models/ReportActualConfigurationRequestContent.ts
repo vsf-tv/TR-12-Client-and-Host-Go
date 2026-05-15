@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { DeviceConfiguration } from './DeviceConfiguration';
+import type { ActualDeviceConfiguration } from './ActualDeviceConfiguration';
 import {
-    DeviceConfigurationFromJSON,
-    DeviceConfigurationFromJSONTyped,
-    DeviceConfigurationToJSON,
-    DeviceConfigurationToJSONTyped,
-} from './DeviceConfiguration';
+    ActualDeviceConfigurationFromJSON,
+    ActualDeviceConfigurationFromJSONTyped,
+    ActualDeviceConfigurationToJSON,
+    ActualDeviceConfigurationToJSONTyped,
+} from './ActualDeviceConfiguration';
 
 /**
  * 
@@ -29,10 +29,10 @@ import {
 export interface ReportActualConfigurationRequestContent {
     /**
      * 
-     * @type {DeviceConfiguration}
+     * @type {ActualDeviceConfiguration}
      * @memberof ReportActualConfigurationRequestContent
      */
-    _configuration: DeviceConfiguration;
+    _configuration: ActualDeviceConfiguration;
 }
 
 /**
@@ -53,7 +53,7 @@ export function ReportActualConfigurationRequestContentFromJSONTyped(json: any, 
     }
     return {
         
-        '_configuration': DeviceConfigurationFromJSON(json['configuration']),
+        '_configuration': ActualDeviceConfigurationFromJSON(json['configuration']),
     };
 }
 
@@ -68,7 +68,7 @@ export function ReportActualConfigurationRequestContentToJSONTyped(value?: Repor
 
     return {
         
-        'configuration': DeviceConfigurationToJSON(value['_configuration']),
+        'configuration': ActualDeviceConfigurationToJSON(value['_configuration']),
     };
 }
 

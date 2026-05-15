@@ -71,7 +71,7 @@ export interface Channel {
      * @type {Array<Setting>}
      * @memberof Channel
      */
-    standardSettings?: Array<Setting>;
+    channelSettings?: Array<Setting>;
     /**
      * 
      * @type {Array<ProfileDefinition>}
@@ -83,7 +83,7 @@ export interface Channel {
      * @type {Array<TransportProtocolName>}
      * @memberof Channel
      */
-    connectionProtocols?: Array<TransportProtocolName>;
+    protocols?: Array<TransportProtocolName>;
 }
 
 
@@ -111,9 +111,9 @@ export function ChannelFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'name': json['name'],
         'id': json['id'],
         'channelType': ChannelTypeFromJSON(json['channelType']),
-        'standardSettings': json['standardSettings'] == null ? undefined : ((json['standardSettings'] as Array<any>).map(SettingFromJSON)),
+        'channelSettings': json['channelSettings'] == null ? undefined : ((json['channelSettings'] as Array<any>).map(SettingFromJSON)),
         'profiles': json['profiles'] == null ? undefined : ((json['profiles'] as Array<any>).map(ProfileDefinitionFromJSON)),
-        'connectionProtocols': json['connectionProtocols'] == null ? undefined : ((json['connectionProtocols'] as Array<any>).map(TransportProtocolNameFromJSON)),
+        'protocols': json['protocols'] == null ? undefined : ((json['protocols'] as Array<any>).map(TransportProtocolNameFromJSON)),
     };
 }
 
@@ -131,9 +131,9 @@ export function ChannelToJSONTyped(value?: Channel | null, ignoreDiscriminator: 
         'name': value['name'],
         'id': value['id'],
         'channelType': ChannelTypeToJSON(value['channelType']),
-        'standardSettings': value['standardSettings'] == null ? undefined : ((value['standardSettings'] as Array<any>).map(SettingToJSON)),
+        'channelSettings': value['channelSettings'] == null ? undefined : ((value['channelSettings'] as Array<any>).map(SettingToJSON)),
         'profiles': value['profiles'] == null ? undefined : ((value['profiles'] as Array<any>).map(ProfileDefinitionToJSON)),
-        'connectionProtocols': value['connectionProtocols'] == null ? undefined : ((value['connectionProtocols'] as Array<any>).map(TransportProtocolNameToJSON)),
+        'protocols': value['protocols'] == null ? undefined : ((value['protocols'] as Array<any>).map(TransportProtocolNameToJSON)),
     };
 }
 

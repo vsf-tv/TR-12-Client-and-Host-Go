@@ -7,14 +7,13 @@ Name | Type | Description | Notes
 **Id** | **string** |  | 
 **Name** | **string** |  | 
 **Description** | **string** |  | 
-**Enums** | Pointer to [**EnumValues**](EnumValues.md) |  | [optional] 
-**Ranges** | Pointer to [**RangeValues**](RangeValues.md) |  | [optional] 
+**Constraint** | [**SettingConstraint**](SettingConstraint.md) |  | 
 
 ## Methods
 
 ### NewSetting
 
-`func NewSetting(id string, name string, description string, ) *Setting`
+`func NewSetting(id string, name string, description string, constraint SettingConstraint, ) *Setting`
 
 NewSetting instantiates a new Setting object
 This constructor will assign default values to properties that have it defined,
@@ -89,55 +88,25 @@ and a boolean to check if the value has been set.
 SetDescription sets Description field to given value.
 
 
-### GetEnums
+### GetConstraint
 
-`func (o *Setting) GetEnums() EnumValues`
+`func (o *Setting) GetConstraint() SettingConstraint`
 
-GetEnums returns the Enums field if non-nil, zero value otherwise.
+GetConstraint returns the Constraint field if non-nil, zero value otherwise.
 
-### GetEnumsOk
+### GetConstraintOk
 
-`func (o *Setting) GetEnumsOk() (*EnumValues, bool)`
+`func (o *Setting) GetConstraintOk() (*SettingConstraint, bool)`
 
-GetEnumsOk returns a tuple with the Enums field if it's non-nil, zero value otherwise
+GetConstraintOk returns a tuple with the Constraint field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetEnums
+### SetConstraint
 
-`func (o *Setting) SetEnums(v EnumValues)`
+`func (o *Setting) SetConstraint(v SettingConstraint)`
 
-SetEnums sets Enums field to given value.
+SetConstraint sets Constraint field to given value.
 
-### HasEnums
-
-`func (o *Setting) HasEnums() bool`
-
-HasEnums returns a boolean if a field has been set.
-
-### GetRanges
-
-`func (o *Setting) GetRanges() RangeValues`
-
-GetRanges returns the Ranges field if non-nil, zero value otherwise.
-
-### GetRangesOk
-
-`func (o *Setting) GetRangesOk() (*RangeValues, bool)`
-
-GetRangesOk returns a tuple with the Ranges field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetRanges
-
-`func (o *Setting) SetRanges(v RangeValues)`
-
-SetRanges sets Ranges field to given value.
-
-### HasRanges
-
-`func (o *Setting) HasRanges() bool`
-
-HasRanges returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

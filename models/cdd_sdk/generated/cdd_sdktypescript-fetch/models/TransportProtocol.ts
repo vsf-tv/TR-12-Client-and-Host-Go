@@ -12,20 +12,20 @@
  * Do not edit the class manually.
  */
 
-import type { RistCaller } from './RistCaller';
+import type { RistSimpleCaller } from './RistSimpleCaller';
 import {
-    instanceOfRistCaller,
-    RistCallerFromJSON,
-    RistCallerFromJSONTyped,
-    RistCallerToJSON,
-} from './RistCaller';
-import type { RistListener } from './RistListener';
+    instanceOfRistSimpleCaller,
+    RistSimpleCallerFromJSON,
+    RistSimpleCallerFromJSONTyped,
+    RistSimpleCallerToJSON,
+} from './RistSimpleCaller';
+import type { RistSimpleListener } from './RistSimpleListener';
 import {
-    instanceOfRistListener,
-    RistListenerFromJSON,
-    RistListenerFromJSONTyped,
-    RistListenerToJSON,
-} from './RistListener';
+    instanceOfRistSimpleListener,
+    RistSimpleListenerFromJSON,
+    RistSimpleListenerFromJSONTyped,
+    RistSimpleListenerToJSON,
+} from './RistSimpleListener';
 import type { Rtp } from './Rtp';
 import {
     instanceOfRtp,
@@ -67,7 +67,7 @@ import {
  * 
  * @export
  */
-export type TransportProtocol = RistCaller | RistListener | Rtp | SrtCaller | SrtListener | ZixiPull | ZixiPush;
+export type TransportProtocol = RistSimpleCaller | RistSimpleListener | Rtp | SrtCaller | SrtListener | ZixiPull | ZixiPush;
 
 export function TransportProtocolFromJSON(json: any): TransportProtocol {
     return TransportProtocolFromJSONTyped(json, false);
@@ -80,11 +80,11 @@ export function TransportProtocolFromJSONTyped(json: any, ignoreDiscriminator: b
     if (typeof json !== 'object') {
         return json;
     }
-    if (instanceOfRistCaller(json)) {
-        return RistCallerFromJSONTyped(json, true);
+    if (instanceOfRistSimpleCaller(json)) {
+        return RistSimpleCallerFromJSONTyped(json, true);
     }
-    if (instanceOfRistListener(json)) {
-        return RistListenerFromJSONTyped(json, true);
+    if (instanceOfRistSimpleListener(json)) {
+        return RistSimpleListenerFromJSONTyped(json, true);
     }
     if (instanceOfRtp(json)) {
         return RtpFromJSONTyped(json, true);
@@ -115,11 +115,11 @@ export function TransportProtocolToJSONTyped(value?: TransportProtocol | null, i
     if (typeof value !== 'object') {
         return value;
     }
-    if (instanceOfRistCaller(value)) {
-        return RistCallerToJSON(value as RistCaller);
+    if (instanceOfRistSimpleCaller(value)) {
+        return RistSimpleCallerToJSON(value as RistSimpleCaller);
     }
-    if (instanceOfRistListener(value)) {
-        return RistListenerToJSON(value as RistListener);
+    if (instanceOfRistSimpleListener(value)) {
+        return RistSimpleListenerToJSON(value as RistSimpleListener);
     }
     if (instanceOfRtp(value)) {
         return RtpToJSON(value as Rtp);

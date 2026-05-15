@@ -110,33 +110,130 @@ paths:
           description: ReportStatus 200 response
 components:
   schemas:
-    Channel:
+    ActualChannelConfiguration:
+      description: |-
+        Actual channel configuration — reported by device to host.
+        Extends desired fields with device-only reporting fields.
+      example:
+        protocol:
+          srtListener:
+            streamId: streamId
+            minimumLatencyMilliseconds: 6.027456183070403
+            encryption:
+              aes128:
+                passphrase: passphrase
+            port: 6190.222739483032
+            interface: interface
+        health:
+          healthy: "{}"
+        id: id
+        state: ACTIVE
+        version: version
+        channelSettings:
+          standardSettings:
+          - id: id
+            value: value
+          - id: id
+            value: value
+        thumbnailLocalPath: thumbnailLocalPath
+      properties:
+        id:
+          type: string
+        version:
+          maxLength: 80
+          type: string
+        state:
+          $ref: "#/components/schemas/ChannelState"
+        channelSettings:
+          $ref: "#/components/schemas/ChannelSettings"
+        protocol:
+          $ref: "#/components/schemas/TransportProtocol"
+        health:
+          $ref: "#/components/schemas/Health"
+        thumbnailLocalPath:
+          description: Informs the TR12 Client so it may service Thumbnail Subscriptions.  Host
+            service can ignore.
+          type: string
+      required:
+      - id
+      - state
+      - version
+      type: object
+    ActualDeviceConfiguration:
+      description: |-
+        Actual device configuration — reported by device to host.
+        Extends desired fields with device-only reporting fields.
       example:
         standardSettings:
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            defaultValue: 1.4658129
-            maximum: 6.0274563
-            minimum: 0.8008282
-          name: name
-          description: description
+        - id: id
+          value: value
+        - id: id
+          value: value
+        channels:
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          health:
+            healthy: "{}"
           id: id
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            defaultValue: 1.4658129
-            maximum: 6.0274563
-            minimum: 0.8008282
-          name: name
-          description: description
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+          thumbnailLocalPath: thumbnailLocalPath
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          health:
+            healthy: "{}"
           id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+          thumbnailLocalPath: thumbnailLocalPath
+        health: null
+        version: version
+      properties:
+        version:
+          maxLength: 80
+          type: string
+        channels:
+          items:
+            $ref: "#/components/schemas/ActualChannelConfiguration"
+          type: array
+        standardSettings:
+          items:
+            $ref: "#/components/schemas/IdAndValue"
+          type: array
+        health:
+          $ref: "#/components/schemas/Health"
+      required:
+      - channels
+      - version
+      type: object
+    Channel:
+      example:
         name: name
         profiles:
         - name: name
@@ -147,9 +244,28 @@ components:
           id: id
         channelType: SOURCE
         id: id
-        connectionProtocols:
+        protocols:
         - SRT_LISTENER
         - SRT_LISTENER
+        channelSettings:
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
       properties:
         name:
           type: string
@@ -157,7 +273,7 @@ components:
           type: string
         channelType:
           $ref: "#/components/schemas/ChannelType"
-        standardSettings:
+        channelSettings:
           items:
             $ref: "#/components/schemas/Setting"
           type: array
@@ -165,7 +281,7 @@ components:
           items:
             $ref: "#/components/schemas/ProfileDefinition"
           type: array
-        connectionProtocols:
+        protocols:
           items:
             $ref: "#/components/schemas/TransportProtocolName"
           type: array
@@ -174,56 +290,6 @@ components:
       - id
       - name
       type: object
-    ChannelConfiguration:
-      example:
-        settings:
-          standardSettings:
-          - value: value
-            key: key
-          - value: value
-            key: key
-        health:
-          healthy: "{}"
-        connection:
-          transportProtocol:
-            srtListener:
-              streamId: streamId
-              minimumLatencyMilliseconds: 6.027456183070403
-              encryption:
-                aes128:
-                  passphrase: passphrase
-              port: 6190.222739483032
-              interface: interface
-        id: id
-        configurationId: configurationId
-        state: ACTIVE
-        thumbnailLocalPath: thumbnailLocalPath
-      properties:
-        id:
-          type: string
-        configurationId:
-          maxLength: 80
-          type: string
-        state:
-          $ref: "#/components/schemas/ChannelState"
-        settings:
-          $ref: "#/components/schemas/SettingsChoice"
-        connection:
-          $ref: "#/components/schemas/Connection"
-        health:
-          $ref: "#/components/schemas/Health"
-        thumbnailLocalPath:
-          description: |-
-            Device-side only. Set by the application to indicate the local filesystem
-            path to the thumbnail image for this channel. The host shall not set this
-            field in desired configuration. The SDK reads this to resolve thumbnail
-            subscriptions keyed by channelId.
-          type: string
-      required:
-      - configurationId
-      - id
-      - state
-      type: object
     ChannelProfile:
       properties:
         id:
@@ -231,6 +297,10 @@ components:
       required:
       - id
       type: object
+    ChannelSettings:
+      oneOf:
+      - $ref: "#/components/schemas/standardSettings"
+      - $ref: "#/components/schemas/profile"
     ChannelState:
       enum:
       - ACTIVE
@@ -242,11 +312,11 @@ components:
         state: ACTIVE
         status:
         - name: name
+          description: description
           value: value
-          info: info
         - name: name
+          description: description
           value: value
-          info: info
       properties:
         id:
           type: string
@@ -271,119 +341,60 @@ components:
         updateId: updateId
         payload:
           standardSettings:
-          - value: value
-            key: key
-          - value: value
-            key: key
+          - id: id
+            value: value
+          - id: id
+            value: value
           channels:
-          - settings:
-              standardSettings:
-              - value: value
-                key: key
-              - value: value
-                key: key
-            health:
-              healthy: "{}"
-            connection:
-              transportProtocol:
-                srtListener:
-                  streamId: streamId
-                  minimumLatencyMilliseconds: 6.027456183070403
-                  encryption:
-                    aes128:
-                      passphrase: passphrase
-                  port: 6190.222739483032
-                  interface: interface
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
             id: id
-            configurationId: configurationId
             state: ACTIVE
-            thumbnailLocalPath: thumbnailLocalPath
-          - settings:
+            version: version
+            channelSettings:
               standardSettings:
-              - value: value
-                key: key
-              - value: value
-                key: key
-            health:
-              healthy: "{}"
-            connection:
-              transportProtocol:
-                srtListener:
-                  streamId: streamId
-                  minimumLatencyMilliseconds: 6.027456183070403
-                  encryption:
-                    aes128:
-                      passphrase: passphrase
-                  port: 6190.222739483032
-                  interface: interface
+              - id: id
+                value: value
+              - id: id
+                value: value
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
             id: id
-            configurationId: configurationId
             state: ACTIVE
-            thumbnailLocalPath: thumbnailLocalPath
-          health: null
-          configurationId: configurationId
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+          version: version
       properties:
         updateId:
           type: string
         payload:
-          $ref: "#/components/schemas/DeviceConfiguration"
+          $ref: "#/components/schemas/DesiredDeviceConfiguration"
       type: object
     ConnectRequestContent:
       example:
         hostId: hostId
         registration:
-          standardSettings:
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              defaultValue: 1.4658129
-              maximum: 6.0274563
-              minimum: 0.8008282
-            name: name
-            description: description
-            id: id
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              defaultValue: 1.4658129
-              maximum: 6.0274563
-              minimum: 0.8008282
-            name: name
-            description: description
-            id: id
           channels:
-          - standardSettings:
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                defaultValue: 1.4658129
-                maximum: 6.0274563
-                minimum: 0.8008282
-              name: name
-              description: description
-              id: id
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                defaultValue: 1.4658129
-                maximum: 6.0274563
-                minimum: 0.8008282
-              name: name
-              description: description
-              id: id
-            name: name
+          - name: name
             profiles:
             - name: name
               description: description
@@ -393,35 +404,29 @@ components:
               id: id
             channelType: SOURCE
             id: id
-            connectionProtocols:
+            protocols:
             - SRT_LISTENER
             - SRT_LISTENER
-          - standardSettings:
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                defaultValue: 1.4658129
-                maximum: 6.0274563
-                minimum: 0.8008282
-              name: name
+            channelSettings:
+            - name: name
               description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
               id: id
-            - enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-              ranges:
-                defaultValue: 1.4658129
-                maximum: 6.0274563
-                minimum: 0.8008282
-              name: name
+            - name: name
               description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
               id: id
-            name: name
+          - name: name
             profiles:
             - name: name
               description: description
@@ -431,9 +436,47 @@ components:
               id: id
             channelType: SOURCE
             id: id
-            connectionProtocols:
+            protocols:
             - SRT_LISTENER
             - SRT_LISTENER
+            channelSettings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+              id: id
+          deviceRegistrationSettings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
       properties:
         registration:
           $ref: "#/components/schemas/DeviceRegistration"
@@ -478,21 +521,6 @@ components:
       - state
       - success
       type: object
-    Connection:
-      example:
-        transportProtocol:
-          srtListener:
-            streamId: streamId
-            minimumLatencyMilliseconds: 6.027456183070403
-            encryption:
-              aes128:
-                passphrase: passphrase
-            port: 6190.222739483032
-            interface: interface
-      properties:
-        transportProtocol:
-          $ref: "#/components/schemas/TransportProtocol"
-      type: object
     DeprovisionResponseContent:
       example:
         success: true
@@ -516,132 +544,114 @@ components:
       - state
       - success
       type: object
-    DeviceConfiguration:
+    DesiredChannelConfiguration:
+      description: |-
+        Desired channel configuration — sent from host to device.
+        Contains only fields the host controls. No device-reported fields.
+      example:
+        protocol:
+          srtListener:
+            streamId: streamId
+            minimumLatencyMilliseconds: 6.027456183070403
+            encryption:
+              aes128:
+                passphrase: passphrase
+            port: 6190.222739483032
+            interface: interface
+        id: id
+        state: ACTIVE
+        version: version
+        channelSettings:
+          standardSettings:
+          - id: id
+            value: value
+          - id: id
+            value: value
+      properties:
+        id:
+          type: string
+        version:
+          maxLength: 80
+          type: string
+        state:
+          $ref: "#/components/schemas/ChannelState"
+        channelSettings:
+          $ref: "#/components/schemas/ChannelSettings"
+        protocol:
+          $ref: "#/components/schemas/TransportProtocol"
+      required:
+      - id
+      - state
+      - version
+      type: object
+    DesiredDeviceConfiguration:
+      description: |-
+        Desired device configuration — sent from host to device.
+        Contains only fields the host controls. No device-reported fields.
       example:
         standardSettings:
-        - value: value
-          key: key
-        - value: value
-          key: key
+        - id: id
+          value: value
+        - id: id
+          value: value
         channels:
-        - settings:
-            standardSettings:
-            - value: value
-              key: key
-            - value: value
-              key: key
-          health:
-            healthy: "{}"
-          connection:
-            transportProtocol:
-              srtListener:
-                streamId: streamId
-                minimumLatencyMilliseconds: 6.027456183070403
-                encryption:
-                  aes128:
-                    passphrase: passphrase
-                port: 6190.222739483032
-                interface: interface
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
           id: id
-          configurationId: configurationId
           state: ACTIVE
-          thumbnailLocalPath: thumbnailLocalPath
-        - settings:
+          version: version
+          channelSettings:
             standardSettings:
-            - value: value
-              key: key
-            - value: value
-              key: key
-          health:
-            healthy: "{}"
-          connection:
-            transportProtocol:
-              srtListener:
-                streamId: streamId
-                minimumLatencyMilliseconds: 6.027456183070403
-                encryption:
-                  aes128:
-                    passphrase: passphrase
-                port: 6190.222739483032
-                interface: interface
+            - id: id
+              value: value
+            - id: id
+              value: value
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
           id: id
-          configurationId: configurationId
           state: ACTIVE
-          thumbnailLocalPath: thumbnailLocalPath
-        health: null
-        configurationId: configurationId
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+        version: version
       properties:
-        configurationId:
+        version:
           maxLength: 80
           type: string
         channels:
           items:
-            $ref: "#/components/schemas/ChannelConfiguration"
+            $ref: "#/components/schemas/DesiredChannelConfiguration"
           type: array
         standardSettings:
           items:
             $ref: "#/components/schemas/IdAndValue"
           type: array
-        health:
-          $ref: "#/components/schemas/Health"
       required:
       - channels
-      - configurationId
+      - version
       type: object
     DeviceRegistration:
       example:
-        standardSettings:
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            defaultValue: 1.4658129
-            maximum: 6.0274563
-            minimum: 0.8008282
-          name: name
-          description: description
-          id: id
-        - enums:
-            defaultValue: defaultValue
-            values:
-            - values
-            - values
-          ranges:
-            defaultValue: 1.4658129
-            maximum: 6.0274563
-            minimum: 0.8008282
-          name: name
-          description: description
-          id: id
         channels:
-        - standardSettings:
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              defaultValue: 1.4658129
-              maximum: 6.0274563
-              minimum: 0.8008282
-            name: name
-            description: description
-            id: id
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              defaultValue: 1.4658129
-              maximum: 6.0274563
-              minimum: 0.8008282
-            name: name
-            description: description
-            id: id
-          name: name
+        - name: name
           profiles:
           - name: name
             description: description
@@ -651,35 +661,29 @@ components:
             id: id
           channelType: SOURCE
           id: id
-          connectionProtocols:
+          protocols:
           - SRT_LISTENER
           - SRT_LISTENER
-        - standardSettings:
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              defaultValue: 1.4658129
-              maximum: 6.0274563
-              minimum: 0.8008282
-            name: name
+          channelSettings:
+          - name: name
             description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
             id: id
-          - enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-            ranges:
-              defaultValue: 1.4658129
-              maximum: 6.0274563
-              minimum: 0.8008282
-            name: name
+          - name: name
             description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
             id: id
-          name: name
+        - name: name
           profiles:
           - name: name
             description: description
@@ -689,15 +693,53 @@ components:
             id: id
           channelType: SOURCE
           id: id
-          connectionProtocols:
+          protocols:
           - SRT_LISTENER
           - SRT_LISTENER
+          channelSettings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
+        deviceRegistrationSettings:
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
       properties:
         channels:
           items:
             $ref: "#/components/schemas/Channel"
           type: array
-        standardSettings:
+        deviceRegistrationSettings:
           items:
             $ref: "#/components/schemas/Setting"
           type: array
@@ -711,27 +753,27 @@ components:
           state: ACTIVE
           status:
           - name: name
+            description: description
             value: value
-            info: info
           - name: name
+            description: description
             value: value
-            info: info
         - id: id
           state: ACTIVE
           status:
           - name: name
+            description: description
             value: value
-            info: info
           - name: name
+            description: description
             value: value
-            info: info
         status:
         - name: name
+          description: description
           value: value
-          info: info
         - name: name
+          description: description
           value: value
-          info: info
       properties:
         status:
           items:
@@ -814,6 +856,18 @@ components:
       - defaultValue
       - values
       type: object
+    Error:
+      description: Shared description for degraded and critical states.
+      properties:
+        message:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+      required:
+      - message
+      - timestamp
+      type: object
     ErrorDetails:
       example:
         details: details
@@ -837,57 +891,48 @@ components:
           updateId: updateId
           payload:
             standardSettings:
-            - value: value
-              key: key
-            - value: value
-              key: key
+            - id: id
+              value: value
+            - id: id
+              value: value
             channels:
-            - settings:
-                standardSettings:
-                - value: value
-                  key: key
-                - value: value
-                  key: key
-              health:
-                healthy: "{}"
-              connection:
-                transportProtocol:
-                  srtListener:
-                    streamId: streamId
-                    minimumLatencyMilliseconds: 6.027456183070403
-                    encryption:
-                      aes128:
-                        passphrase: passphrase
-                    port: 6190.222739483032
-                    interface: interface
+            - protocol:
+                srtListener:
+                  streamId: streamId
+                  minimumLatencyMilliseconds: 6.027456183070403
+                  encryption:
+                    aes128:
+                      passphrase: passphrase
+                  port: 6190.222739483032
+                  interface: interface
               id: id
-              configurationId: configurationId
               state: ACTIVE
-              thumbnailLocalPath: thumbnailLocalPath
-            - settings:
+              version: version
+              channelSettings:
                 standardSettings:
-                - value: value
-                  key: key
-                - value: value
-                  key: key
-              health:
-                healthy: "{}"
-              connection:
-                transportProtocol:
-                  srtListener:
-                    streamId: streamId
-                    minimumLatencyMilliseconds: 6.027456183070403
-                    encryption:
-                      aes128:
-                        passphrase: passphrase
-                    port: 6190.222739483032
-                    interface: interface
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+            - protocol:
+                srtListener:
+                  streamId: streamId
+                  minimumLatencyMilliseconds: 6.027456183070403
+                  encryption:
+                    aes128:
+                      passphrase: passphrase
+                  port: 6190.222739483032
+                  interface: interface
               id: id
-              configurationId: configurationId
               state: ACTIVE
-              thumbnailLocalPath: thumbnailLocalPath
-            health: null
-            configurationId: configurationId
+              version: version
+              channelSettings:
+                standardSettings:
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+            version: version
         success: true
         state: state
         message: message
@@ -944,15 +989,15 @@ components:
       type: object
     IdAndValue:
       example:
+        id: id
         value: value
-        key: key
       properties:
-        key:
+        id:
           type: string
         value:
           type: string
       required:
-      - key
+      - id
       - value
       type: object
     ProfileDefinition:
@@ -973,10 +1018,6 @@ components:
       - name
       type: object
     RangeValues:
-      example:
-        defaultValue: 1.4658129
-        maximum: 6.0274563
-        minimum: 0.8008282
       properties:
         minimum:
           format: float
@@ -996,60 +1037,58 @@ components:
       example:
         configuration:
           standardSettings:
-          - value: value
-            key: key
-          - value: value
-            key: key
+          - id: id
+            value: value
+          - id: id
+            value: value
           channels:
-          - settings:
-              standardSettings:
-              - value: value
-                key: key
-              - value: value
-                key: key
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
             health:
               healthy: "{}"
-            connection:
-              transportProtocol:
-                srtListener:
-                  streamId: streamId
-                  minimumLatencyMilliseconds: 6.027456183070403
-                  encryption:
-                    aes128:
-                      passphrase: passphrase
-                  port: 6190.222739483032
-                  interface: interface
             id: id
-            configurationId: configurationId
             state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
             thumbnailLocalPath: thumbnailLocalPath
-          - settings:
-              standardSettings:
-              - value: value
-                key: key
-              - value: value
-                key: key
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
             health:
               healthy: "{}"
-            connection:
-              transportProtocol:
-                srtListener:
-                  streamId: streamId
-                  minimumLatencyMilliseconds: 6.027456183070403
-                  encryption:
-                    aes128:
-                      passphrase: passphrase
-                  port: 6190.222739483032
-                  interface: interface
             id: id
-            configurationId: configurationId
             state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
             thumbnailLocalPath: thumbnailLocalPath
           health: null
-          configurationId: configurationId
+          version: version
       properties:
         configuration:
-          $ref: "#/components/schemas/DeviceConfiguration"
+          $ref: "#/components/schemas/ActualDeviceConfiguration"
       required:
       - configuration
       type: object
@@ -1084,27 +1123,27 @@ components:
             state: ACTIVE
             status:
             - name: name
+              description: description
               value: value
-              info: info
             - name: name
+              description: description
               value: value
-              info: info
           - id: id
             state: ACTIVE
             status:
             - name: name
+              description: description
               value: value
-              info: info
             - name: name
+              description: description
               value: value
-              info: info
           status:
           - name: name
+            description: description
             value: value
-            info: info
           - name: name
+            description: description
             value: value
-            info: info
       properties:
         status:
           $ref: "#/components/schemas/DeviceStatus"
@@ -1211,17 +1250,14 @@ components:
       type: object
     Setting:
       example:
-        enums:
-          defaultValue: defaultValue
-          values:
-          - values
-          - values
-        ranges:
-          defaultValue: 1.4658129
-          maximum: 6.0274563
-          minimum: 0.8008282
         name: name
         description: description
+        constraint:
+          enums:
+            defaultValue: defaultValue
+            values:
+            - values
+            - values
         id: id
       properties:
         id:
@@ -1230,19 +1266,21 @@ components:
           type: string
         description:
           type: string
-        enums:
-          $ref: "#/components/schemas/EnumValues"
-        ranges:
-          $ref: "#/components/schemas/RangeValues"
+        constraint:
+          $ref: "#/components/schemas/SettingConstraint"
       required:
+      - constraint
       - description
       - id
       - name
       type: object
-    SettingsChoice:
+    SettingConstraint:
+      description: |-
+        A setting constraint is either an enumerated list of valid values
+        or a numeric range — never both.
       oneOf:
-      - $ref: "#/components/schemas/standardSettings"
-      - $ref: "#/components/schemas/profile"
+      - $ref: "#/components/schemas/enums"
+      - $ref: "#/components/schemas/ranges"
     SrtCallerTransportProtocol:
       properties:
         streamId:
@@ -1291,17 +1329,17 @@ components:
     StatusValue:
       example:
         name: name
+        description: description
         value: value
-        info: info
       properties:
         name:
           type: string
-        info:
+        description:
           type: string
         value:
           type: string
       required:
-      - info
+      - description
       - name
       - value
       type: object
@@ -1324,23 +1362,6 @@ components:
       - RIST_SIMPLE_LISTENER
       - RTP
       type: string
-    UnhealthyStateDescription:
-      description: Shared description for degraded and critical states.
-      properties:
-        messages:
-          items:
-            type: string
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        componentName:
-          type: string
-      required:
-      - componentName
-      - messages
-      - timestamp
-      type: object
     ZixiPullTransportProtocol:
       properties:
         streamId:
@@ -1379,6 +1400,30 @@ components:
       required:
       - address
       type: object
+    standardSettings:
+      example:
+        standardSettings:
+        - id: id
+          value: value
+        - id: id
+          value: value
+      properties:
+        standardSettings:
+          items:
+            $ref: "#/components/schemas/IdAndValue"
+          type: array
+      required:
+      - standardSettings
+      title: standardSettings
+      type: object
+    profile:
+      properties:
+        profile:
+          $ref: "#/components/schemas/ChannelProfile"
+      required:
+      - profile
+      title: profile
+      type: object
     aes128:
       example:
         aes128:
@@ -1412,7 +1457,7 @@ components:
     degraded:
       properties:
         degraded:
-          $ref: "#/components/schemas/UnhealthyStateDescription"
+          $ref: "#/components/schemas/Error"
       required:
       - degraded
       title: degraded
@@ -1420,34 +1465,32 @@ components:
     critical:
       properties:
         critical:
-          $ref: "#/components/schemas/UnhealthyStateDescription"
+          $ref: "#/components/schemas/Error"
       required:
       - critical
       title: critical
       type: object
-    standardSettings:
+    enums:
       example:
-        standardSettings:
-        - value: value
-          key: key
-        - value: value
-          key: key
+        enums:
+          defaultValue: defaultValue
+          values:
+          - values
+          - values
       properties:
-        standardSettings:
-          items:
-            $ref: "#/components/schemas/IdAndValue"
-          type: array
+        enums:
+          $ref: "#/components/schemas/EnumValues"
       required:
-      - standardSettings
-      title: standardSettings
+      - enums
+      title: enums
       type: object
-    profile:
+    ranges:
       properties:
-        profile:
-          $ref: "#/components/schemas/ChannelProfile"
+        ranges:
+          $ref: "#/components/schemas/RangeValues"
       required:
-      - profile
-      title: profile
+      - ranges
+      title: ranges
       type: object
     srtListener:
       example:

@@ -5,14 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Healthy** | **map[string]interface{}** | Healthy state — no additional fields needed. | 
-**Degraded** | [**UnhealthyStateDescription**](UnhealthyStateDescription.md) |  | 
-**Critical** | [**UnhealthyStateDescription**](UnhealthyStateDescription.md) |  | 
+**Degraded** | [**Error**](Error.md) |  | 
+**Critical** | [**Error**](Error.md) |  | 
 
 ## Methods
 
 ### NewHealth
 
-`func NewHealth(healthy map[string]interface{}, degraded UnhealthyStateDescription, critical UnhealthyStateDescription, ) *Health`
+`func NewHealth(healthy map[string]interface{}, degraded Error, critical Error, ) *Health`
 
 NewHealth instantiates a new Health object
 This constructor will assign default values to properties that have it defined,
@@ -49,40 +49,40 @@ SetHealthy sets Healthy field to given value.
 
 ### GetDegraded
 
-`func (o *Health) GetDegraded() UnhealthyStateDescription`
+`func (o *Health) GetDegraded() Error`
 
 GetDegraded returns the Degraded field if non-nil, zero value otherwise.
 
 ### GetDegradedOk
 
-`func (o *Health) GetDegradedOk() (*UnhealthyStateDescription, bool)`
+`func (o *Health) GetDegradedOk() (*Error, bool)`
 
 GetDegradedOk returns a tuple with the Degraded field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDegraded
 
-`func (o *Health) SetDegraded(v UnhealthyStateDescription)`
+`func (o *Health) SetDegraded(v Error)`
 
 SetDegraded sets Degraded field to given value.
 
 
 ### GetCritical
 
-`func (o *Health) GetCritical() UnhealthyStateDescription`
+`func (o *Health) GetCritical() Error`
 
 GetCritical returns the Critical field if non-nil, zero value otherwise.
 
 ### GetCriticalOk
 
-`func (o *Health) GetCriticalOk() (*UnhealthyStateDescription, bool)`
+`func (o *Health) GetCriticalOk() (*Error, bool)`
 
 GetCriticalOk returns a tuple with the Critical field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCritical
 
-`func (o *Health) SetCritical(v UnhealthyStateDescription)`
+`func (o *Health) SetCritical(v Error)`
 
 SetCritical sets Critical field to given value.
 

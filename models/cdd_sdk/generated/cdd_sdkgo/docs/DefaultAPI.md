@@ -340,7 +340,7 @@ import (
 )
 
 func main() {
-	reportActualConfigurationRequestContent := *openapiclient.NewReportActualConfigurationRequestContent(*openapiclient.NewDeviceConfiguration("ConfigurationId_example", []openapiclient.ChannelConfiguration{*openapiclient.NewChannelConfiguration("Id_example", "ConfigurationId_example", openapiclient.ChannelState("ACTIVE"))})) // ReportActualConfigurationRequestContent | 
+	reportActualConfigurationRequestContent := *openapiclient.NewReportActualConfigurationRequestContent(*openapiclient.NewActualDeviceConfiguration("Version_example", []openapiclient.ActualChannelConfiguration{*openapiclient.NewActualChannelConfiguration("Id_example", "Version_example", openapiclient.ChannelState("ACTIVE"))})) // ReportActualConfigurationRequestContent | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)
@@ -404,7 +404,7 @@ import (
 )
 
 func main() {
-	reportStatusRequestContent := *openapiclient.NewReportStatusRequestContent(*openapiclient.NewDeviceStatus([]openapiclient.StatusValue{*openapiclient.NewStatusValue("Name_example", "Info_example", "Value_example")})) // ReportStatusRequestContent | 
+	reportStatusRequestContent := *openapiclient.NewReportStatusRequestContent(*openapiclient.NewDeviceStatus([]openapiclient.StatusValue{*openapiclient.NewStatusValue("Name_example", "Description_example", "Value_example")})) // ReportStatusRequestContent | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

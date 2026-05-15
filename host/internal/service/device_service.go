@@ -327,26 +327,26 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 
 	if len(device.DesiredConfig) > 0 {
 		var prev struct {
-			ConfigurationId string          `json:"configurationId"`
-			SimpleSettings  json.RawMessage `json:"standardSettings"`
-			Channels        []struct {
-				Id              string          `json:"id"`
-				ConfigurationId string          `json:"configurationId"`
-				State           string          `json:"state"`
-				Settings        json.RawMessage `json:"settings"`
-				Connection      json.RawMessage `json:"connection"`
+			Version        string          `json:"version"`
+			SimpleSettings json.RawMessage `json:"standardSettings"`
+			Channels       []struct {
+				Id      string          `json:"id"`
+				Version string          `json:"version"`
+				State   string          `json:"state"`
+				Settings json.RawMessage `json:"channelSettings"`
+				Protocol json.RawMessage `json:"protocol"`
 			} `json:"channels"`
 		}
 		if json.Unmarshal(device.DesiredConfig, &prev) == nil {
-			prevDeviceConfigId = prev.ConfigurationId
+			prevDeviceConfigId = prev.Version
 			prevDeviceSettings = canonicalJSON(prev.SimpleSettings)
 			for _, ch := range prev.Channels {
 				if ch.Id != "" {
 					prevChannels[ch.Id] = prevChannel{
-						ConfigurationId: ch.ConfigurationId,
+						ConfigurationId: ch.Version,
 						State:           ch.State,
 						Settings:        canonicalJSON(ch.Settings),
-						Connection:      canonicalJSON(ch.Connection),
+						Connection:      canonicalJSON(ch.Protocol),
 					}
 				}
 			}
@@ -356,10 +356,10 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	var newCfg struct {
 		SimpleSettings json.RawMessage `json:"standardSettings"`
 		Channels       []struct {
-			Id         string          `json:"id"`
-			State      string          `json:"state"`
-			Settings   json.RawMessage `json:"settings"`
-			Connection json.RawMessage `json:"connection"`
+			Id       string          `json:"id"`
+			State    string          `json:"state"`
+			Settings json.RawMessage `json:"channelSettings"`
+			Protocol json.RawMessage `json:"protocol"`
 		} `json:"channels"`
 	}
 	json.Unmarshal(cfgJSON, &newCfg)
@@ -368,15 +368,15 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	deviceConfigId := prevDeviceConfigId
 	if prevDeviceConfigId == "" || newDeviceSettings != prevDeviceSettings {
 		deviceConfigId = strconv.FormatInt(time.Now().UnixNano(), 10)
-		log.Printf("[HOST UpdateConfig] device simpleSettings changed → configurationId=%s", deviceConfigId)
+		log.Printf("[HOST UpdateConfig] device simpleSettings changed → version=%s", deviceConfigId)
 	} else {
-		log.Printf("[HOST UpdateConfig] device simpleSettings unchanged → configurationId=%s", deviceConfigId)
+		log.Printf("[HOST UpdateConfig] device simpleSettings unchanged → version=%s", deviceConfigId)
 	}
 
 	wrapped := map[string]interface{}{}
 	json.Unmarshal(cfgJSON, &wrapped)
 	wrapped["updateId"] = updateID
-	wrapped["configurationId"] = deviceConfigId
+	wrapped["version"] = deviceConfigId
 
 	if channels, ok := wrapped["channels"].([]interface{}); ok {
 		for _, ch := range channels {
@@ -394,20 +394,20 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 				if hasPrev &&
 					newCh.State == prev.State &&
 					canonicalJSON(newCh.Settings) == prev.Settings &&
-					canonicalJSON(newCh.Connection) == prev.Connection {
+					canonicalJSON(newCh.Protocol) == prev.Connection {
 					newChConfigId = prev.ConfigurationId
-					log.Printf("[HOST UpdateConfig] channel %s unchanged → configurationId=%s", chID, newChConfigId)
+					log.Printf("[HOST UpdateConfig] channel %s unchanged → version=%s", chID, newChConfigId)
 				} else {
 					newChConfigId = strconv.FormatInt(time.Now().UnixNano(), 10)
-					log.Printf("[HOST UpdateConfig] channel %s changed (state:%s→%s settings_changed=%v connection_changed=%v) → configurationId=%s",
+					log.Printf("[HOST UpdateConfig] channel %s changed (state:%s→%s settings_changed=%v protocol_changed=%v) → version=%s",
 						chID, prev.State, newCh.State,
 						canonicalJSON(newCh.Settings) != prev.Settings,
-						canonicalJSON(newCh.Connection) != prev.Connection,
+						canonicalJSON(newCh.Protocol) != prev.Connection,
 						newChConfigId)
 				}
 				break
 			}
-			chMap["configurationId"] = newChConfigId
+			chMap["version"] = newChConfigId
 		}
 	}
 
@@ -635,12 +635,12 @@ func formatCertExpiration(expiresAt string) string {
 func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 	var cfg struct {
 		Channels       []struct {
-			ID         string          `json:"id"`
-			State      string          `json:"state,omitempty"`
-			Settings   json.RawMessage `json:"settings,omitempty"`
-			Connection json.RawMessage `json:"connection,omitempty"`
+			ID              string          `json:"id"`
+			State           string          `json:"state,omitempty"`
+			ChannelSettings json.RawMessage `json:"channelSettings,omitempty"`
+			Protocol        json.RawMessage `json:"protocol,omitempty"`
 		} `json:"channels"`
-		SimpleSettings []struct{ Key string `json:"key"` } `json:"standardSettings,omitempty"`
+		StandardSettings []struct{ Id string `json:"id"` } `json:"standardSettings,omitempty"`
 	}
 	if err := json.Unmarshal(cfgJSON, &cfg); err != nil {
 		return fmt.Errorf("invalid configuration JSON: %w", err)
@@ -648,31 +648,31 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 
 	var reg struct {
 		Channels []struct {
-			ID                  string                            `json:"id"`
-			Name                string                            `json:"name"`
-			SimpleSettings      []struct{ ID string `json:"id"` } `json:"standardSettings,omitempty"`
-			Profiles            []struct{ ID string `json:"id"` } `json:"profiles,omitempty"`
-			ConnectionProtocols []string                          `json:"connectionProtocols,omitempty"`
+			ID              string                            `json:"id"`
+			Name            string                            `json:"name"`
+			ChannelSettings []struct{ ID string `json:"id"` } `json:"channelSettings,omitempty"`
+			Profiles        []struct{ ID string `json:"id"` } `json:"profiles,omitempty"`
+			Protocols       []string                          `json:"protocols,omitempty"`
 		} `json:"channels"`
-		SimpleSettings []struct{ ID string `json:"id"` } `json:"standardSettings,omitempty"`
+		DeviceRegistrationSettings []struct{ ID string `json:"id"` } `json:"deviceRegistrationSettings,omitempty"`
 	}
 	if err := json.Unmarshal(regJSON, &reg); err != nil {
 		return fmt.Errorf("invalid registration JSON: %w", err)
 	}
 
-	// Validate device-level simpleSettings
-	if len(cfg.SimpleSettings) > 0 {
+	// Validate device-level standardSettings
+	if len(cfg.StandardSettings) > 0 {
 		regDevSettings := map[string]bool{}
-		for _, s := range reg.SimpleSettings {
+		for _, s := range reg.DeviceRegistrationSettings {
 			regDevSettings[s.ID] = true
 		}
-		for _, s := range cfg.SimpleSettings {
-			if !regDevSettings[s.Key] {
-				validKeys := make([]string, len(reg.SimpleSettings))
-				for i, rs := range reg.SimpleSettings {
+		for _, s := range cfg.StandardSettings {
+			if !regDevSettings[s.Id] {
+				validKeys := make([]string, len(reg.DeviceRegistrationSettings))
+				for i, rs := range reg.DeviceRegistrationSettings {
 					validKeys[i] = rs.ID
 				}
-				return fmt.Errorf("unknown device-level setting key %q, valid: %v", s.Key, validKeys)
+				return fmt.Errorf("unknown device-level setting key %q, valid: %v", s.Id, validKeys)
 			}
 		}
 	}
@@ -698,17 +698,22 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 
 		regCh := reg.Channels[idx]
 
-		if len(cfgCh.Settings) > 0 {
+		if len(cfgCh.ChannelSettings) > 0 {
+			// ChannelSettings is a union: either {"standardSettings": {"standardSettings": [...]}} or {"profile": {"profile": {"id": "..."}}}
 			var settings struct {
-				SimpleSettings []struct{ Key string `json:"key"` } `json:"standardSettings,omitempty"`
-				Profile        *struct{ ID string `json:"id"` }   `json:"profile,omitempty"`
+				StandardSettings *struct {
+					StandardSettings []struct{ Id string `json:"id"` } `json:"standardSettings,omitempty"`
+				} `json:"standardSettings,omitempty"`
+				Profile *struct {
+					Profile struct{ ID string `json:"id"` } `json:"profile"`
+				} `json:"profile,omitempty"`
 			}
-			json.Unmarshal(cfgCh.Settings, &settings)
+			json.Unmarshal(cfgCh.ChannelSettings, &settings)
 
 			if settings.Profile != nil {
 				validProfile := false
 				for _, p := range regCh.Profiles {
-					if p.ID == settings.Profile.ID {
+					if p.ID == settings.Profile.Profile.ID {
 						validProfile = true
 						break
 					}
@@ -718,25 +723,25 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 					for i, p := range regCh.Profiles {
 						validIDs[i] = p.ID
 					}
-					return fmt.Errorf("unknown profile ID %q for channel %q, valid: %v", settings.Profile.ID, cfgCh.ID, validIDs)
+					return fmt.Errorf("unknown profile ID %q for channel %q, valid: %v", settings.Profile.Profile.ID, cfgCh.ID, validIDs)
 				}
 			}
-			if len(settings.SimpleSettings) > 0 {
+			if settings.StandardSettings != nil && len(settings.StandardSettings.StandardSettings) > 0 {
 				regSettings := map[string]bool{}
-				for _, s := range regCh.SimpleSettings {
+				for _, s := range regCh.ChannelSettings {
 					regSettings[s.ID] = true
 				}
-				for _, s := range settings.SimpleSettings {
-					if !regSettings[s.Key] {
-						return fmt.Errorf("unknown setting key %q for channel %q", s.Key, cfgCh.ID)
+				for _, s := range settings.StandardSettings.StandardSettings {
+					if !regSettings[s.Id] {
+						return fmt.Errorf("unknown setting key %q for channel %q", s.Id, cfgCh.ID)
 					}
 				}
 			}
 		}
 
-		// Validate connection transport protocol
-		if len(cfgCh.Connection) > 0 {
-			if err := validateConnection(cfgCh.Connection, regCh.ConnectionProtocols, cfgCh.ID); err != nil {
+		// Validate transport protocol
+		if len(cfgCh.Protocol) > 0 {
+			if err := validateProtocol(cfgCh.Protocol, regCh.Protocols, cfgCh.ID); err != nil {
 				return err
 			}
 		}
@@ -808,22 +813,12 @@ var protocolKeyToRegistration = map[string]string{
 	"rtp":                "RTP",
 }
 
-func validateConnection(connJSON json.RawMessage, registeredProtocols []string, channelID string) error {
-	var conn struct {
-		TransportProtocol json.RawMessage `json:"transportProtocol,omitempty"`
-	}
-	if err := json.Unmarshal(connJSON, &conn); err != nil {
-		return fmt.Errorf("invalid connection JSON for channel %q: %w", channelID, err)
-	}
-	if len(conn.TransportProtocol) == 0 {
-		return nil
-	}
-
+func validateProtocol(protoJSON json.RawMessage, registeredProtocols []string, channelID string) error {
 	// Parse the transport protocol union — it's a JSON object with a single key
 	// like {"srtCaller": {...}} or {"ristListener": {...}}
 	var protoMap map[string]json.RawMessage
-	if err := json.Unmarshal(conn.TransportProtocol, &protoMap); err != nil {
-		return fmt.Errorf("invalid transportProtocol JSON for channel %q: %w", channelID, err)
+	if err := json.Unmarshal(protoJSON, &protoMap); err != nil {
+		return fmt.Errorf("invalid protocol JSON for channel %q: %w", channelID, err)
 	}
 
 	for protoKey, protoBody := range protoMap {

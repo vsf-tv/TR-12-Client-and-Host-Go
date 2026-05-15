@@ -113,7 +113,7 @@ func TestFullLifecycle(t *testing.T) {
 	var reg struct {
 		Channels []struct {
 			ID             string        `json:"id"`
-			SimpleSettings []interface{} `json:"standardSettings"`
+			ChannelSettings []interface{} `json:"standardSettings"`
 		} `json:"channels"`
 	}
 	if err := json.Unmarshal(detail.Registration, &reg); err != nil {
@@ -122,8 +122,8 @@ func TestFullLifecycle(t *testing.T) {
 	if len(reg.Channels) != 1 || reg.Channels[0].ID != "CH01" {
 		t.Fatalf("Phase 6: expected 1 channel with id=CH01, got %+v", reg.Channels)
 	}
-	if len(reg.Channels[0].SimpleSettings) != 7 {
-		t.Fatalf("Phase 6: expected 7 standardSettings, got %d", len(reg.Channels[0].SimpleSettings))
+	if len(reg.Channels[0].ChannelSettings) != 7 {
+		t.Fatalf("Phase 6: expected 7 standardSettings, got %d", len(reg.Channels[0].ChannelSettings))
 	}
 	if !detail.Online {
 		t.Fatal("Phase 6: expected online=true")
@@ -158,7 +158,7 @@ func TestFullLifecycle(t *testing.T) {
 
 	// 7b: Negative — Unknown Setting Key
 	t.Log("Phase 7b: Negative — Unknown Setting Key")
-	badSettingCfg := json.RawMessage(`{"channels":[{"id":"CH01","state":"ACTIVE","settings":{"standardSettings":[{"key":"NONEXISTENT_SETTING","value":"foo"}]}}]}`)
+	badSettingCfg := json.RawMessage(`{"channels":[{"id":"CH01","state":"ACTIVE","channelSettings":{"standardSettings":[{"id":"NONEXISTENT_SETTING","value":"foo"}]}}]}`)
 	code, body = env.hostUpdateConfig(deviceID, token, badSettingCfg)
 	if code != 400 {
 		t.Fatalf("Phase 7b: expected 400, got %d: %s", code, body)
@@ -170,7 +170,7 @@ func TestFullLifecycle(t *testing.T) {
 
 	// 7c: Negative — Unknown Profile ID
 	t.Log("Phase 7c: Negative — Unknown Profile ID")
-	badProfileCfg := json.RawMessage(`{"channels":[{"id":"CH01","state":"ACTIVE","settings":{"profile":{"id":"nonexistent_profile"}}}]}`)
+	badProfileCfg := json.RawMessage(`{"channels":[{"id":"CH01","state":"ACTIVE","channelSettings":{"profile":{"id":"nonexistent_profile"}}}]}`)
 	code, body = env.hostUpdateConfig(deviceID, token, badProfileCfg)
 	if code != 400 {
 		t.Fatalf("Phase 7c: expected 400, got %d: %s", code, body)
@@ -184,30 +184,28 @@ func TestFullLifecycle(t *testing.T) {
 	t.Log("Phase 7d: Positive — Full Configuration")
 	fullConfig := json.RawMessage(`{
 		"standardSettings": [
-			{"key": "sync_clock_source", "value": "PTP"}
+			{"id": "sync_clock_source", "value": "PTP"}
 		],
 		"channels": [
 			{
 				"id": "CH01",
 				"state": "ACTIVE",
-				"settings": {
+				"channelSettings": {
 					"standardSettings": [
-						{"key": "RS01", "value": "1920x1080"},
-						{"key": "FR01", "value": "60"},
-						{"key": "MB01", "value": "20000"},
-						{"key": "RC01", "value": "CBR"},
-						{"key": "CO01", "value": "H.264"},
-						{"key": "GP01", "value": "60"},
-						{"key": "IN01", "value": "SDI1"}
+						{"id": "RS01", "value": "1920x1080"},
+						{"id": "FR01", "value": "60"},
+						{"id": "MB01", "value": "20000"},
+						{"id": "RC01", "value": "CBR"},
+						{"id": "CO01", "value": "H.264"},
+						{"id": "GP01", "value": "60"},
+						{"id": "IN01", "value": "SDI1"}
 					]
 				},
-				"connection": {
-					"transportProtocol": {
-						"srtCaller": {
-							"address": "192.168.1.100",
-							"port": 9000,
-							"minimumLatencyMilliseconds": 200
-						}
+				"protocol": {
+					"srtCaller": {
+						"address": "192.168.1.100",
+						"port": 9000,
+						"minimumLatencyMilliseconds": 200
 					}
 				}
 			}
@@ -274,7 +272,7 @@ func TestFullLifecycle(t *testing.T) {
 	}
 	if actualCfg == nil {
 		json.Unmarshal(fullConfig, &actualCfg)
-		actualCfg["configurationId"] = 0
+		actualCfg["version"] = 0
 	}
 	// Inject thumbnailLocalPath per channel — the application sets this in actual config
 	if channels, ok := actualCfg["channels"].([]interface{}); ok {
@@ -415,19 +413,19 @@ func TestOfflineConfigDelivery(t *testing.T) {
 	// Push a config update while device is offline
 	t.Log("Pushing config update while device is offline...")
 	offlineConfig := json.RawMessage(`{
-		"standardSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
 		"channels": [{
 			"id": "CH01",
 			"state": "IDLE",
-			"settings": {
+			"channelSettings": {
 				"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"},
-					{"key": "FR01", "value": "60"},
-					{"key": "MB01", "value": "5000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+					{"id": "RS01", "value": "1920x1080"},
+					{"id": "FR01", "value": "60"},
+					{"id": "MB01", "value": "5000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]
 			}
 		}]
@@ -511,37 +509,37 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// ---------------------------------------------------------------
 	t.Log("Phase 1: Full 2-channel configuration update")
 	fullConfig := json.RawMessage(`{
-		"standardSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
-				"settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"},
-					{"key": "FR01", "value": "60"},
-					{"key": "MB01", "value": "20000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				"channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"},
+					{"id": "FR01", "value": "60"},
+					{"id": "MB01", "value": "20000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]},
-				"connection": {"transportProtocol": {"srtCaller": {
+				"protocol": {"srtCaller": {
 					"address": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
-				}}}
+				}}
 			},
 			{
 				"id": "CH02", "state": "ACTIVE",
-				"settings": {"standardSettings": [
-					{"key": "RS01", "value": "1280x720"},
-					{"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "30"},
-					{"key": "IN01", "value": "HDMI1"}
+				"channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1280x720"},
+					{"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "30"},
+					{"id": "IN01", "value": "HDMI1"}
 				]},
-				"connection": {"transportProtocol": {"srtCaller": {
+				"protocol": {"srtCaller": {
 					"address": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
-				}}}
+				}}
 			}
 		]
 	}`)
@@ -585,37 +583,37 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// We use a distinct CH01 value (FR01=25) to confirm it was applied.
 	time.Sleep(1 * time.Second) // ensure epoch second advances for new configurationId
 	ch01OnlyConfig := json.RawMessage(`{
-		"standardSettings": [{"key": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
-				"settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"},
-					{"key": "FR01", "value": "25"},
-					{"key": "MB01", "value": "20000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				"channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"},
+					{"id": "FR01", "value": "25"},
+					{"id": "MB01", "value": "20000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]},
-				"connection": {"transportProtocol": {"srtCaller": {
+				"protocol": {"srtCaller": {
 					"address": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
-				}}}
+				}}
 			},
 			{
 				"id": "CH02", "state": "ACTIVE",
-				"settings": {"standardSettings": [
-					{"key": "RS01", "value": "1280x720"},
-					{"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "30"},
-					{"key": "IN01", "value": "HDMI1"}
+				"channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1280x720"},
+					{"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "30"},
+					{"id": "IN01", "value": "HDMI1"}
 				]},
-				"connection": {"transportProtocol": {"srtCaller": {
+				"protocol": {"srtCaller": {
 					"address": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
-				}}}
+				}}
 			}
 		]
 	}`)
@@ -644,37 +642,37 @@ func TestTwoChannelEncoder(t *testing.T) {
 	t.Log("Phase 3: Device-level only update — channels should not be reapplied")
 	time.Sleep(1 * time.Second)
 	deviceOnlyConfig := json.RawMessage(`{
-		"standardSettings": [{"key": "sync_clock_source", "value": "GENLOCK"}],
+		"standardSettings": [{"id": "sync_clock_source", "value": "GENLOCK"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
-				"settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"},
-					{"key": "FR01", "value": "25"},
-					{"key": "MB01", "value": "20000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				"channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"},
+					{"id": "FR01", "value": "25"},
+					{"id": "MB01", "value": "20000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]},
-				"connection": {"transportProtocol": {"srtCaller": {
+				"protocol": {"srtCaller": {
 					"address": "192.168.1.100", "port": 9001, "minimumLatencyMilliseconds": 200
-				}}}
+				}}
 			},
 			{
 				"id": "CH02", "state": "ACTIVE",
-				"settings": {"standardSettings": [
-					{"key": "RS01", "value": "1280x720"},
-					{"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"},
-					{"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"},
-					{"key": "GP01", "value": "30"},
-					{"key": "IN01", "value": "HDMI1"}
+				"channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1280x720"},
+					{"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"},
+					{"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"},
+					{"id": "GP01", "value": "30"},
+					{"id": "IN01", "value": "HDMI1"}
 				]},
-				"connection": {"transportProtocol": {"srtCaller": {
+				"protocol": {"srtCaller": {
 					"address": "192.168.1.101", "port": 9002, "minimumLatencyMilliseconds": 200
-				}}}
+				}}
 			}
 		]
 	}`)
@@ -736,19 +734,19 @@ func TestConfigurationIdBumping(t *testing.T) {
 		}
 		b, _ := json.Marshal(payload)
 		var cfg struct {
-			ConfigurationId string `json:"configurationId"`
+			Version string `json:"version"`
 			Channels        []struct {
 				Id              string `json:"id"`
-				ConfigurationId string `json:"configurationId"`
+				Version string `json:"version"`
 			} `json:"channels"`
 		}
 		json.Unmarshal(b, &cfg)
-		deviceId = cfg.ConfigurationId
+		deviceId = cfg.Version
 		for _, ch := range cfg.Channels {
 			if ch.Id == "CH01" {
-				ch01Id = ch.ConfigurationId
+				ch01Id = ch.Version
 			} else if ch.Id == "CH02" {
-				ch02Id = ch.ConfigurationId
+				ch02Id = ch.Version
 			}
 		}
 		return
@@ -756,19 +754,19 @@ func TestConfigurationIdBumping(t *testing.T) {
 
 	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
 		return json.RawMessage(`{
-			"standardSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
+			"standardSettings": [{"id": "sync_clock_source", "value": "` + clockSource + `"}],
 			"channels": [
-				{"id": "CH01", "state": "` + ch01State + `", "settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				{"id": "CH01", "state": "` + ch01State + `", "channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]}},
-				{"id": "CH02", "state": "` + ch02State + `", "settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				{"id": "CH02", "state": "` + ch02State + `", "channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]}}
 			]
 		}`)
@@ -899,19 +897,19 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 			return "", "", ""
 		}
 		var actual struct {
-			ConfigurationId string `json:"configurationId"`
+			Version string `json:"version"`
 			Channels        []struct {
 				Id              string `json:"id"`
-				ConfigurationId string `json:"configurationId"`
+				Version string `json:"version"`
 			} `json:"channels"`
 		}
 		json.Unmarshal(detail.ActualConfiguration, &actual)
-		deviceId = actual.ConfigurationId
+		deviceId = actual.Version
 		for _, ch := range actual.Channels {
 			if ch.Id == "CH01" {
-				ch01Id = ch.ConfigurationId
+				ch01Id = ch.Version
 			} else if ch.Id == "CH02" {
-				ch02Id = ch.ConfigurationId
+				ch02Id = ch.Version
 			}
 		}
 		return
@@ -919,19 +917,19 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 
 	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
 		return json.RawMessage(`{
-			"standardSettings": [{"key": "sync_clock_source", "value": "` + clockSource + `"}],
+			"standardSettings": [{"id": "sync_clock_source", "value": "` + clockSource + `"}],
 			"channels": [
-				{"id": "CH01", "state": "` + ch01State + `", "settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				{"id": "CH01", "state": "` + ch01State + `", "channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]}},
-				{"id": "CH02", "state": "` + ch02State + `", "settings": {"standardSettings": [
-					{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
-					{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
-					{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
-					{"key": "IN01", "value": "SDI1"}
+				{"id": "CH02", "state": "` + ch02State + `", "channelSettings": {"standardSettings": [
+					{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
+					{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+					{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+					{"id": "IN01", "value": "SDI1"}
 				]}}
 			]
 		}`)
@@ -986,10 +984,10 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 	}
 	// Extract the new payload — CH01 has new configurationId, CH02 has old
 	var desiredCfg2 struct {
-		ConfigurationId string `json:"configurationId"`
+		Version string `json:"version"`
 		Channels        []struct {
 			Id              string `json:"id"`
-			ConfigurationId string `json:"configurationId"`
+			Version string `json:"version"`
 		} `json:"channels"`
 	}
 	if p, ok := sdkCfg2.Configuration["payload"]; ok {
@@ -1104,17 +1102,17 @@ func TestTwoChannelThumbnails(t *testing.T) {
 	// Push config so SDK has a desired config, then report actual with thumbnailLocalPath
 	fullConfig := json.RawMessage(`{
 		"channels": [
-			{"id": "CH01", "state": "IDLE", "settings": {"standardSettings": [
-				{"key": "RS01", "value": "1920x1080"}, {"key": "FR01", "value": "30"},
-				{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
-				{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
-				{"key": "IN01", "value": "SDI1"}
+			{"id": "CH01", "state": "IDLE", "channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
 			]}},
-			{"id": "CH02", "state": "IDLE", "settings": {"standardSettings": [
-				{"key": "RS01", "value": "1280x720"}, {"key": "FR01", "value": "30"},
-				{"key": "MB01", "value": "10000"}, {"key": "RC01", "value": "CBR"},
-				{"key": "CO01", "value": "H.264"}, {"key": "GP01", "value": "60"},
-				{"key": "IN01", "value": "HDMI1"}
+			{"id": "CH02", "state": "IDLE", "channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1280x720"}, {"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "HDMI1"}
 			]}}
 		]
 	}`)

@@ -22,8 +22,8 @@ export const TransportProtocolName = {
     SrtCaller: 'SRT_CALLER',
     ZixiPush: 'ZIXI_PUSH',
     ZixiPull: 'ZIXI_PULL',
-    RistCaller: 'RIST_CALLER',
-    RistListener: 'RIST_LISTENER',
+    RistSimpleCaller: 'RIST_SIMPLE_CALLER',
+    RistSimpleListener: 'RIST_SIMPLE_LISTENER',
     Rtp: 'RTP'
 } as const;
 export type TransportProtocolName = typeof TransportProtocolName[keyof typeof TransportProtocolName];

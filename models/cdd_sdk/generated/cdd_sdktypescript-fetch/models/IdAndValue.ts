@@ -24,7 +24,7 @@ export interface IdAndValue {
      * @type {string}
      * @memberof IdAndValue
      */
-    key: string;
+    id: string;
     /**
      * 
      * @type {string}
@@ -37,7 +37,7 @@ export interface IdAndValue {
  * Check if a given object implements the IdAndValue interface.
  */
 export function instanceOfIdAndValue(value: object): value is IdAndValue {
-    if (!('key' in value) || value['key'] === undefined) return false;
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('value' in value) || value['value'] === undefined) return false;
     return true;
 }
@@ -52,7 +52,7 @@ export function IdAndValueFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     }
     return {
         
-        'key': json['key'],
+        'id': json['id'],
         'value': json['value'],
     };
 }
@@ -68,7 +68,7 @@ export function IdAndValueToJSONTyped(value?: IdAndValue | null, ignoreDiscrimin
 
     return {
         
-        'key': value['key'],
+        'id': value['id'],
         'value': value['value'],
     };
 }

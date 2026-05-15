@@ -246,7 +246,7 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 }
 
 // ReportConfiguration publishes an actual configuration payload to the host service.
-func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.DeviceConfiguration) cddsdkgo.ReportActualConfigurationResponseContent {
+func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.ActualDeviceConfiguration) cddsdkgo.ReportActualConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 

@@ -51,9 +51,9 @@ func (cb *ArdCallbacks) UpdateChannelProfile(channelID, profileID string) {
 	fmt.Printf("[UPDATE] Channel %s profile: %s\n", channelID, profileID)
 }
 
-func (cb *ArdCallbacks) UpdateChannelConnection(channelID string, connection *cddsdkgo.Connection) {
-	fmt.Printf("[UPDATE] Channel %s connection: %+v\n", channelID, connection)
-	cb.Encoder.HandleTransportConfigChange(channelID, connection)
+func (cb *ArdCallbacks) UpdateChannelConnection(channelID string, protocol *cddsdkgo.TransportProtocol) {
+	fmt.Printf("[UPDATE] Channel %s connection: %+v\n", channelID, protocol)
+	cb.Encoder.HandleTransportConfigChange(channelID, protocol)
 }
 
 func (cb *ArdCallbacks) UpdateChannelState(channelID string, state cddsdkgo.ChannelState) {
@@ -75,7 +75,7 @@ func (cb *ArdCallbacks) GetChannelProfileValue(channelID string) (string, bool) 
 	return "", false // Use simple settings by default
 }
 
-func (cb *ArdCallbacks) GetChannelConnection(channelID string) *cddsdkgo.Connection {
+func (cb *ArdCallbacks) GetChannelConnection(channelID string) *cddsdkgo.TransportProtocol {
 	return cb.Encoder.GetChannelConnection(channelID)
 }
 
@@ -86,21 +86,21 @@ func (cb *ArdCallbacks) GetChannelState(channelID string) cddsdkgo.ChannelState 
 func (cb *ArdCallbacks) GetDeviceStatus() []cddsdkgo.StatusValue {
 	// Device status doesn't depend on any specific channel
 	return []cddsdkgo.StatusValue{
-		{Name: "cpu", Value: "31", Info: "Current CPU % utilization."},
-		{Name: "temp", Value: "76", Info: "CPU in degrees C."},
-		{Name: "model", Value: "Talon", Info: "Hardware device model identifier."},
-		{Name: "serial", Value: "123456789", Info: "Device serial number."},
+		{Name: "cpu", Value: "31", Description: "Current CPU % utilization."},
+		{Name: "temp", Value: "76", Description: "CPU in degrees C."},
+		{Name: "model", Value: "Talon", Description: "Hardware device model identifier."},
+		{Name: "serial", Value: "123456789", Description: "Device serial number."},
 	}
 }
 
 func (cb *ArdCallbacks) GetChannelStatus(channelID string) []cddsdkgo.StatusValue {
 	if cb.Encoder.RunningChannel(channelID) {
 		return []cddsdkgo.StatusValue{
-			{Name: "bitrate", Value: GetSimulatedBitrate(), Info: "Bitrate Mbps configured on the video encoder."},
+			{Name: "bitrate", Value: GetSimulatedBitrate(), Description: "Bitrate Mbps configured on the video encoder."},
 		}
 	}
 	return []cddsdkgo.StatusValue{
-		{Name: "bitrate", Value: "0", Info: "Bitrate Mbps configured on the video encoder."},
+		{Name: "bitrate", Value: "0", Description: "Bitrate Mbps configured on the video encoder."},
 	}
 }
 

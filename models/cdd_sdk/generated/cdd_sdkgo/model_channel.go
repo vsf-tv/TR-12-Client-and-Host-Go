@@ -24,9 +24,9 @@ type Channel struct {
 	Name string `json:"name"`
 	Id string `json:"id"`
 	ChannelType ChannelType `json:"channelType"`
-	StandardSettings []Setting `json:"standardSettings,omitempty"`
+	ChannelSettings []Setting `json:"channelSettings,omitempty"`
 	Profiles []ProfileDefinition `json:"profiles,omitempty"`
-	ConnectionProtocols []TransportProtocolName `json:"connectionProtocols,omitempty"`
+	Protocols []TransportProtocolName `json:"protocols,omitempty"`
 }
 
 type _Channel Channel
@@ -123,36 +123,36 @@ func (o *Channel) SetChannelType(v ChannelType) {
 	o.ChannelType = v
 }
 
-// GetStandardSettings returns the StandardSettings field value if set, zero value otherwise.
-func (o *Channel) GetStandardSettings() []Setting {
-	if o == nil || IsNil(o.StandardSettings) {
+// GetChannelSettings returns the ChannelSettings field value if set, zero value otherwise.
+func (o *Channel) GetChannelSettings() []Setting {
+	if o == nil || IsNil(o.ChannelSettings) {
 		var ret []Setting
 		return ret
 	}
-	return o.StandardSettings
+	return o.ChannelSettings
 }
 
-// GetStandardSettingsOk returns a tuple with the StandardSettings field value if set, nil otherwise
+// GetChannelSettingsOk returns a tuple with the ChannelSettings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetStandardSettingsOk() ([]Setting, bool) {
-	if o == nil || IsNil(o.StandardSettings) {
+func (o *Channel) GetChannelSettingsOk() ([]Setting, bool) {
+	if o == nil || IsNil(o.ChannelSettings) {
 		return nil, false
 	}
-	return o.StandardSettings, true
+	return o.ChannelSettings, true
 }
 
-// HasStandardSettings returns a boolean if a field has been set.
-func (o *Channel) HasStandardSettings() bool {
-	if o != nil && !IsNil(o.StandardSettings) {
+// HasChannelSettings returns a boolean if a field has been set.
+func (o *Channel) HasChannelSettings() bool {
+	if o != nil && !IsNil(o.ChannelSettings) {
 		return true
 	}
 
 	return false
 }
 
-// SetStandardSettings gets a reference to the given []Setting and assigns it to the StandardSettings field.
-func (o *Channel) SetStandardSettings(v []Setting) {
-	o.StandardSettings = v
+// SetChannelSettings gets a reference to the given []Setting and assigns it to the ChannelSettings field.
+func (o *Channel) SetChannelSettings(v []Setting) {
+	o.ChannelSettings = v
 }
 
 // GetProfiles returns the Profiles field value if set, zero value otherwise.
@@ -187,36 +187,36 @@ func (o *Channel) SetProfiles(v []ProfileDefinition) {
 	o.Profiles = v
 }
 
-// GetConnectionProtocols returns the ConnectionProtocols field value if set, zero value otherwise.
-func (o *Channel) GetConnectionProtocols() []TransportProtocolName {
-	if o == nil || IsNil(o.ConnectionProtocols) {
+// GetProtocols returns the Protocols field value if set, zero value otherwise.
+func (o *Channel) GetProtocols() []TransportProtocolName {
+	if o == nil || IsNil(o.Protocols) {
 		var ret []TransportProtocolName
 		return ret
 	}
-	return o.ConnectionProtocols
+	return o.Protocols
 }
 
-// GetConnectionProtocolsOk returns a tuple with the ConnectionProtocols field value if set, nil otherwise
+// GetProtocolsOk returns a tuple with the Protocols field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetConnectionProtocolsOk() ([]TransportProtocolName, bool) {
-	if o == nil || IsNil(o.ConnectionProtocols) {
+func (o *Channel) GetProtocolsOk() ([]TransportProtocolName, bool) {
+	if o == nil || IsNil(o.Protocols) {
 		return nil, false
 	}
-	return o.ConnectionProtocols, true
+	return o.Protocols, true
 }
 
-// HasConnectionProtocols returns a boolean if a field has been set.
-func (o *Channel) HasConnectionProtocols() bool {
-	if o != nil && !IsNil(o.ConnectionProtocols) {
+// HasProtocols returns a boolean if a field has been set.
+func (o *Channel) HasProtocols() bool {
+	if o != nil && !IsNil(o.Protocols) {
 		return true
 	}
 
 	return false
 }
 
-// SetConnectionProtocols gets a reference to the given []TransportProtocolName and assigns it to the ConnectionProtocols field.
-func (o *Channel) SetConnectionProtocols(v []TransportProtocolName) {
-	o.ConnectionProtocols = v
+// SetProtocols gets a reference to the given []TransportProtocolName and assigns it to the Protocols field.
+func (o *Channel) SetProtocols(v []TransportProtocolName) {
+	o.Protocols = v
 }
 
 func (o Channel) MarshalJSON() ([]byte, error) {
@@ -232,14 +232,14 @@ func (o Channel) ToMap() (map[string]interface{}, error) {
 	toSerialize["name"] = o.Name
 	toSerialize["id"] = o.Id
 	toSerialize["channelType"] = o.ChannelType
-	if !IsNil(o.StandardSettings) {
-		toSerialize["standardSettings"] = o.StandardSettings
+	if !IsNil(o.ChannelSettings) {
+		toSerialize["channelSettings"] = o.ChannelSettings
 	}
 	if !IsNil(o.Profiles) {
 		toSerialize["profiles"] = o.Profiles
 	}
-	if !IsNil(o.ConnectionProtocols) {
-		toSerialize["connectionProtocols"] = o.ConnectionProtocols
+	if !IsNil(o.Protocols) {
+		toSerialize["protocols"] = o.Protocols
 	}
 	return toSerialize, nil
 }

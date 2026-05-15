@@ -5,14 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** |  | 
-**Info** | **string** |  | 
+**Description** | **string** |  | 
 **Value** | **string** |  | 
 
 ## Methods
 
 ### NewStatusValue
 
-`func NewStatusValue(name string, info string, value string, ) *StatusValue`
+`func NewStatusValue(name string, description string, value string, ) *StatusValue`
 
 NewStatusValue instantiates a new StatusValue object
 This constructor will assign default values to properties that have it defined,
@@ -47,24 +47,24 @@ and a boolean to check if the value has been set.
 SetName sets Name field to given value.
 
 
-### GetInfo
+### GetDescription
 
-`func (o *StatusValue) GetInfo() string`
+`func (o *StatusValue) GetDescription() string`
 
-GetInfo returns the Info field if non-nil, zero value otherwise.
+GetDescription returns the Description field if non-nil, zero value otherwise.
 
-### GetInfoOk
+### GetDescriptionOk
 
-`func (o *StatusValue) GetInfoOk() (*string, bool)`
+`func (o *StatusValue) GetDescriptionOk() (*string, bool)`
 
-GetInfoOk returns a tuple with the Info field if it's non-nil, zero value otherwise
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetInfo
+### SetDescription
 
-`func (o *StatusValue) SetInfo(v string)`
+`func (o *StatusValue) SetDescription(v string)`
 
-SetInfo sets Info field to given value.
+SetDescription sets Description field to given value.
 
 
 ### GetValue

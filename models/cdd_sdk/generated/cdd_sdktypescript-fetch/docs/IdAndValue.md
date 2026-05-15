@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`key` | string
+`id` | string
 `value` | string
 
 ## Example
@@ -16,7 +16,7 @@ import type { IdAndValue } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "key": null,
+  "id": null,
   "value": null,
 } satisfies IdAndValue
 

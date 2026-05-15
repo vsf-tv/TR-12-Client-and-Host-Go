@@ -3,7 +3,8 @@ $version: "2"
 namespace com.cdd
 
 use aws.protocols#restJson1
-use com.cdd.configuration#DeviceConfiguration
+use com.cdd.configuration#DesiredDeviceConfiguration
+use com.cdd.configuration#ActualDeviceConfiguration
 use com.cdd.registration#DeviceRegistration
 use com.cdd.status#DeviceStatus
 
@@ -91,7 +92,7 @@ structure ReportStatusInput {
 
 structure ReportActualConfigurationInput {
     @required
-    configuration: DeviceConfiguration
+    configuration: ActualDeviceConfiguration
 }
 
 // Output structures
@@ -141,5 +142,5 @@ structure ErrorDetails {
 
 structure ConfigurationData {
     updateId: String,
-    payload: DeviceConfiguration
+    payload: DesiredDeviceConfiguration
 }

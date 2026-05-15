@@ -38,7 +38,7 @@ type DeviceCallbacks interface {
 	// UpdateChannelConnection applies transport protocol configuration to a channel.
 	// IMPORTANT: TR-12 communicates desired configuration once. The device is
 	// responsible for retrying until the desired state is achieved.
-	UpdateChannelConnection(channelID string, connection *cddsdkgo.Connection)
+	UpdateChannelConnection(channelID string, protocol *cddsdkgo.TransportProtocol)
 
 	// UpdateChannelState applies the desired channel state (ACTIVE or IDLE).
 	// The device must retry until the state is achieved — the host will not re-send.
@@ -57,7 +57,7 @@ type DeviceCallbacks interface {
 	GetChannelProfileValue(channelID string) (string, bool)
 
 	// GetChannelConnection returns the current transport protocol configuration.
-	GetChannelConnection(channelID string) *cddsdkgo.Connection
+	GetChannelConnection(channelID string) *cddsdkgo.TransportProtocol
 
 	// GetChannelState returns the current channel state.
 	GetChannelState(channelID string) cddsdkgo.ChannelState

@@ -13,20 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { RangeValues } from './RangeValues';
+import type { SettingConstraint } from './SettingConstraint';
 import {
-    RangeValuesFromJSON,
-    RangeValuesFromJSONTyped,
-    RangeValuesToJSON,
-    RangeValuesToJSONTyped,
-} from './RangeValues';
-import type { EnumValues } from './EnumValues';
-import {
-    EnumValuesFromJSON,
-    EnumValuesFromJSONTyped,
-    EnumValuesToJSON,
-    EnumValuesToJSONTyped,
-} from './EnumValues';
+    SettingConstraintFromJSON,
+    SettingConstraintFromJSONTyped,
+    SettingConstraintToJSON,
+    SettingConstraintToJSONTyped,
+} from './SettingConstraint';
 
 /**
  * 
@@ -54,16 +47,10 @@ export interface Setting {
     description: string;
     /**
      * 
-     * @type {EnumValues}
+     * @type {SettingConstraint}
      * @memberof Setting
      */
-    enums?: EnumValues;
-    /**
-     * 
-     * @type {RangeValues}
-     * @memberof Setting
-     */
-    ranges?: RangeValues;
+    constraint: SettingConstraint;
 }
 
 /**
@@ -73,6 +60,7 @@ export function instanceOfSetting(value: object): value is Setting {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('description' in value) || value['description'] === undefined) return false;
+    if (!('constraint' in value) || value['constraint'] === undefined) return false;
     return true;
 }
 
@@ -89,8 +77,7 @@ export function SettingFromJSONTyped(json: any, ignoreDiscriminator: boolean): S
         'id': json['id'],
         'name': json['name'],
         'description': json['description'],
-        'enums': json['enums'] == null ? undefined : EnumValuesFromJSON(json['enums']),
-        'ranges': json['ranges'] == null ? undefined : RangeValuesFromJSON(json['ranges']),
+        'constraint': SettingConstraintFromJSON(json['constraint']),
     };
 }
 
@@ -108,8 +95,7 @@ export function SettingToJSONTyped(value?: Setting | null, ignoreDiscriminator: 
         'id': value['id'],
         'name': value['name'],
         'description': value['description'],
-        'enums': EnumValuesToJSON(value['enums']),
-        'ranges': RangeValuesToJSON(value['ranges']),
+        'constraint': SettingConstraintToJSON(value['constraint']),
     };
 }
 

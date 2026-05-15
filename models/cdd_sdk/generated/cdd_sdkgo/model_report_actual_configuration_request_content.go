@@ -21,7 +21,7 @@ var _ MappedNullable = &ReportActualConfigurationRequestContent{}
 
 // ReportActualConfigurationRequestContent struct for ReportActualConfigurationRequestContent
 type ReportActualConfigurationRequestContent struct {
-	Configuration DeviceConfiguration `json:"configuration"`
+	Configuration ActualDeviceConfiguration `json:"configuration"`
 }
 
 type _ReportActualConfigurationRequestContent ReportActualConfigurationRequestContent
@@ -30,7 +30,7 @@ type _ReportActualConfigurationRequestContent ReportActualConfigurationRequestCo
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewReportActualConfigurationRequestContent(configuration DeviceConfiguration) *ReportActualConfigurationRequestContent {
+func NewReportActualConfigurationRequestContent(configuration ActualDeviceConfiguration) *ReportActualConfigurationRequestContent {
 	this := ReportActualConfigurationRequestContent{}
 	this.Configuration = configuration
 	return &this
@@ -45,9 +45,9 @@ func NewReportActualConfigurationRequestContentWithDefaults() *ReportActualConfi
 }
 
 // GetConfiguration returns the Configuration field value
-func (o *ReportActualConfigurationRequestContent) GetConfiguration() DeviceConfiguration {
+func (o *ReportActualConfigurationRequestContent) GetConfiguration() ActualDeviceConfiguration {
 	if o == nil {
-		var ret DeviceConfiguration
+		var ret ActualDeviceConfiguration
 		return ret
 	}
 
@@ -56,7 +56,7 @@ func (o *ReportActualConfigurationRequestContent) GetConfiguration() DeviceConfi
 
 // GetConfigurationOk returns a tuple with the Configuration field value
 // and a boolean to check if the value has been set.
-func (o *ReportActualConfigurationRequestContent) GetConfigurationOk() (*DeviceConfiguration, bool) {
+func (o *ReportActualConfigurationRequestContent) GetConfigurationOk() (*ActualDeviceConfiguration, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -64,7 +64,7 @@ func (o *ReportActualConfigurationRequestContent) GetConfigurationOk() (*DeviceC
 }
 
 // SetConfiguration sets field value
-func (o *ReportActualConfigurationRequestContent) SetConfiguration(v DeviceConfiguration) {
+func (o *ReportActualConfigurationRequestContent) SetConfiguration(v ActualDeviceConfiguration) {
 	o.Configuration = v
 }
 
