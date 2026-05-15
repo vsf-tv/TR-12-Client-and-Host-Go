@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **Name** | **string** |  | 
 **Id** | **string** |  | 
 **ChannelType** | [**ChannelType**](ChannelType.md) |  | 
-**ChannelSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
+**Settings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
 **Profiles** | Pointer to [**[]ProfileDefinition**](ProfileDefinition.md) |  | [optional] 
 **Protocols** | Pointer to [**[]TransportProtocolName**](TransportProtocolName.md) |  | [optional] 
 
@@ -90,30 +90,30 @@ and a boolean to check if the value has been set.
 SetChannelType sets ChannelType field to given value.
 
 
-### GetChannelSettings
+### GetSettings
 
-`func (o *Channel) GetChannelSettings() []Setting`
+`func (o *Channel) GetSettings() []Setting`
 
-GetChannelSettings returns the ChannelSettings field if non-nil, zero value otherwise.
+GetSettings returns the Settings field if non-nil, zero value otherwise.
 
-### GetChannelSettingsOk
+### GetSettingsOk
 
-`func (o *Channel) GetChannelSettingsOk() (*[]Setting, bool)`
+`func (o *Channel) GetSettingsOk() (*[]Setting, bool)`
 
-GetChannelSettingsOk returns a tuple with the ChannelSettings field if it's non-nil, zero value otherwise
+GetSettingsOk returns a tuple with the Settings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetChannelSettings
+### SetSettings
 
-`func (o *Channel) SetChannelSettings(v []Setting)`
+`func (o *Channel) SetSettings(v []Setting)`
 
-SetChannelSettings sets ChannelSettings field to given value.
+SetSettings sets Settings field to given value.
 
-### HasChannelSettings
+### HasSettings
 
-`func (o *Channel) HasChannelSettings() bool`
+`func (o *Channel) HasSettings() bool`
 
-HasChannelSettings returns a boolean if a field has been set.
+HasSettings returns a boolean if a field has been set.
 
 ### GetProfiles
 

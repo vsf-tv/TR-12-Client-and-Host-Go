@@ -343,7 +343,7 @@ func TestUpdateConfiguration_Success(t *testing.T) {
 	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	// Set registration so validation passes
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1","channelSettings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
+	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
 	store.UpdateDeviceRegistration(deviceID, reg)
 
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
@@ -502,7 +502,7 @@ func TestRotateCredentials_NotActive(t *testing.T) {
 // --- validateConfiguration ---
 
 func TestValidateConfiguration_ValidConfig(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","channelSettings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
+	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","channelSettings":{"standardSettings":{"standardSettings":[{"id":"brightness","value":"low"}]}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
@@ -519,7 +519,7 @@ func TestValidateConfiguration_UnknownChannel(t *testing.T) {
 }
 
 func TestValidateConfiguration_UnknownSettingKey(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","channelSettings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}]}]}`)
+	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}]}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","channelSettings":{"standardSettings":{"standardSettings":[{"id":"contrast","value":"50"}]}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown setting key") {
@@ -546,7 +546,7 @@ func TestValidateConfiguration_InvalidChannelState(t *testing.T) {
 }
 
 func TestValidateConfiguration_DeviceLevelSettingValid(t *testing.T) {
-	reg := json.RawMessage(`{"deviceRegistrationSettings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	reg := json.RawMessage(`{"settings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
 	cfg := json.RawMessage(`{"standardSettings":[{"id":"clock_source","value":"PTP"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
@@ -554,7 +554,7 @@ func TestValidateConfiguration_DeviceLevelSettingValid(t *testing.T) {
 }
 
 func TestValidateConfiguration_DeviceLevelSettingUnknown(t *testing.T) {
-	reg := json.RawMessage(`{"deviceRegistrationSettings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	reg := json.RawMessage(`{"settings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
 	cfg := json.RawMessage(`{"standardSettings":[{"id":"bogus_setting","value":"foo"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown device-level setting key") {

@@ -93,7 +93,7 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 
 	// Device-level standard settings
 	var deviceSettings []cddsdkgo.IdAndValue
-	for _, setting := range registration.DeviceRegistrationSettings {
+	for _, setting := range registration.Settings {
 		if val, found := s.CB.GetDeviceUpdatedValue(setting.Id); found {
 			deviceSettings = append(deviceSettings, cddsdkgo.IdAndValue{
 				Id: setting.Id, Value: val,
@@ -141,9 +141,9 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ActualCha
 	}
 
 	// Standard settings if no profile
-	if !hasProfile && len(regCh.ChannelSettings) > 0 {
+	if !hasProfile && len(regCh.Settings) > 0 {
 		var kvList []cddsdkgo.IdAndValue
-		for _, setting := range regCh.ChannelSettings {
+		for _, setting := range regCh.Settings {
 			if val, found := s.CB.GetChannelUpdatedValue(chID, setting.Id); found {
 				kvList = append(kvList, cddsdkgo.IdAndValue{
 					Id: setting.Id, Value: val,

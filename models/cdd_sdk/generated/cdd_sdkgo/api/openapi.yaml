@@ -234,6 +234,25 @@ components:
       type: object
     Channel:
       example:
+        settings:
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
         name: name
         profiles:
         - name: name
@@ -247,25 +266,6 @@ components:
         protocols:
         - SRT_LISTENER
         - SRT_LISTENER
-        channelSettings:
-        - name: name
-          description: description
-          constraint:
-            enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-          id: id
-        - name: name
-          description: description
-          constraint:
-            enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-          id: id
       properties:
         name:
           type: string
@@ -273,7 +273,7 @@ components:
           type: string
         channelType:
           $ref: "#/components/schemas/ChannelType"
-        channelSettings:
+        settings:
           items:
             $ref: "#/components/schemas/Setting"
           type: array
@@ -393,8 +393,46 @@ components:
       example:
         hostId: hostId
         registration:
+          settings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
           channels:
-          - name: name
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+              id: id
+            name: name
             profiles:
             - name: name
               description: description
@@ -407,7 +445,7 @@ components:
             protocols:
             - SRT_LISTENER
             - SRT_LISTENER
-            channelSettings:
+          - settings:
             - name: name
               description: description
               constraint:
@@ -426,7 +464,7 @@ components:
                   - values
                   - values
               id: id
-          - name: name
+            name: name
             profiles:
             - name: name
               description: description
@@ -439,44 +477,6 @@ components:
             protocols:
             - SRT_LISTENER
             - SRT_LISTENER
-            channelSettings:
-            - name: name
-              description: description
-              constraint:
-                enums:
-                  defaultValue: defaultValue
-                  values:
-                  - values
-                  - values
-              id: id
-            - name: name
-              description: description
-              constraint:
-                enums:
-                  defaultValue: defaultValue
-                  values:
-                  - values
-                  - values
-              id: id
-          deviceRegistrationSettings:
-          - name: name
-            description: description
-            constraint:
-              enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-            id: id
-          - name: name
-            description: description
-            constraint:
-              enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-            id: id
       properties:
         registration:
           $ref: "#/components/schemas/DeviceRegistration"
@@ -650,8 +650,46 @@ components:
       type: object
     DeviceRegistration:
       example:
+        settings:
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+          id: id
         channels:
-        - name: name
+        - settings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+            id: id
+          name: name
           profiles:
           - name: name
             description: description
@@ -664,7 +702,7 @@ components:
           protocols:
           - SRT_LISTENER
           - SRT_LISTENER
-          channelSettings:
+        - settings:
           - name: name
             description: description
             constraint:
@@ -683,7 +721,7 @@ components:
                 - values
                 - values
             id: id
-        - name: name
+          name: name
           profiles:
           - name: name
             description: description
@@ -696,50 +734,12 @@ components:
           protocols:
           - SRT_LISTENER
           - SRT_LISTENER
-          channelSettings:
-          - name: name
-            description: description
-            constraint:
-              enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-            id: id
-          - name: name
-            description: description
-            constraint:
-              enums:
-                defaultValue: defaultValue
-                values:
-                - values
-                - values
-            id: id
-        deviceRegistrationSettings:
-        - name: name
-          description: description
-          constraint:
-            enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-          id: id
-        - name: name
-          description: description
-          constraint:
-            enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-          id: id
       properties:
         channels:
           items:
             $ref: "#/components/schemas/Channel"
           type: array
-        deviceRegistrationSettings:
+        settings:
           items:
             $ref: "#/components/schemas/Setting"
           type: array

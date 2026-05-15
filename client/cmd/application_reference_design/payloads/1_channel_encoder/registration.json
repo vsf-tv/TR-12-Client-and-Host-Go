@@ -1,5 +1,5 @@
 {
-  "deviceRegistrationSettings": [
+  "settings": [
     {
       "name": "Clock Source",
       "description": "Sets the clock source for all active channels.",
@@ -50,7 +50,7 @@
           "description": "H265, 60fps, 40mps, 4k, 500ms gop"
         }
       ],
-      "channelSettings": [
+      "settings": [
         {
           "name": "resolution",
           "description": "Output video dimensions.",

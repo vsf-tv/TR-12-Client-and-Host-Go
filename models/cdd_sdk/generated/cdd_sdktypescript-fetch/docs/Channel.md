@@ -9,7 +9,7 @@ Name | Type
 `name` | string
 `id` | string
 `channelType` | [ChannelType](ChannelType.md)
-`channelSettings` | [Array&lt;Setting&gt;](Setting.md)
+`settings` | [Array&lt;Setting&gt;](Setting.md)
 `profiles` | [Array&lt;ProfileDefinition&gt;](ProfileDefinition.md)
 `protocols` | [Array&lt;TransportProtocolName&gt;](TransportProtocolName.md)
 
@@ -23,7 +23,7 @@ const example = {
   "name": null,
   "id": null,
   "channelType": null,
-  "channelSettings": null,
+  "settings": null,
   "profiles": null,
   "protocols": null,
 } satisfies Channel

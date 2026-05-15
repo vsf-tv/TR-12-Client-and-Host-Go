@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Channels** | [**[]Channel**](Channel.md) |  | 
-**DeviceRegistrationSettings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
+**Settings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
 
 ## Methods
 
@@ -46,30 +46,30 @@ and a boolean to check if the value has been set.
 SetChannels sets Channels field to given value.
 
 
-### GetDeviceRegistrationSettings
+### GetSettings
 
-`func (o *DeviceRegistration) GetDeviceRegistrationSettings() []Setting`
+`func (o *DeviceRegistration) GetSettings() []Setting`
 
-GetDeviceRegistrationSettings returns the DeviceRegistrationSettings field if non-nil, zero value otherwise.
+GetSettings returns the Settings field if non-nil, zero value otherwise.
 
-### GetDeviceRegistrationSettingsOk
+### GetSettingsOk
 
-`func (o *DeviceRegistration) GetDeviceRegistrationSettingsOk() (*[]Setting, bool)`
+`func (o *DeviceRegistration) GetSettingsOk() (*[]Setting, bool)`
 
-GetDeviceRegistrationSettingsOk returns a tuple with the DeviceRegistrationSettings field if it's non-nil, zero value otherwise
+GetSettingsOk returns a tuple with the Settings field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetDeviceRegistrationSettings
+### SetSettings
 
-`func (o *DeviceRegistration) SetDeviceRegistrationSettings(v []Setting)`
+`func (o *DeviceRegistration) SetSettings(v []Setting)`
 
-SetDeviceRegistrationSettings sets DeviceRegistrationSettings field to given value.
+SetSettings sets Settings field to given value.
 
-### HasDeviceRegistrationSettings
+### HasSettings
 
-`func (o *DeviceRegistration) HasDeviceRegistrationSettings() bool`
+`func (o *DeviceRegistration) HasSettings() bool`
 
-HasDeviceRegistrationSettings returns a boolean if a field has been set.
+HasSettings returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

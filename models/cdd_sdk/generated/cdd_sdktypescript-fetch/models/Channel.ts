@@ -71,7 +71,7 @@ export interface Channel {
      * @type {Array<Setting>}
      * @memberof Channel
      */
-    channelSettings?: Array<Setting>;
+    settings?: Array<Setting>;
     /**
      * 
      * @type {Array<ProfileDefinition>}
@@ -111,7 +111,7 @@ export function ChannelFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
         'name': json['name'],
         'id': json['id'],
         'channelType': ChannelTypeFromJSON(json['channelType']),
-        'channelSettings': json['channelSettings'] == null ? undefined : ((json['channelSettings'] as Array<any>).map(SettingFromJSON)),
+        'settings': json['settings'] == null ? undefined : ((json['settings'] as Array<any>).map(SettingFromJSON)),
         'profiles': json['profiles'] == null ? undefined : ((json['profiles'] as Array<any>).map(ProfileDefinitionFromJSON)),
         'protocols': json['protocols'] == null ? undefined : ((json['protocols'] as Array<any>).map(TransportProtocolNameFromJSON)),
     };
@@ -131,7 +131,7 @@ export function ChannelToJSONTyped(value?: Channel | null, ignoreDiscriminator: 
         'name': value['name'],
         'id': value['id'],
         'channelType': ChannelTypeToJSON(value['channelType']),
-        'channelSettings': value['channelSettings'] == null ? undefined : ((value['channelSettings'] as Array<any>).map(SettingToJSON)),
+        'settings': value['settings'] == null ? undefined : ((value['settings'] as Array<any>).map(SettingToJSON)),
         'profiles': value['profiles'] == null ? undefined : ((value['profiles'] as Array<any>).map(ProfileDefinitionToJSON)),
         'protocols': value['protocols'] == null ? undefined : ((value['protocols'] as Array<any>).map(TransportProtocolNameToJSON)),
     };

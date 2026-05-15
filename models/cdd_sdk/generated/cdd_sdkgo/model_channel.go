@@ -24,7 +24,7 @@ type Channel struct {
 	Name string `json:"name"`
 	Id string `json:"id"`
 	ChannelType ChannelType `json:"channelType"`
-	ChannelSettings []Setting `json:"channelSettings,omitempty"`
+	Settings []Setting `json:"settings,omitempty"`
 	Profiles []ProfileDefinition `json:"profiles,omitempty"`
 	Protocols []TransportProtocolName `json:"protocols,omitempty"`
 }
@@ -123,36 +123,36 @@ func (o *Channel) SetChannelType(v ChannelType) {
 	o.ChannelType = v
 }
 
-// GetChannelSettings returns the ChannelSettings field value if set, zero value otherwise.
-func (o *Channel) GetChannelSettings() []Setting {
-	if o == nil || IsNil(o.ChannelSettings) {
+// GetSettings returns the Settings field value if set, zero value otherwise.
+func (o *Channel) GetSettings() []Setting {
+	if o == nil || IsNil(o.Settings) {
 		var ret []Setting
 		return ret
 	}
-	return o.ChannelSettings
+	return o.Settings
 }
 
-// GetChannelSettingsOk returns a tuple with the ChannelSettings field value if set, nil otherwise
+// GetSettingsOk returns a tuple with the Settings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetChannelSettingsOk() ([]Setting, bool) {
-	if o == nil || IsNil(o.ChannelSettings) {
+func (o *Channel) GetSettingsOk() ([]Setting, bool) {
+	if o == nil || IsNil(o.Settings) {
 		return nil, false
 	}
-	return o.ChannelSettings, true
+	return o.Settings, true
 }
 
-// HasChannelSettings returns a boolean if a field has been set.
-func (o *Channel) HasChannelSettings() bool {
-	if o != nil && !IsNil(o.ChannelSettings) {
+// HasSettings returns a boolean if a field has been set.
+func (o *Channel) HasSettings() bool {
+	if o != nil && !IsNil(o.Settings) {
 		return true
 	}
 
 	return false
 }
 
-// SetChannelSettings gets a reference to the given []Setting and assigns it to the ChannelSettings field.
-func (o *Channel) SetChannelSettings(v []Setting) {
-	o.ChannelSettings = v
+// SetSettings gets a reference to the given []Setting and assigns it to the Settings field.
+func (o *Channel) SetSettings(v []Setting) {
+	o.Settings = v
 }
 
 // GetProfiles returns the Profiles field value if set, zero value otherwise.
@@ -232,8 +232,8 @@ func (o Channel) ToMap() (map[string]interface{}, error) {
 	toSerialize["name"] = o.Name
 	toSerialize["id"] = o.Id
 	toSerialize["channelType"] = o.ChannelType
-	if !IsNil(o.ChannelSettings) {
-		toSerialize["channelSettings"] = o.ChannelSettings
+	if !IsNil(o.Settings) {
+		toSerialize["settings"] = o.Settings
 	}
 	if !IsNil(o.Profiles) {
 		toSerialize["profiles"] = o.Profiles

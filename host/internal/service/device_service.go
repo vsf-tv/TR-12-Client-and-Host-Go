@@ -650,11 +650,11 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 		Channels []struct {
 			ID              string                            `json:"id"`
 			Name            string                            `json:"name"`
-			ChannelSettings []struct{ ID string `json:"id"` } `json:"channelSettings,omitempty"`
+			ChannelSettings []struct{ ID string `json:"id"` } `json:"settings,omitempty"`
 			Profiles        []struct{ ID string `json:"id"` } `json:"profiles,omitempty"`
 			Protocols       []string                          `json:"protocols,omitempty"`
 		} `json:"channels"`
-		DeviceRegistrationSettings []struct{ ID string `json:"id"` } `json:"deviceRegistrationSettings,omitempty"`
+		DeviceRegistrationSettings []struct{ ID string `json:"id"` } `json:"settings,omitempty"`
 	}
 	if err := json.Unmarshal(regJSON, &reg); err != nil {
 		return fmt.Errorf("invalid registration JSON: %w", err)

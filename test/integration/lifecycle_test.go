@@ -112,8 +112,8 @@ func TestFullLifecycle(t *testing.T) {
 	// Parse registration to check structure
 	var reg struct {
 		Channels []struct {
-			ID             string        `json:"id"`
-			ChannelSettings []interface{} `json:"standardSettings"`
+			ID              string        `json:"id"`
+			ChannelSettings []interface{} `json:"settings"`
 		} `json:"channels"`
 	}
 	if err := json.Unmarshal(detail.Registration, &reg); err != nil {

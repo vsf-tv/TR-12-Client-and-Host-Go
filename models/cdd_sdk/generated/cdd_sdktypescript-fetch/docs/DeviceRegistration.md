@@ -7,7 +7,7 @@
 Name | Type
 ------------ | -------------
 `channels` | [Array&lt;Channel&gt;](Channel.md)
-`deviceRegistrationSettings` | [Array&lt;Setting&gt;](Setting.md)
+`settings` | [Array&lt;Setting&gt;](Setting.md)
 
 ## Example
 
@@ -17,7 +17,7 @@ import type { DeviceRegistration } from ''
 // TODO: Update the object below with actual values
 const example = {
   "channels": null,
-  "deviceRegistrationSettings": null,
+  "settings": null,
 } satisfies DeviceRegistration
 
 console.log(example)

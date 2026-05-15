@@ -45,7 +45,7 @@ export interface DeviceRegistration {
      * @type {Array<Setting>}
      * @memberof DeviceRegistration
      */
-    deviceRegistrationSettings?: Array<Setting>;
+    settings?: Array<Setting>;
 }
 
 /**
@@ -67,7 +67,7 @@ export function DeviceRegistrationFromJSONTyped(json: any, ignoreDiscriminator: 
     return {
         
         'channels': ((json['channels'] as Array<any>).map(ChannelFromJSON)),
-        'deviceRegistrationSettings': json['deviceRegistrationSettings'] == null ? undefined : ((json['deviceRegistrationSettings'] as Array<any>).map(SettingFromJSON)),
+        'settings': json['settings'] == null ? undefined : ((json['settings'] as Array<any>).map(SettingFromJSON)),
     };
 }
 
@@ -83,7 +83,7 @@ export function DeviceRegistrationToJSONTyped(value?: DeviceRegistration | null,
     return {
         
         'channels': ((value['channels'] as Array<any>).map(ChannelToJSON)),
-        'deviceRegistrationSettings': value['deviceRegistrationSettings'] == null ? undefined : ((value['deviceRegistrationSettings'] as Array<any>).map(SettingToJSON)),
+        'settings': value['settings'] == null ? undefined : ((value['settings'] as Array<any>).map(SettingToJSON)),
     };
 }
 
