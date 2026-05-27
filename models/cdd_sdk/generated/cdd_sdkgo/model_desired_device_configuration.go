@@ -22,7 +22,9 @@ var _ MappedNullable = &DesiredDeviceConfiguration{}
 // DesiredDeviceConfiguration Desired device configuration — sent from host to device. Contains only fields the host controls. No device-reported fields.
 type DesiredDeviceConfiguration struct {
 	Version string `json:"version"`
+	// See limits.smithy: MAX_CHANNELS
 	Channels []DesiredChannelConfiguration `json:"channels"`
+	// See limits.smithy: MAX_SETTINGS_PER_SCOPE
 	StandardSettings []IdAndValue `json:"standardSettings,omitempty"`
 }
 

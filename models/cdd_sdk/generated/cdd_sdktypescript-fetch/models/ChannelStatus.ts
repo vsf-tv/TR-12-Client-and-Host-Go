@@ -47,7 +47,7 @@ export interface ChannelStatus {
      */
     state: ChannelState;
     /**
-     * 
+     * See limits.smithy: MAX_STATUS_VALUES
      * @type {Array<StatusValue>}
      * @memberof ChannelStatus
      */

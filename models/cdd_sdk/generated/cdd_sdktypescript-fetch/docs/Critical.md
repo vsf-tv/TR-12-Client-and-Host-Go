@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`critical` | Error
+`critical` | [HealthError](HealthError.md)
 
 ## Example
 

@@ -1,12 +1,12 @@
 
-# Channel
+# ChannelTemplate
 
+A channel template defines the capabilities shared by one or more channels.
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`name` | string
 `id` | string
 `channelType` | [ChannelType](ChannelType.md)
 `settings` | [Array&lt;Setting&gt;](Setting.md)
@@ -16,17 +16,16 @@ Name | Type
 ## Example
 
 ```typescript
-import type { Channel } from ''
+import type { ChannelTemplate } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "name": null,
   "id": null,
   "channelType": null,
   "settings": null,
   "profiles": null,
   "protocols": null,
-} satisfies Channel
+} satisfies ChannelTemplate
 
 console.log(example)
 
@@ -35,7 +34,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as Channel
+const exampleParsed = JSON.parse(exampleJSON) as ChannelTemplate
 console.log(exampleParsed)
 ```
 

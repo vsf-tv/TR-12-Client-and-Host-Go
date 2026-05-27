@@ -6,7 +6,7 @@
 
 Name | Type
 ------------ | -------------
-`degraded` | Error
+`degraded` | [HealthError](HealthError.md)
 
 ## Example
 

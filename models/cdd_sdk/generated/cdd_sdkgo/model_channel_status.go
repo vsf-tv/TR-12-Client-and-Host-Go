@@ -23,6 +23,7 @@ var _ MappedNullable = &ChannelStatus{}
 type ChannelStatus struct {
 	Id string `json:"id"`
 	State ChannelState `json:"state"`
+	// See limits.smithy: MAX_STATUS_VALUES
 	Status []StatusValue `json:"status"`
 }
 

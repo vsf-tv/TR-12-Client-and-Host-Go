@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { HealthError } from './HealthError';
+import {
+    HealthErrorFromJSON,
+    HealthErrorFromJSONTyped,
+    HealthErrorToJSON,
+    HealthErrorToJSONTyped,
+} from './HealthError';
+
 /**
  * 
  * @export
@@ -21,10 +29,10 @@ import { mapValues } from '../runtime';
 export interface Critical {
     /**
      * 
-     * @type {Error}
+     * @type {HealthError}
      * @memberof Critical
      */
-    critical: Error;
+    critical: HealthError;
 }
 
 /**
@@ -45,7 +53,7 @@ export function CriticalFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'critical': json['critical'],
+        'critical': HealthErrorFromJSON(json['critical']),
     };
 }
 
@@ -60,7 +68,7 @@ export function CriticalToJSONTyped(value?: Critical | null, ignoreDiscriminator
 
     return {
         
-        'critical': value['critical'],
+        'critical': HealthErrorToJSON(value['critical']),
     };
 }
 

@@ -1,12 +1,12 @@
 $version: "2"
 
-namespace com.cdd
+namespace com.tr12
 
 use aws.protocols#restJson1
-use com.cdd.configuration#DesiredDeviceConfiguration
-use com.cdd.configuration#ActualDeviceConfiguration
-use com.cdd.registration#DeviceRegistration
-use com.cdd.status#DeviceStatus
+use com.tr12.configuration#DesiredDeviceConfiguration
+use com.tr12.configuration#ActualDeviceConfiguration
+use com.tr12.registration#DeviceRegistration
+use com.tr12.status#DeviceStatus
 
 @restJson1
 service CddService {

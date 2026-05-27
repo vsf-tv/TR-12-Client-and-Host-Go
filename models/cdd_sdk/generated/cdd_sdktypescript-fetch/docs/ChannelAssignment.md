@@ -1,25 +1,27 @@
 
-# ModelError
+# ChannelAssignment
 
-Shared description for degraded and critical states.
+Associates a channel ID with a template. The channel inherits all capabilities (settings, profiles, protocols) from the referenced template.
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`message` | string
-`timestamp` | Date
+`channelId` | string
+`name` | string
+`templateId` | string
 
 ## Example
 
 ```typescript
-import type { ModelError } from ''
+import type { ChannelAssignment } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "message": null,
-  "timestamp": null,
-} satisfies ModelError
+  "channelId": null,
+  "name": null,
+  "templateId": null,
+} satisfies ChannelAssignment
 
 console.log(example)
 
@@ -28,7 +30,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as ModelError
+const exampleParsed = JSON.parse(exampleJSON) as ChannelAssignment
 console.log(exampleParsed)
 ```
 

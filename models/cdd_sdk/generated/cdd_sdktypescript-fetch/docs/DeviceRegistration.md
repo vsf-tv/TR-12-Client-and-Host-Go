@@ -1,12 +1,14 @@
 
 # DeviceRegistration
 
+Device registration payload — advertises device capabilities to the host.  Uses a template/assignment pattern to avoid redundant channel definitions: - channelTemplates: unique capability definitions (max 5) - channelAssignments: maps each channel ID to a template (max 50)  This keeps the registration payload under 90 kB for MQTT transport.
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`channels` | [Array&lt;Channel&gt;](Channel.md)
+`channelTemplates` | [Array&lt;ChannelTemplate&gt;](ChannelTemplate.md)
+`channelAssignments` | [Array&lt;ChannelAssignment&gt;](ChannelAssignment.md)
 `settings` | [Array&lt;Setting&gt;](Setting.md)
 
 ## Example
@@ -16,7 +18,8 @@ import type { DeviceRegistration } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "channels": null,
+  "channelTemplates": null,
+  "channelAssignments": null,
   "settings": null,
 } satisfies DeviceRegistration
 

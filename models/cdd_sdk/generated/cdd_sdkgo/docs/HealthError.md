@@ -1,4 +1,4 @@
-# Error
+# HealthError
 
 ## Properties
 
@@ -9,59 +9,59 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewError
+### NewHealthError
 
-`func NewError(message string, timestamp time.Time, ) *Error`
+`func NewHealthError(message string, timestamp time.Time, ) *HealthError`
 
-NewError instantiates a new Error object
+NewHealthError instantiates a new HealthError object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewErrorWithDefaults
+### NewHealthErrorWithDefaults
 
-`func NewErrorWithDefaults() *Error`
+`func NewHealthErrorWithDefaults() *HealthError`
 
-NewErrorWithDefaults instantiates a new Error object
+NewHealthErrorWithDefaults instantiates a new HealthError object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetMessage
 
-`func (o *Error) GetMessage() string`
+`func (o *HealthError) GetMessage() string`
 
 GetMessage returns the Message field if non-nil, zero value otherwise.
 
 ### GetMessageOk
 
-`func (o *Error) GetMessageOk() (*string, bool)`
+`func (o *HealthError) GetMessageOk() (*string, bool)`
 
 GetMessageOk returns a tuple with the Message field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetMessage
 
-`func (o *Error) SetMessage(v string)`
+`func (o *HealthError) SetMessage(v string)`
 
 SetMessage sets Message field to given value.
 
 
 ### GetTimestamp
 
-`func (o *Error) GetTimestamp() time.Time`
+`func (o *HealthError) GetTimestamp() time.Time`
 
 GetTimestamp returns the Timestamp field if non-nil, zero value otherwise.
 
 ### GetTimestampOk
 
-`func (o *Error) GetTimestampOk() (*time.Time, bool)`
+`func (o *HealthError) GetTimestampOk() (*time.Time, bool)`
 
 GetTimestampOk returns a tuple with the Timestamp field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetTimestamp
 
-`func (o *Error) SetTimestamp(v time.Time)`
+`func (o *HealthError) SetTimestamp(v time.Time)`
 
 SetTimestamp sets Timestamp field to given value.
 

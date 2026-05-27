@@ -17,38 +17,38 @@ import (
 	"fmt"
 )
 
-// checks if the Error type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &Error{}
+// checks if the HealthError type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &HealthError{}
 
-// Error Shared description for degraded and critical states.
-type Error struct {
+// HealthError Shared description for degraded and critical states.
+type HealthError struct {
 	Message string `json:"message"`
 	Timestamp time.Time `json:"timestamp"`
 }
 
-type _Error Error
+type _HealthError HealthError
 
-// NewError instantiates a new Error object
+// NewHealthError instantiates a new HealthError object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewError(message string, timestamp time.Time) *Error {
-	this := Error{}
+func NewHealthError(message string, timestamp time.Time) *HealthError {
+	this := HealthError{}
 	this.Message = message
 	this.Timestamp = timestamp
 	return &this
 }
 
-// NewErrorWithDefaults instantiates a new Error object
+// NewHealthErrorWithDefaults instantiates a new HealthError object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewErrorWithDefaults() *Error {
-	this := Error{}
+func NewHealthErrorWithDefaults() *HealthError {
+	this := HealthError{}
 	return &this
 }
 
 // GetMessage returns the Message field value
-func (o *Error) GetMessage() string {
+func (o *HealthError) GetMessage() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -59,7 +59,7 @@ func (o *Error) GetMessage() string {
 
 // GetMessageOk returns a tuple with the Message field value
 // and a boolean to check if the value has been set.
-func (o *Error) GetMessageOk() (*string, bool) {
+func (o *HealthError) GetMessageOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -67,12 +67,12 @@ func (o *Error) GetMessageOk() (*string, bool) {
 }
 
 // SetMessage sets field value
-func (o *Error) SetMessage(v string) {
+func (o *HealthError) SetMessage(v string) {
 	o.Message = v
 }
 
 // GetTimestamp returns the Timestamp field value
-func (o *Error) GetTimestamp() time.Time {
+func (o *HealthError) GetTimestamp() time.Time {
 	if o == nil {
 		var ret time.Time
 		return ret
@@ -83,7 +83,7 @@ func (o *Error) GetTimestamp() time.Time {
 
 // GetTimestampOk returns a tuple with the Timestamp field value
 // and a boolean to check if the value has been set.
-func (o *Error) GetTimestampOk() (*time.Time, bool) {
+func (o *HealthError) GetTimestampOk() (*time.Time, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -91,11 +91,11 @@ func (o *Error) GetTimestampOk() (*time.Time, bool) {
 }
 
 // SetTimestamp sets field value
-func (o *Error) SetTimestamp(v time.Time) {
+func (o *HealthError) SetTimestamp(v time.Time) {
 	o.Timestamp = v
 }
 
-func (o Error) MarshalJSON() ([]byte, error) {
+func (o HealthError) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -103,14 +103,14 @@ func (o Error) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o Error) ToMap() (map[string]interface{}, error) {
+func (o HealthError) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["message"] = o.Message
 	toSerialize["timestamp"] = o.Timestamp
 	return toSerialize, nil
 }
 
-func (o *Error) UnmarshalJSON(data []byte) (err error) {
+func (o *HealthError) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -133,53 +133,53 @@ func (o *Error) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varError := _Error{}
+	varHealthError := _HealthError{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varError)
+	err = decoder.Decode(&varHealthError)
 
 	if err != nil {
 		return err
 	}
 
-	*o = Error(varError)
+	*o = HealthError(varHealthError)
 
 	return err
 }
 
-type NullableError struct {
-	value *Error
+type NullableHealthError struct {
+	value *HealthError
 	isSet bool
 }
 
-func (v NullableError) Get() *Error {
+func (v NullableHealthError) Get() *HealthError {
 	return v.value
 }
 
-func (v *NullableError) Set(val *Error) {
+func (v *NullableHealthError) Set(val *HealthError) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableError) IsSet() bool {
+func (v NullableHealthError) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableError) Unset() {
+func (v *NullableHealthError) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableError(val *Error) *NullableError {
-	return &NullableError{value: val, isSet: true}
+func NewNullableHealthError(val *HealthError) *NullableHealthError {
+	return &NullableHealthError{value: val, isSet: true}
 }
 
-func (v NullableError) MarshalJSON() ([]byte, error) {
+func (v NullableHealthError) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableError) UnmarshalJSON(src []byte) error {
+func (v *NullableHealthError) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

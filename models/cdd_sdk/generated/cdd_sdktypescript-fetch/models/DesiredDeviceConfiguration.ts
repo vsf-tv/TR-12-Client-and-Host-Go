@@ -42,13 +42,13 @@ export interface DesiredDeviceConfiguration {
      */
     version: string;
     /**
-     * 
+     * See limits.smithy: MAX_CHANNELS
      * @type {Array<DesiredChannelConfiguration>}
      * @memberof DesiredDeviceConfiguration
      */
     channels: Array<DesiredChannelConfiguration>;
     /**
-     * 
+     * See limits.smithy: MAX_SETTINGS_PER_SCOPE
      * @type {Array<IdAndValue>}
      * @memberof DesiredDeviceConfiguration
      */

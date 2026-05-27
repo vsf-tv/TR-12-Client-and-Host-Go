@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { Channel } from './Channel';
+import type { ChannelAssignment } from './ChannelAssignment';
 import {
-    ChannelFromJSON,
-    ChannelFromJSONTyped,
-    ChannelToJSON,
-    ChannelToJSONTyped,
-} from './Channel';
+    ChannelAssignmentFromJSON,
+    ChannelAssignmentFromJSONTyped,
+    ChannelAssignmentToJSON,
+    ChannelAssignmentToJSONTyped,
+} from './ChannelAssignment';
 import type { Setting } from './Setting';
 import {
     SettingFromJSON,
@@ -27,21 +27,44 @@ import {
     SettingToJSON,
     SettingToJSONTyped,
 } from './Setting';
+import type { ChannelTemplate } from './ChannelTemplate';
+import {
+    ChannelTemplateFromJSON,
+    ChannelTemplateFromJSONTyped,
+    ChannelTemplateToJSON,
+    ChannelTemplateToJSONTyped,
+} from './ChannelTemplate';
 
 /**
+ * Device registration payload — advertises device capabilities to the host.
  * 
+ * Uses a template/assignment pattern to avoid redundant channel definitions:
+ * - channelTemplates: unique capability definitions (max 5)
+ * - channelAssignments: maps each channel ID to a template (max 50)
+ * 
+ * This keeps the registration payload under 90 kB for MQTT transport.
  * @export
  * @interface DeviceRegistration
  */
 export interface DeviceRegistration {
     /**
-     * 
-     * @type {Array<Channel>}
+     * Unique channel capability definitions. Most devices have a small number of
+     * distinct channel configurations shared across many channel IDs.
+     * See limits.smithy: MAX_CHANNEL_TEMPLATES
+     * @type {Array<ChannelTemplate>}
      * @memberof DeviceRegistration
      */
-    channels: Array<Channel>;
+    channelTemplates: Array<ChannelTemplate>;
     /**
-     * 
+     * Maps individual channel IDs to their template definition.
+     * Total channel count across the device — max 50.
+     * See limits.smithy: MAX_CHANNELS
+     * @type {Array<ChannelAssignment>}
+     * @memberof DeviceRegistration
+     */
+    channelAssignments: Array<ChannelAssignment>;
+    /**
+     * Device-level settings (not channel-specific).
      * @type {Array<Setting>}
      * @memberof DeviceRegistration
      */
@@ -52,7 +75,8 @@ export interface DeviceRegistration {
  * Check if a given object implements the DeviceRegistration interface.
  */
 export function instanceOfDeviceRegistration(value: object): value is DeviceRegistration {
-    if (!('channels' in value) || value['channels'] === undefined) return false;
+    if (!('channelTemplates' in value) || value['channelTemplates'] === undefined) return false;
+    if (!('channelAssignments' in value) || value['channelAssignments'] === undefined) return false;
     return true;
 }
 
@@ -66,7 +90,8 @@ export function DeviceRegistrationFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'channels': ((json['channels'] as Array<any>).map(ChannelFromJSON)),
+        'channelTemplates': ((json['channelTemplates'] as Array<any>).map(ChannelTemplateFromJSON)),
+        'channelAssignments': ((json['channelAssignments'] as Array<any>).map(ChannelAssignmentFromJSON)),
         'settings': json['settings'] == null ? undefined : ((json['settings'] as Array<any>).map(SettingFromJSON)),
     };
 }
@@ -82,7 +107,8 @@ export function DeviceRegistrationToJSONTyped(value?: DeviceRegistration | null,
 
     return {
         
-        'channels': ((value['channels'] as Array<any>).map(ChannelToJSON)),
+        'channelTemplates': ((value['channelTemplates'] as Array<any>).map(ChannelTemplateToJSON)),
+        'channelAssignments': ((value['channelAssignments'] as Array<any>).map(ChannelAssignmentToJSON)),
         'settings': value['settings'] == null ? undefined : ((value['settings'] as Array<any>).map(SettingToJSON)),
     };
 }

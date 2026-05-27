@@ -135,6 +135,12 @@ components:
             value: value
           - id: id
             value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
         thumbnailLocalPath: thumbnailLocalPath
       properties:
         id:
@@ -169,6 +175,12 @@ components:
           value: value
         - id: id
           value: value
+        - id: id
+          value: value
+        - id: id
+          value: value
+        - id: id
+          value: value
         channels:
         - protocol:
             srtListener:
@@ -190,6 +202,12 @@ components:
               value: value
             - id: id
               value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
           thumbnailLocalPath: thumbnailLocalPath
         - protocol:
             srtListener:
@@ -207,6 +225,93 @@ components:
           version: version
           channelSettings:
             standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+          thumbnailLocalPath: thumbnailLocalPath
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          health:
+            healthy: "{}"
+          id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+          thumbnailLocalPath: thumbnailLocalPath
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          health:
+            healthy: "{}"
+          id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+          thumbnailLocalPath: thumbnailLocalPath
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          health:
+            healthy: "{}"
+          id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
             - id: id
               value: value
             - id: id
@@ -219,12 +324,16 @@ components:
           maxLength: 80
           type: string
         channels:
+          description: "See limits.smithy: MAX_CHANNELS"
           items:
             $ref: "#/components/schemas/ActualChannelConfiguration"
+          maxItems: 50
           type: array
         standardSettings:
+          description: "See limits.smithy: MAX_SETTINGS_PER_SCOPE"
           items:
             $ref: "#/components/schemas/IdAndValue"
+          maxItems: 50
           type: array
         health:
           $ref: "#/components/schemas/Health"
@@ -232,63 +341,25 @@ components:
       - channels
       - version
       type: object
-    Channel:
+    ChannelAssignment:
+      description: |-
+        Associates a channel ID with a template. The channel inherits all
+        capabilities (settings, profiles, protocols) from the referenced template.
       example:
-        settings:
-        - name: name
-          description: description
-          constraint:
-            enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-          id: id
-        - name: name
-          description: description
-          constraint:
-            enums:
-              defaultValue: defaultValue
-              values:
-              - values
-              - values
-          id: id
         name: name
-        profiles:
-        - name: name
-          description: description
-          id: id
-        - name: name
-          description: description
-          id: id
-        channelType: SOURCE
-        id: id
-        protocols:
-        - SRT_LISTENER
-        - SRT_LISTENER
+        templateId: templateId
+        channelId: channelId
       properties:
+        channelId:
+          type: string
         name:
           type: string
-        id:
+        templateId:
           type: string
-        channelType:
-          $ref: "#/components/schemas/ChannelType"
-        settings:
-          items:
-            $ref: "#/components/schemas/Setting"
-          type: array
-        profiles:
-          items:
-            $ref: "#/components/schemas/ProfileDefinition"
-          type: array
-        protocols:
-          items:
-            $ref: "#/components/schemas/TransportProtocolName"
-          type: array
       required:
-      - channelType
-      - id
+      - channelId
       - name
+      - templateId
       type: object
     ChannelProfile:
       properties:
@@ -317,19 +388,147 @@ components:
         - name: name
           description: description
           value: value
+        - name: name
+          description: description
+          value: value
+        - name: name
+          description: description
+          value: value
+        - name: name
+          description: description
+          value: value
       properties:
         id:
           type: string
         state:
           $ref: "#/components/schemas/ChannelState"
         status:
+          description: "See limits.smithy: MAX_STATUS_VALUES"
           items:
             $ref: "#/components/schemas/StatusValue"
+          maxItems: 50
           type: array
       required:
       - id
       - state
       - status
+      type: object
+    ChannelTemplate:
+      description: A channel template defines the capabilities shared by one or more
+        channels.
+      example:
+        settings:
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        profiles:
+        - name: name
+          description: description
+          id: id
+        - name: name
+          description: description
+          id: id
+        - name: name
+          description: description
+          id: id
+        - name: name
+          description: description
+          id: id
+        - name: name
+          description: description
+          id: id
+        channelType: SOURCE
+        id: id
+        protocols:
+        - SRT_LISTENER
+        - SRT_LISTENER
+        - SRT_LISTENER
+        - SRT_LISTENER
+        - SRT_LISTENER
+      properties:
+        id:
+          type: string
+        channelType:
+          $ref: "#/components/schemas/ChannelType"
+        settings:
+          description: Settings this channel type supports.
+          items:
+            $ref: "#/components/schemas/Setting"
+          maxItems: 50
+          type: array
+        profiles:
+          description: Profiles this channel type supports (mutually exclusive with
+            settings in config).
+          items:
+            $ref: "#/components/schemas/ProfileDefinition"
+          maxItems: 25
+          type: array
+        protocols:
+          description: Transport protocols this channel type can use.
+          items:
+            $ref: "#/components/schemas/TransportProtocolName"
+          maxItems: 10
+          type: array
+      required:
+      - channelType
+      - id
       type: object
     ChannelType:
       enum:
@@ -341,6 +540,12 @@ components:
         updateId: updateId
         payload:
           standardSettings:
+          - id: id
+            value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
           - id: id
             value: value
           - id: id
@@ -364,6 +569,12 @@ components:
                 value: value
               - id: id
                 value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
           - protocol:
               srtListener:
                 streamId: streamId
@@ -378,6 +589,84 @@ components:
             version: version
             channelSettings:
               standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
+            id: id
+            state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
+            id: id
+            state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
+            id: id
+            state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
               - id: id
                 value: value
               - id: id
@@ -402,6 +691,9 @@ components:
                 values:
                 - values
                 - values
+                - values
+                - values
+                - values
             id: id
           - name: name
             description: description
@@ -411,8 +703,47 @@ components:
                 values:
                 - values
                 - values
+                - values
+                - values
+                - values
             id: id
-          channels:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          channelTemplates:
           - settings:
             - name: name
               description: description
@@ -422,6 +753,9 @@ components:
                   values:
                   - values
                   - values
+                  - values
+                  - values
+                  - values
               id: id
             - name: name
               description: description
@@ -431,9 +765,56 @@ components:
                   values:
                   - values
                   - values
+                  - values
+                  - values
+                  - values
               id: id
-            name: name
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
             profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
             - name: name
               description: description
               id: id
@@ -445,6 +826,9 @@ components:
             protocols:
             - SRT_LISTENER
             - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
           - settings:
             - name: name
               description: description
@@ -454,6 +838,9 @@ components:
                   values:
                   - values
                   - values
+                  - values
+                  - values
+                  - values
               id: id
             - name: name
               description: description
@@ -463,9 +850,56 @@ components:
                   values:
                   - values
                   - values
+                  - values
+                  - values
+                  - values
               id: id
-            name: name
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
             profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
             - name: name
               description: description
               id: id
@@ -477,6 +911,280 @@ components:
             protocols:
             - SRT_LISTENER
             - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          channelAssignments:
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
       properties:
         registration:
           $ref: "#/components/schemas/DeviceRegistration"
@@ -567,6 +1275,12 @@ components:
             value: value
           - id: id
             value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
       properties:
         id:
           type: string
@@ -594,6 +1308,12 @@ components:
           value: value
         - id: id
           value: value
+        - id: id
+          value: value
+        - id: id
+          value: value
+        - id: id
+          value: value
         channels:
         - protocol:
             srtListener:
@@ -613,6 +1333,12 @@ components:
               value: value
             - id: id
               value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
         - protocol:
             srtListener:
               streamId: streamId
@@ -627,6 +1353,84 @@ components:
           version: version
           channelSettings:
             standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+        - protocol:
+            srtListener:
+              streamId: streamId
+              minimumLatencyMilliseconds: 6.027456183070403
+              encryption:
+                aes128:
+                  passphrase: passphrase
+              port: 6190.222739483032
+              interface: interface
+          id: id
+          state: ACTIVE
+          version: version
+          channelSettings:
+            standardSettings:
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
             - id: id
               value: value
             - id: id
@@ -637,18 +1441,30 @@ components:
           maxLength: 80
           type: string
         channels:
+          description: "See limits.smithy: MAX_CHANNELS"
           items:
             $ref: "#/components/schemas/DesiredChannelConfiguration"
+          maxItems: 50
           type: array
         standardSettings:
+          description: "See limits.smithy: MAX_SETTINGS_PER_SCOPE"
           items:
             $ref: "#/components/schemas/IdAndValue"
+          maxItems: 50
           type: array
       required:
       - channels
       - version
       type: object
     DeviceRegistration:
+      description: |-
+        Device registration payload — advertises device capabilities to the host.
+
+        Uses a template/assignment pattern to avoid redundant channel definitions:
+        - channelTemplates: unique capability definitions (max 5)
+        - channelAssignments: maps each channel ID to a template (max 50)
+
+        This keeps the registration payload under 90 kB for MQTT transport.
       example:
         settings:
         - name: name
@@ -659,6 +1475,9 @@ components:
               values:
               - values
               - values
+              - values
+              - values
+              - values
           id: id
         - name: name
           description: description
@@ -668,8 +1487,47 @@ components:
               values:
               - values
               - values
+              - values
+              - values
+              - values
           id: id
-        channels:
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        - name: name
+          description: description
+          constraint:
+            enums:
+              defaultValue: defaultValue
+              values:
+              - values
+              - values
+              - values
+              - values
+              - values
+          id: id
+        channelTemplates:
         - settings:
           - name: name
             description: description
@@ -679,6 +1537,9 @@ components:
                 values:
                 - values
                 - values
+                - values
+                - values
+                - values
             id: id
           - name: name
             description: description
@@ -688,9 +1549,56 @@ components:
                 values:
                 - values
                 - values
+                - values
+                - values
+                - values
             id: id
-          name: name
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
           profiles:
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
           - name: name
             description: description
             id: id
@@ -702,6 +1610,9 @@ components:
           protocols:
           - SRT_LISTENER
           - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
         - settings:
           - name: name
             description: description
@@ -711,6 +1622,9 @@ components:
                 values:
                 - values
                 - values
+                - values
+                - values
+                - values
             id: id
           - name: name
             description: description
@@ -720,9 +1634,56 @@ components:
                 values:
                 - values
                 - values
+                - values
+                - values
+                - values
             id: id
-          name: name
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
           profiles:
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
           - name: name
             description: description
             id: id
@@ -734,17 +1695,308 @@ components:
           protocols:
           - SRT_LISTENER
           - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+        - settings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          profiles:
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          channelType: SOURCE
+          id: id
+          protocols:
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+        - settings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          profiles:
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          channelType: SOURCE
+          id: id
+          protocols:
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+        - settings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          profiles:
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          - name: name
+            description: description
+            id: id
+          channelType: SOURCE
+          id: id
+          protocols:
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+          - SRT_LISTENER
+        channelAssignments:
+        - name: name
+          templateId: templateId
+          channelId: channelId
+        - name: name
+          templateId: templateId
+          channelId: channelId
+        - name: name
+          templateId: templateId
+          channelId: channelId
+        - name: name
+          templateId: templateId
+          channelId: channelId
+        - name: name
+          templateId: templateId
+          channelId: channelId
       properties:
-        channels:
+        channelTemplates:
+          description: |-
+            Unique channel capability definitions. Most devices have a small number of
+            distinct channel configurations shared across many channel IDs.
+            See limits.smithy: MAX_CHANNEL_TEMPLATES
           items:
-            $ref: "#/components/schemas/Channel"
+            $ref: "#/components/schemas/ChannelTemplate"
+          maxItems: 5
+          type: array
+        channelAssignments:
+          description: |-
+            Maps individual channel IDs to their template definition.
+            Total channel count across the device — max 50.
+            See limits.smithy: MAX_CHANNELS
+          items:
+            $ref: "#/components/schemas/ChannelAssignment"
+          maxItems: 50
           type: array
         settings:
+          description: Device-level settings (not channel-specific).
           items:
             $ref: "#/components/schemas/Setting"
+          maxItems: 50
           type: array
       required:
-      - channels
+      - channelAssignments
+      - channelTemplates
       type: object
     DeviceStatus:
       example:
@@ -758,6 +2010,15 @@ components:
           - name: name
             description: description
             value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
         - id: id
           state: ACTIVE
           status:
@@ -767,7 +2028,79 @@ components:
           - name: name
             description: description
             value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+        - id: id
+          state: ACTIVE
+          status:
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+        - id: id
+          state: ACTIVE
+          status:
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+        - id: id
+          state: ACTIVE
+          status:
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
         status:
+        - name: name
+          description: description
+          value: value
+        - name: name
+          description: description
+          value: value
+        - name: name
+          description: description
+          value: value
         - name: name
           description: description
           value: value
@@ -776,12 +2109,16 @@ components:
           value: value
       properties:
         status:
+          description: "See limits.smithy: MAX_STATUS_VALUES"
           items:
             $ref: "#/components/schemas/StatusValue"
+          maxItems: 50
           type: array
         channels:
+          description: "See limits.smithy: MAX_CHANNEL_STATUS"
           items:
             $ref: "#/components/schemas/ChannelStatus"
+          maxItems: 50
           type: array
       required:
       - status
@@ -845,28 +2182,20 @@ components:
         values:
         - values
         - values
+        - values
+        - values
+        - values
       properties:
         values:
           items:
             type: string
+          maxItems: 10
           type: array
         defaultValue:
           type: string
       required:
       - defaultValue
       - values
-      type: object
-    Error:
-      description: Shared description for degraded and critical states.
-      properties:
-        message:
-          type: string
-        timestamp:
-          format: date-time
-          type: string
-      required:
-      - message
-      - timestamp
       type: object
     ErrorDetails:
       example:
@@ -895,6 +2224,12 @@ components:
               value: value
             - id: id
               value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
+            - id: id
+              value: value
             channels:
             - protocol:
                 srtListener:
@@ -914,6 +2249,12 @@ components:
                   value: value
                 - id: id
                   value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
             - protocol:
                 srtListener:
                   streamId: streamId
@@ -928,6 +2269,84 @@ components:
               version: version
               channelSettings:
                 standardSettings:
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+            - protocol:
+                srtListener:
+                  streamId: streamId
+                  minimumLatencyMilliseconds: 6.027456183070403
+                  encryption:
+                    aes128:
+                      passphrase: passphrase
+                  port: 6190.222739483032
+                  interface: interface
+              id: id
+              state: ACTIVE
+              version: version
+              channelSettings:
+                standardSettings:
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+            - protocol:
+                srtListener:
+                  streamId: streamId
+                  minimumLatencyMilliseconds: 6.027456183070403
+                  encryption:
+                    aes128:
+                      passphrase: passphrase
+                  port: 6190.222739483032
+                  interface: interface
+              id: id
+              state: ACTIVE
+              version: version
+              channelSettings:
+                standardSettings:
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+            - protocol:
+                srtListener:
+                  streamId: streamId
+                  minimumLatencyMilliseconds: 6.027456183070403
+                  encryption:
+                    aes128:
+                      passphrase: passphrase
+                  port: 6190.222739483032
+                  interface: interface
+              id: id
+              state: ACTIVE
+              version: version
+              channelSettings:
+                standardSettings:
+                - id: id
+                  value: value
+                - id: id
+                  value: value
+                - id: id
+                  value: value
                 - id: id
                   value: value
                 - id: id
@@ -984,6 +2403,18 @@ components:
       - $ref: "#/components/schemas/healthy"
       - $ref: "#/components/schemas/degraded"
       - $ref: "#/components/schemas/critical"
+    HealthError:
+      description: Shared description for degraded and critical states.
+      properties:
+        message:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+      required:
+      - message
+      - timestamp
+      type: object
     Healthy:
       description: Healthy state — no additional fields needed.
       type: object
@@ -1041,6 +2472,12 @@ components:
             value: value
           - id: id
             value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
+          - id: id
+            value: value
           channels:
           - protocol:
               srtListener:
@@ -1062,6 +2499,12 @@ components:
                 value: value
               - id: id
                 value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
             thumbnailLocalPath: thumbnailLocalPath
           - protocol:
               srtListener:
@@ -1079,6 +2522,93 @@ components:
             version: version
             channelSettings:
               standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+            thumbnailLocalPath: thumbnailLocalPath
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
+            health:
+              healthy: "{}"
+            id: id
+            state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+            thumbnailLocalPath: thumbnailLocalPath
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
+            health:
+              healthy: "{}"
+            id: id
+            state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
+            thumbnailLocalPath: thumbnailLocalPath
+          - protocol:
+              srtListener:
+                streamId: streamId
+                minimumLatencyMilliseconds: 6.027456183070403
+                encryption:
+                  aes128:
+                    passphrase: passphrase
+                port: 6190.222739483032
+                interface: interface
+            health:
+              healthy: "{}"
+            id: id
+            state: ACTIVE
+            version: version
+            channelSettings:
+              standardSettings:
+              - id: id
+                value: value
+              - id: id
+                value: value
+              - id: id
+                value: value
               - id: id
                 value: value
               - id: id
@@ -1128,6 +2658,15 @@ components:
             - name: name
               description: description
               value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
           - id: id
             state: ACTIVE
             status:
@@ -1137,7 +2676,79 @@ components:
             - name: name
               description: description
               value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+          - id: id
+            state: ACTIVE
+            status:
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+          - id: id
+            state: ACTIVE
+            status:
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+          - id: id
+            state: ACTIVE
+            status:
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
+            - name: name
+              description: description
+              value: value
           status:
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
+          - name: name
+            description: description
+            value: value
           - name: name
             description: description
             value: value
@@ -1256,6 +2867,9 @@ components:
           enums:
             defaultValue: defaultValue
             values:
+            - values
+            - values
+            - values
             - values
             - values
         id: id
@@ -1407,10 +3021,18 @@ components:
           value: value
         - id: id
           value: value
+        - id: id
+          value: value
+        - id: id
+          value: value
+        - id: id
+          value: value
       properties:
         standardSettings:
+          description: "See limits.smithy: MAX_SETTINGS_PER_SCOPE"
           items:
             $ref: "#/components/schemas/IdAndValue"
+          maxItems: 50
           type: array
       required:
       - standardSettings
@@ -1457,7 +3079,7 @@ components:
     degraded:
       properties:
         degraded:
-          $ref: "#/components/schemas/Error"
+          $ref: "#/components/schemas/HealthError"
       required:
       - degraded
       title: degraded
@@ -1465,7 +3087,7 @@ components:
     critical:
       properties:
         critical:
-          $ref: "#/components/schemas/Error"
+          $ref: "#/components/schemas/HealthError"
       required:
       - critical
       title: critical
@@ -1475,6 +3097,9 @@ components:
         enums:
           defaultValue: defaultValue
           values:
+          - values
+          - values
+          - values
           - values
           - values
       properties:

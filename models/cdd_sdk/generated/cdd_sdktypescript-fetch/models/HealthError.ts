@@ -16,37 +16,37 @@ import { mapValues } from '../runtime';
 /**
  * Shared description for degraded and critical states.
  * @export
- * @interface ModelError
+ * @interface HealthError
  */
-export interface ModelError {
+export interface HealthError {
     /**
      * 
      * @type {string}
-     * @memberof ModelError
+     * @memberof HealthError
      */
     message: string;
     /**
      * 
      * @type {Date}
-     * @memberof ModelError
+     * @memberof HealthError
      */
     timestamp: Date;
 }
 
 /**
- * Check if a given object implements the ModelError interface.
+ * Check if a given object implements the HealthError interface.
  */
-export function instanceOfModelError(value: object): value is ModelError {
+export function instanceOfHealthError(value: object): value is HealthError {
     if (!('message' in value) || value['message'] === undefined) return false;
     if (!('timestamp' in value) || value['timestamp'] === undefined) return false;
     return true;
 }
 
-export function ModelErrorFromJSON(json: any): ModelError {
-    return ModelErrorFromJSONTyped(json, false);
+export function HealthErrorFromJSON(json: any): HealthError {
+    return HealthErrorFromJSONTyped(json, false);
 }
 
-export function ModelErrorFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelError {
+export function HealthErrorFromJSONTyped(json: any, ignoreDiscriminator: boolean): HealthError {
     if (json == null) {
         return json;
     }
@@ -57,11 +57,11 @@ export function ModelErrorFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     };
 }
 
-export function ModelErrorToJSON(json: any): ModelError {
-    return ModelErrorToJSONTyped(json, false);
+export function HealthErrorToJSON(json: any): HealthError {
+    return HealthErrorToJSONTyped(json, false);
 }
 
-export function ModelErrorToJSONTyped(value?: ModelError | null, ignoreDiscriminator: boolean = false): any {
+export function HealthErrorToJSONTyped(value?: HealthError | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

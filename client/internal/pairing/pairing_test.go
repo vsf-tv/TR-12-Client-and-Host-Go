@@ -31,7 +31,6 @@ func newTestStore(t *testing.T) *credentials.Store {
 	if err != nil {
 		t.Fatalf("NewStore: %v", err)
 	}
-	// Pre-generate keys so pairing doesn't need to do it
 	if err := store.GenerateKeysAndCSR(); err != nil {
 		t.Fatalf("GenerateKeysAndCSR: %v", err)
 	}
@@ -44,35 +43,21 @@ func newTestPairing(t *testing.T, serverURL string) *Pairing {
 	return New(newTestStore(t), "SOURCE", "test-host", serverURL, serverURL)
 }
 
-// pairSuccessResponse builds a valid pair success JSON response.
+// pairSuccessResponse builds a valid pair success JSON response (HTTP 200, flat fields).
 func pairSuccessResponse(deviceID, pairingCode, accessCode string, timeoutSec int) []byte {
-	timeout := float32(timeoutSec)
 	resp := models.CreatePairingCodeResponseContent{
-		Result: models.CreatePairingCodeResult{
-			Success: &tr12models.Success{
-				Success: tr12models.CreatePairingCodeSuccessData{
-					DeviceId:              deviceID,
-					PairingCode:           pairingCode,
-					AccessCode:            accessCode,
-					PairingTimeoutSeconds: timeout,
-				},
-			},
-		},
+		DeviceId:              deviceID,
+		PairingCode:           pairingCode,
+		AccessCode:            accessCode,
+		PairingTimeoutSeconds: float32(timeoutSec),
 	}
 	b, _ := json.Marshal(resp)
 	return b
 }
 
-// pairFailureResponse builds a pair failure JSON response.
+// pairFailureResponse builds a pair failure JSON response (HTTP 400).
 func pairFailureResponse(reason tr12models.CreatePairingCodeFailureReason) []byte {
-	resp := models.CreatePairingCodeResponseContent{
-		Result: models.CreatePairingCodeResult{
-			Failure: &tr12models.Failure{
-				Failure: tr12models.CreatePairingCodeFailureData{Reason: reason},
-			},
-		},
-	}
-	b, _ := json.Marshal(resp)
+	b, _ := json.Marshal(map[string]string{"reason": string(reason)})
 	return b
 }
 
@@ -95,28 +80,28 @@ func authResponse(status tr12models.PairingCodeAuthorizedStatus, mqttURI, region
 	keepalive := float32(30)
 
 	hs := &tr12models.HostSettings{
-		MqttAlpnProtocol:                              proto,
-		PairingTimeoutSeconds:                         timeout,
-		MinimumIntervalPublishSeconds:                 interval,
-		MqttKeepaliveSeconds:                          keepalive,
-		DeviceSubscribesToDesiredConfigurationTopic:   subTopic,
-		DevicePublishesRegistrationTopic:              pubTopic,
-		DevicePublishesStatusTopic:                    statusTopic,
-		DevicePublishesActualConfigurationTopic:       actualTopic,
-		DeviceSubscribesToCertificateRotationTopic:    certsTopic,
-		DeviceSubscribesToDeprovisionTopic:            deprovTopic,
+		MqttAlpnProtocol:                               proto,
+		PairingTimeoutSeconds:                          timeout,
+		MinimumIntervalPublishSeconds:                  interval,
+		MqttKeepaliveSeconds:                           keepalive,
+		DeviceSubscribesToDesiredConfigurationTopic:    subTopic,
+		DevicePublishesRegistrationTopic:               pubTopic,
+		DevicePublishesStatusTopic:                     statusTopic,
+		DevicePublishesActualConfigurationTopic:        actualTopic,
+		DeviceSubscribesToCertificateRotationTopic:     certsTopic,
+		DeviceSubscribesToDeprovisionTopic:             deprovTopic,
 		DevicePublishesDeprovisionAcknowledgementTopic: pubDeprovTopic,
-		DeviceSubscribesToThumbnailSubscriptionTopic:  thumbTopic,
-		DeviceSubscribesToLogSubscriptionTopic:        logTopic,
+		DeviceSubscribesToThumbnailSubscriptionTopic:   thumbTopic,
+		DeviceSubscribesToLogSubscriptionTopic:         logTopic,
 	}
 
 	resp := tr12models.AuthenticatePairingCodeResponseContent{
-		Status:        status,
-		CaCertificate: &caCert,
+		Status:            status,
+		CaCertificate:     &caCert,
 		DeviceCertificate: &deviceCert,
-		MqttUri:       &mqttURI,
-		RegionName:    &region,
-		HostSettings:  hs,
+		MqttUri:           &mqttURI,
+		RegionName:        &region,
+		HostSettings:      hs,
 	}
 	b, _ := json.Marshal(resp)
 	return b
@@ -132,17 +117,10 @@ func TestIsExpired_NoPairResponse(t *testing.T) {
 }
 
 func TestIsExpired_NotExpired(t *testing.T) {
-	timeout := float32(300)
 	p := &Pairing{
 		StartTime: time.Now().Unix(),
 		PairResponse: &models.CreatePairingCodeResponseContent{
-			Result: models.CreatePairingCodeResult{
-				Success: &tr12models.Success{
-					Success: tr12models.CreatePairingCodeSuccessData{
-						PairingTimeoutSeconds: timeout,
-					},
-				},
-			},
+			PairingTimeoutSeconds: 300,
 		},
 	}
 	if p.IsExpired() {
@@ -151,17 +129,10 @@ func TestIsExpired_NotExpired(t *testing.T) {
 }
 
 func TestIsExpired_Expired(t *testing.T) {
-	timeout := float32(1)
 	p := &Pairing{
-		StartTime: time.Now().Unix() - 10, // 10 seconds ago
+		StartTime: time.Now().Unix() - 10,
 		PairResponse: &models.CreatePairingCodeResponseContent{
-			Result: models.CreatePairingCodeResult{
-				Success: &tr12models.Success{
-					Success: tr12models.CreatePairingCodeSuccessData{
-						PairingTimeoutSeconds: timeout,
-					},
-				},
-			},
+			PairingTimeoutSeconds: 1,
 		},
 	}
 	if !p.IsExpired() {
@@ -170,17 +141,10 @@ func TestIsExpired_Expired(t *testing.T) {
 }
 
 func TestExpiresIn(t *testing.T) {
-	timeout := float32(300)
 	p := &Pairing{
 		StartTime: time.Now().Unix() - 10,
 		PairResponse: &models.CreatePairingCodeResponseContent{
-			Result: models.CreatePairingCodeResult{
-				Success: &tr12models.Success{
-					Success: tr12models.CreatePairingCodeSuccessData{
-						PairingTimeoutSeconds: timeout,
-					},
-				},
-			},
+			PairingTimeoutSeconds: 300,
 		},
 	}
 	remaining := p.ExpiresIn()
@@ -197,17 +161,10 @@ func TestGetPairingCode_NoResponse(t *testing.T) {
 }
 
 func TestGetPairingCode(t *testing.T) {
-	timeout := float32(300)
 	p := &Pairing{
 		PairResponse: &models.CreatePairingCodeResponseContent{
-			Result: models.CreatePairingCodeResult{
-				Success: &tr12models.Success{
-					Success: tr12models.CreatePairingCodeSuccessData{
-						PairingCode:           "ABC123",
-						PairingTimeoutSeconds: timeout,
-					},
-				},
-			},
+			PairingCode:           "ABC123",
+			PairingTimeoutSeconds: 300,
 		},
 	}
 	if got := p.GetPairingCode(); got != "ABC123" {
@@ -241,6 +198,7 @@ func TestGetNewPairingCode_Success(t *testing.T) {
 func TestGetNewPairingCode_HostIDMismatch(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write(pairFailureResponse(tr12models.CREATEPAIRINGCODEFAILUREREASON_HOST_ID_MISMATCH))
 	}))
 	defer srv.Close()
@@ -258,6 +216,7 @@ func TestGetNewPairingCode_HostIDMismatch(t *testing.T) {
 func TestGetNewPairingCode_VersionNotSupported(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write(pairFailureResponse(tr12models.CREATEPAIRINGCODEFAILUREREASON_VERSION_NOT_SUPPORTED))
 	}))
 	defer srv.Close()
@@ -272,6 +231,7 @@ func TestGetNewPairingCode_VersionNotSupported(t *testing.T) {
 func TestGetNewPairingCode_DeviceTypeNotSupported(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		w.Write(pairFailureResponse(tr12models.CREATEPAIRINGCODEFAILUREREASON_DEVICE_TYPE_NOT_SUPPORTED))
 	}))
 	defer srv.Close()
@@ -336,19 +296,11 @@ func TestAuthenticatePairingCode_Standby(t *testing.T) {
 	defer srv.Close()
 
 	p := newTestPairing(t, srv.URL)
-	// Inject a pair response so AuthenticatePairingCode has a pairing code to use
-	timeout := float32(300)
 	p.PairResponse = &models.CreatePairingCodeResponseContent{
-		Result: models.CreatePairingCodeResult{
-			Success: &tr12models.Success{
-				Success: tr12models.CreatePairingCodeSuccessData{
-					DeviceId:              "dev-001",
-					PairingCode:           "ABC123",
-					AccessCode:            "secret",
-					PairingTimeoutSeconds: timeout,
-				},
-			},
-		},
+		DeviceId:              "dev-001",
+		PairingCode:           "ABC123",
+		AccessCode:            "secret",
+		PairingTimeoutSeconds: 300,
 	}
 
 	claimed, err := p.AuthenticatePairingCode()
@@ -368,18 +320,11 @@ func TestAuthenticatePairingCode_Claimed(t *testing.T) {
 	defer srv.Close()
 
 	p := newTestPairing(t, srv.URL)
-	timeout := float32(300)
 	p.PairResponse = &models.CreatePairingCodeResponseContent{
-		Result: models.CreatePairingCodeResult{
-			Success: &tr12models.Success{
-				Success: tr12models.CreatePairingCodeSuccessData{
-					DeviceId:              "dev-001",
-					PairingCode:           "ABC123",
-					AccessCode:            "secret",
-					PairingTimeoutSeconds: timeout,
-				},
-			},
-		},
+		DeviceId:              "dev-001",
+		PairingCode:           "ABC123",
+		AccessCode:            "secret",
+		PairingTimeoutSeconds: 300,
 	}
 
 	claimed, err := p.AuthenticatePairingCode()
@@ -389,7 +334,6 @@ func TestAuthenticatePairingCode_Claimed(t *testing.T) {
 	if !claimed {
 		t.Fatal("expected claimed=true for CLAIMED status")
 	}
-	// Verify certs were written to filesystem
 	if p.Certs.GetDeviceID() != "dev-001" {
 		t.Fatalf("expected device ID dev-001, got %q", p.Certs.GetDeviceID())
 	}
@@ -405,18 +349,11 @@ func TestAuthenticatePairingCode_ServerError(t *testing.T) {
 	defer srv.Close()
 
 	p := newTestPairing(t, srv.URL)
-	timeout := float32(300)
 	p.PairResponse = &models.CreatePairingCodeResponseContent{
-		Result: models.CreatePairingCodeResult{
-			Success: &tr12models.Success{
-				Success: tr12models.CreatePairingCodeSuccessData{
-					DeviceId:              "dev-001",
-					PairingCode:           "ABC123",
-					AccessCode:            "secret",
-					PairingTimeoutSeconds: timeout,
-				},
-			},
-		},
+		DeviceId:              "dev-001",
+		PairingCode:           "ABC123",
+		AccessCode:            "secret",
+		PairingTimeoutSeconds: 300,
 	}
 
 	_, err := p.AuthenticatePairingCode()

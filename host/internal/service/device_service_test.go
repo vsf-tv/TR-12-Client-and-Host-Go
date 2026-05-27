@@ -91,7 +91,7 @@ func generateTestCSR(t *testing.T) string {
 func doPair(t *testing.T, svc *DeviceService) (deviceID, pairingCode, accessCode string) {
 	t.Helper()
 	csr := generateTestCSR(t)
-	resp, err := svc.Pair(models.CreatePairingCodeRequestContent{
+	resp, pairingErr, err := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
 		Version:    models.ProtocolVersion{Version: models.PtrString("1.0")},
 		DeviceType: "SOURCE",
@@ -100,12 +100,10 @@ func doPair(t *testing.T, svc *DeviceService) (deviceID, pairingCode, accessCode
 	if err != nil {
 		t.Fatalf("Pair: %v", err)
 	}
-	result := resp.GetResult()
-	if result.Success == nil {
-		t.Fatal("expected Success result from Pair")
+	if pairingErr != nil {
+		t.Fatalf("Pair rejected: %s", *pairingErr)
 	}
-	data := result.Success.Success
-	return data.DeviceId, data.PairingCode, data.AccessCode
+	return resp.DeviceId, resp.PairingCode, resp.AccessCode
 }
 
 // --- Pair ---
@@ -127,7 +125,7 @@ func TestPair_Success(t *testing.T) {
 
 func TestPair_HostIDMismatch(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	resp, err := svc.Pair(models.CreatePairingCodeRequestContent{
+	_, pairingErr, err := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "wrong-host",
 		Version:    models.ProtocolVersion{Version: models.PtrString("1.0")},
 		DeviceType: "SOURCE",
@@ -136,37 +134,43 @@ func TestPair_HostIDMismatch(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Pair: %v", err)
 	}
-	result := resp.GetResult()
-	if result.Failure == nil {
-		t.Fatal("expected Failure result for host ID mismatch")
+	if pairingErr == nil {
+		t.Fatal("expected rejection for host ID mismatch")
+	}
+	if *pairingErr != models.PairFailureHostIDMismatch {
+		t.Fatalf("expected HOST_ID_MISMATCH, got %s", *pairingErr)
 	}
 }
 
 func TestPair_BadDeviceType(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	resp, _ := svc.Pair(models.CreatePairingCodeRequestContent{
+	_, pairingErr, _ := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
 		Version:    models.ProtocolVersion{Version: models.PtrString("1.0")},
 		DeviceType: "INVALID",
 		CertificateSigningRequest: generateTestCSR(t),
 	})
-	result := resp.GetResult()
-	if result.Failure == nil {
-		t.Fatal("expected Failure for bad device type")
+	if pairingErr == nil {
+		t.Fatal("expected rejection for bad device type")
+	}
+	if *pairingErr != models.PairFailureDeviceTypeNotSupported {
+		t.Fatalf("expected DEVICE_TYPE_NOT_SUPPORTED, got %s", *pairingErr)
 	}
 }
 
 func TestPair_EmptyVersion(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	resp, _ := svc.Pair(models.CreatePairingCodeRequestContent{
+	_, pairingErr, _ := svc.Pair(models.CreatePairingCodeRequestContent{
 		HostId:     "test-host",
 		Version:    models.ProtocolVersion{Version: models.PtrString("")},
 		DeviceType: "SOURCE",
 		CertificateSigningRequest: generateTestCSR(t),
 	})
-	result := resp.GetResult()
-	if result.Failure == nil {
-		t.Fatal("expected Failure for empty version")
+	if pairingErr == nil {
+		t.Fatal("expected rejection for empty version")
+	}
+	if *pairingErr != models.PairFailureVersionNotSupported {
+		t.Fatalf("expected VERSION_NOT_SUPPORTED, got %s", *pairingErr)
 	}
 }
 

@@ -21,7 +21,9 @@ var _ MappedNullable = &DeviceStatus{}
 
 // DeviceStatus struct for DeviceStatus
 type DeviceStatus struct {
+	// See limits.smithy: MAX_STATUS_VALUES
 	Status []StatusValue `json:"status"`
+	// See limits.smithy: MAX_CHANNEL_STATUS
 	Channels []ChannelStatus `json:"channels,omitempty"`
 }
 

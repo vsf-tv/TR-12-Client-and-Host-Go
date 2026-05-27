@@ -35,13 +35,13 @@ import {
  */
 export interface DeviceStatus {
     /**
-     * 
+     * See limits.smithy: MAX_STATUS_VALUES
      * @type {Array<StatusValue>}
      * @memberof DeviceStatus
      */
     status: Array<StatusValue>;
     /**
-     * 
+     * See limits.smithy: MAX_CHANNEL_STATUS
      * @type {Array<ChannelStatus>}
      * @memberof DeviceStatus
      */

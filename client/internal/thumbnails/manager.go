@@ -31,13 +31,13 @@ type PathResolver func(channelID string) string
 // Uploader handles a single thumbnail subscription in its own goroutine.
 type Uploader struct {
 	channelID    string
-	request      tr12models.ThumbnailRequest
+	request      tr12models.ThumbnailSubscription
 	pathResolver PathResolver
 	stopCh       chan struct{}
 	logger       *cddlogger.CDDLogger
 }
 
-func newUploader(channelID string, req tr12models.ThumbnailRequest, resolver PathResolver, logger *cddlogger.CDDLogger) *Uploader {
+func newUploader(channelID string, req tr12models.ThumbnailSubscription, resolver PathResolver, logger *cddlogger.CDDLogger) *Uploader {
 	return &Uploader{
 		channelID:    channelID,
 		request:      req,
@@ -87,7 +87,7 @@ func (u *Uploader) run() {
 	}
 }
 
-func validateRequestParams(localPath string, req *tr12models.ThumbnailRequest, logger *cddlogger.CDDLogger) bool {
+func validateRequestParams(localPath string, req *tr12models.ThumbnailSubscription, logger *cddlogger.CDDLogger) bool {
 	if req.HasExpiresAt() && !time.Now().Before(req.GetExpiresAt()) {
 		logger.Info("Thumbnail: Request expired.")
 		return false

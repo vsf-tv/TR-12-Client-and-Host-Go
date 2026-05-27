@@ -22,7 +22,9 @@ var _ MappedNullable = &ActualDeviceConfiguration{}
 // ActualDeviceConfiguration Actual device configuration — reported by device to host. Extends desired fields with device-only reporting fields.
 type ActualDeviceConfiguration struct {
 	Version string `json:"version"`
+	// See limits.smithy: MAX_CHANNELS
 	Channels []ActualChannelConfiguration `json:"channels"`
+	// See limits.smithy: MAX_SETTINGS_PER_SCOPE
 	StandardSettings []IdAndValue `json:"standardSettings,omitempty"`
 	Health *Health `json:"health,omitempty"`
 }

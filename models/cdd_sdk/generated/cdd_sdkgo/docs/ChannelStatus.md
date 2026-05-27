@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Id** | **string** |  | 
 **State** | [**ChannelState**](ChannelState.md) |  | 
-**Status** | [**[]StatusValue**](StatusValue.md) |  | 
+**Status** | [**[]StatusValue**](StatusValue.md) | See limits.smithy: MAX_STATUS_VALUES | 
 
 ## Methods
 

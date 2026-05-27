@@ -297,7 +297,7 @@ func (e *Encoder) SetChannelHealth(channelID string, level string, messages []st
 	ch := e.getOrCreateChannel(channelID)
 	now := time.Now().UTC()
 	msg := strings.Join(messages, "; ")
-	errVal := cddsdkgo.Error{Message: msg, Timestamp: now}
+	errVal := cddsdkgo.HealthError{Message: msg, Timestamp: now}
 	var h cddsdkgo.Health
 	if level == "CRITICAL" {
 		h = cddsdkgo.CriticalAsHealth(cddsdkgo.NewCritical(errVal))

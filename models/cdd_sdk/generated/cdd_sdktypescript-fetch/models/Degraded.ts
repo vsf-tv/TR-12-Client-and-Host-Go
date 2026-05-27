@@ -13,6 +13,14 @@
  */
 
 import { mapValues } from '../runtime';
+import type { HealthError } from './HealthError';
+import {
+    HealthErrorFromJSON,
+    HealthErrorFromJSONTyped,
+    HealthErrorToJSON,
+    HealthErrorToJSONTyped,
+} from './HealthError';
+
 /**
  * 
  * @export
@@ -21,10 +29,10 @@ import { mapValues } from '../runtime';
 export interface Degraded {
     /**
      * 
-     * @type {Error}
+     * @type {HealthError}
      * @memberof Degraded
      */
-    degraded: Error;
+    degraded: HealthError;
 }
 
 /**
@@ -45,7 +53,7 @@ export function DegradedFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'degraded': json['degraded'],
+        'degraded': HealthErrorFromJSON(json['degraded']),
     };
 }
 
@@ -60,7 +68,7 @@ export function DegradedToJSONTyped(value?: Degraded | null, ignoreDiscriminator
 
     return {
         
-        'degraded': value['degraded'],
+        'degraded': HealthErrorToJSON(value['degraded']),
     };
 }
 

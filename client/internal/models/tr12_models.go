@@ -21,27 +21,22 @@ import (
 
 type CreatePairingCodeRequestContent = tr12models.CreatePairingCodeRequestContent
 type CreatePairingCodeResponseContent = tr12models.CreatePairingCodeResponseContent
-type CreatePairingCodeResult = tr12models.CreatePairingCodeResult
-type CreatePairingCodeSuccessData = tr12models.CreatePairingCodeSuccessData
-type CreatePairingCodeFailureData = tr12models.CreatePairingCodeFailureData
 type CreatePairingCodeFailureReason = tr12models.CreatePairingCodeFailureReason
+type CreatePairingCodeExceptionResponseContent = tr12models.CreatePairingCodeExceptionResponseContent
 type AuthenticatePairingCodeRequestContent = tr12models.AuthenticatePairingCodeRequestContent
 type AuthenticatePairingCodeResponseContent = tr12models.AuthenticatePairingCodeResponseContent
 type AuthStatus = tr12models.PairingCodeAuthorizedStatus
 type HostSettings = tr12models.HostSettings
 type GetHostConfigResponseContent = tr12models.GetHostConfigResponseContent
-type DeprovisionRequest = tr12models.DeviceSubscribesToDeprovisionRequestContent
+type DeprovisionRequest = tr12models.DeviceSubscribesToDeprovisionResponseContent
 type DeprovisionReason = tr12models.DeprovisionReason
-type RequestLogSubscriptionContent = tr12models.DeviceSubscribesToLogSubscriptionRequestContent
-type RotateCertificatesRequestContent = tr12models.DeviceSubscribesToCertificateRotationRequestContent
-type ThumbnailRequest = tr12models.ThumbnailRequest
-type Success = tr12models.Success
-type Failure = tr12models.Failure
+type RequestLogSubscriptionContent = tr12models.DeviceSubscribesToLogSubscriptionResponseContent
+type RotateCertificatesRequestContent = tr12models.DeviceSubscribesToCertificateRotationResponseContent
+type ThumbnailSubscription = tr12models.ThumbnailSubscription
 
-// RequestThumbnailRequestContent wraps a map of thumbnail subscriptions.
-type RequestThumbnailRequestContent struct {
-	Requests map[string]ThumbnailRequest `json:"requests"`
-}
+// RequestThumbnailRequestContent is the thumbnail subscription payload sent to devices.
+// It maps directly to DeviceSubscribesToThumbnailSubscriptionResponseContent.
+type RequestThumbnailRequestContent = tr12models.DeviceSubscribesToThumbnailSubscriptionResponseContent
 
 // ---- Convenience constants ----
 

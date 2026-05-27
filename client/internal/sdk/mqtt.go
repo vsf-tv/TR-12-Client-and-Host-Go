@@ -213,9 +213,13 @@ func (s *CddSdk) reportRegistration() {
 		s.logger.Errorf("Can't get host settings for registration: %v", err)
 		return
 	}
-	data, err := json.Marshal(s.registration)
+	// Wrap registration in the envelope
+	envelope := map[string]interface{}{
+		"deviceRegistration": s.registration,
+	}
+	data, err := json.Marshal(envelope)
 	if err != nil {
-		s.logger.Errorf("Failed to marshal registration: %v", err)
+		s.logger.Errorf("Failed to marshal registration envelope: %v", err)
 		return
 	}
 	s.logger.Info("Reporting Registration")
@@ -233,7 +237,7 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 	s.logger.Infof("****** CONFIG UPDATE received on topic=%s payloadLen=%d", msg.Topic(), len(msg.Payload()))
 	s.logger.Info("****** CONFIG UPDATE payload:\n" + string(msg.Payload()))
 
-	// Extract updateId first (it's an envelope field, not part of DeviceConfiguration)
+	// Deserialize the envelope, extract desiredDeviceConfiguration, then deserialize the config
 	var envelope map[string]json.RawMessage
 	if err := json.Unmarshal(msg.Payload(), &envelope); err != nil {
 		s.logger.Errorf("Could not parse configuration update envelope: %v", err)
@@ -242,7 +246,6 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 
 	var updateID string
 	if rawUID, ok := envelope["updateId"]; ok {
-		// updateId may be a number or string from the host service
 		var numID float64
 		var strID string
 		if err := json.Unmarshal(rawUID, &numID); err == nil {
@@ -256,15 +259,14 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 		updateID = s.updateID.Get()
 	}
 
-	// Deserialize the payload (without updateId) into DesiredDeviceConfiguration
-	delete(envelope, "updateId")
-	payloadBytes, err := json.Marshal(envelope)
-	if err != nil {
-		s.logger.Errorf("Could not re-marshal config payload: %v", err)
+	// Extract the desiredDeviceConfiguration field from the envelope
+	cfgRaw, ok := envelope["desiredDeviceConfiguration"]
+	if !ok {
+		s.logger.Errorf("Could not find desiredDeviceConfiguration in config update envelope")
 		return
 	}
 	var deviceConfig cddsdkgo.DesiredDeviceConfiguration
-	if err := json.Unmarshal(payloadBytes, &deviceConfig); err != nil {
+	if err := json.Unmarshal(cfgRaw, &deviceConfig); err != nil {
 		s.logger.Errorf("Could not deserialize DesiredDeviceConfiguration: %v", err)
 		return
 	}
@@ -274,12 +276,11 @@ func (s *CddSdk) updateConfigurationCallback(_ mqtt.Client, msg mqtt.Message) {
 }
 
 func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
-	var rotate tr12models.DeviceSubscribesToCertificateRotationRequestContent
+	var rotate tr12models.DeviceSubscribesToCertificateRotationResponseContent
 	if err := json.Unmarshal(msg.Payload(), &rotate); err != nil {
 		s.logger.Errorf("[CERTS] Could not parse credential update: %v", err)
 		return
 	}
-	// Log first 80 chars of the incoming cert for comparison
 	certSnip := rotate.DeviceCertificate
 	if len(certSnip) > 80 {
 		certSnip = certSnip[:80]
@@ -304,22 +305,25 @@ func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
 
 func (s *CddSdk) updateThumbnailSubscriptionCallback(_ mqtt.Client, msg mqtt.Message) {
 	s.logger.Infof("[THUMB] raw payload: %s", string(msg.Payload()))
-	var sub models.RequestThumbnailRequestContent
+	var sub tr12models.DeviceSubscribesToThumbnailSubscriptionResponseContent
 	if err := json.Unmarshal(msg.Payload(), &sub); err != nil {
 		s.logger.Errorf("Could not process thumbnail subscription update: %v", err)
 		return
 	}
-	for channelID, req := range sub.Requests {
+	local := models.RequestThumbnailRequestContent{
+		Requests: sub.Requests,
+	}
+	for channelID, req := range local.Requests {
 		s.logger.Infof("[THUMB] channel=%s remotePath=%q periodSeconds=%.0f expiresAt=%v maxSizeKB=%.0f",
 			channelID, req.GetRemotePath(), req.GetPeriodSeconds(), req.GetExpiresAt(), req.GetMaxSizeKB())
 	}
-	if err := s.thumbnailManager.UpdateThumbnail(&sub); err != nil {
+	if err := s.thumbnailManager.UpdateThumbnail(&local); err != nil {
 		s.logger.Errorf("Thumbnail subscription error: %v", err)
 	}
 }
 
 func (s *CddSdk) deprovisionDeviceCallback(_ mqtt.Client, msg mqtt.Message) {
-	var deprov tr12models.DeviceSubscribesToDeprovisionRequestContent
+	var deprov tr12models.DeviceSubscribesToDeprovisionResponseContent
 	if err := json.Unmarshal(msg.Payload(), &deprov); err != nil {
 		s.logger.Errorf("Could not parse deprovision update. Deprovisioning anyway: %v", err)
 	} else {
@@ -331,7 +335,7 @@ func (s *CddSdk) deprovisionDeviceCallback(_ mqtt.Client, msg mqtt.Message) {
 }
 
 func (s *CddSdk) updateLogSubscriptionCallback(_ mqtt.Client, msg mqtt.Message) {
-	var logSub tr12models.DeviceSubscribesToLogSubscriptionRequestContent
+	var logSub tr12models.DeviceSubscribesToLogSubscriptionResponseContent
 	if err := json.Unmarshal(msg.Payload(), &logSub); err != nil {
 		s.logger.Errorf("Could not process logger update: %v", err)
 		return

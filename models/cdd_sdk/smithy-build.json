@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "sources": ["smithy", "../TR-12-Models/smithy"],
+  "sources": ["smithy", "../TR-12-Models/model"],
   "maven": {
     "dependencies": [
       "software.amazon.smithy.python.codegen.plugins:types:0.1.0",
@@ -10,7 +10,7 @@
   },
   "plugins": {
     "openapi": {
-      "service": "com.cdd#CddService",
+      "service": "com.tr12#CddService",
       "protocol": "aws.protocols#restJson1",
       "version": "3.0.2",
       "tags": true,

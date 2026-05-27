@@ -190,7 +190,7 @@ func TestRotateCerts_Changed(t *testing.T) {
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
-	rotate := &tr12models.DeviceSubscribesToCertificateRotationRequestContent{
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
 		MqttUri:           "tls://new:8883",
 		DeviceCertificate: "new-cert",
 		RegionName: tr12models.PtrString("new-region"),
@@ -232,7 +232,7 @@ func TestRotateCerts_NothingChanged(t *testing.T) {
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
-	rotate := &tr12models.DeviceSubscribesToCertificateRotationRequestContent{
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
 		MqttUri:           "tls://same:8883",
 		DeviceCertificate: "same-cert",
 		RegionName: tr12models.PtrString("same-region"),
@@ -284,7 +284,7 @@ func TestRotateCerts_SameCertNewURI(t *testing.T) {
 	auth.SetHostSettings(*hs)
 	s.WriteToFilesystem("dev1", auth)
 
-	rotate := &tr12models.DeviceSubscribesToCertificateRotationRequestContent{
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
 		MqttUri:           "tls://new:8883",
 		DeviceCertificate: "same-cert",
 		RegionName: tr12models.PtrString("local"),
@@ -321,7 +321,7 @@ func TestRotateCerts_NilConnSettings_URINotUpdated(t *testing.T) {
 	// Write only the cert file, leave ConnSettings nil
 	os.WriteFile(s.DeviceCertFile, []byte("old-cert"), 0600)
 
-	rotate := &tr12models.DeviceSubscribesToCertificateRotationRequestContent{
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
 		MqttUri:           "tls://new:8883",
 		DeviceCertificate: "new-cert",
 		RegionName: tr12models.PtrString("local"),

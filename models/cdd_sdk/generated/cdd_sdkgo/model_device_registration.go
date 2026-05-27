@@ -19,9 +19,13 @@ import (
 // checks if the DeviceRegistration type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &DeviceRegistration{}
 
-// DeviceRegistration struct for DeviceRegistration
+// DeviceRegistration Device registration payload — advertises device capabilities to the host.  Uses a template/assignment pattern to avoid redundant channel definitions: - channelTemplates: unique capability definitions (max 5) - channelAssignments: maps each channel ID to a template (max 50)  This keeps the registration payload under 90 kB for MQTT transport.
 type DeviceRegistration struct {
-	Channels []Channel `json:"channels"`
+	// Unique channel capability definitions. Most devices have a small number of distinct channel configurations shared across many channel IDs. See limits.smithy: MAX_CHANNEL_TEMPLATES
+	ChannelTemplates []ChannelTemplate `json:"channelTemplates"`
+	// Maps individual channel IDs to their template definition. Total channel count across the device — max 50. See limits.smithy: MAX_CHANNELS
+	ChannelAssignments []ChannelAssignment `json:"channelAssignments"`
+	// Device-level settings (not channel-specific).
 	Settings []Setting `json:"settings,omitempty"`
 }
 
@@ -31,9 +35,10 @@ type _DeviceRegistration DeviceRegistration
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDeviceRegistration(channels []Channel) *DeviceRegistration {
+func NewDeviceRegistration(channelTemplates []ChannelTemplate, channelAssignments []ChannelAssignment) *DeviceRegistration {
 	this := DeviceRegistration{}
-	this.Channels = channels
+	this.ChannelTemplates = channelTemplates
+	this.ChannelAssignments = channelAssignments
 	return &this
 }
 
@@ -45,28 +50,52 @@ func NewDeviceRegistrationWithDefaults() *DeviceRegistration {
 	return &this
 }
 
-// GetChannels returns the Channels field value
-func (o *DeviceRegistration) GetChannels() []Channel {
+// GetChannelTemplates returns the ChannelTemplates field value
+func (o *DeviceRegistration) GetChannelTemplates() []ChannelTemplate {
 	if o == nil {
-		var ret []Channel
+		var ret []ChannelTemplate
 		return ret
 	}
 
-	return o.Channels
+	return o.ChannelTemplates
 }
 
-// GetChannelsOk returns a tuple with the Channels field value
+// GetChannelTemplatesOk returns a tuple with the ChannelTemplates field value
 // and a boolean to check if the value has been set.
-func (o *DeviceRegistration) GetChannelsOk() ([]Channel, bool) {
+func (o *DeviceRegistration) GetChannelTemplatesOk() ([]ChannelTemplate, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return o.Channels, true
+	return o.ChannelTemplates, true
 }
 
-// SetChannels sets field value
-func (o *DeviceRegistration) SetChannels(v []Channel) {
-	o.Channels = v
+// SetChannelTemplates sets field value
+func (o *DeviceRegistration) SetChannelTemplates(v []ChannelTemplate) {
+	o.ChannelTemplates = v
+}
+
+// GetChannelAssignments returns the ChannelAssignments field value
+func (o *DeviceRegistration) GetChannelAssignments() []ChannelAssignment {
+	if o == nil {
+		var ret []ChannelAssignment
+		return ret
+	}
+
+	return o.ChannelAssignments
+}
+
+// GetChannelAssignmentsOk returns a tuple with the ChannelAssignments field value
+// and a boolean to check if the value has been set.
+func (o *DeviceRegistration) GetChannelAssignmentsOk() ([]ChannelAssignment, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return o.ChannelAssignments, true
+}
+
+// SetChannelAssignments sets field value
+func (o *DeviceRegistration) SetChannelAssignments(v []ChannelAssignment) {
+	o.ChannelAssignments = v
 }
 
 // GetSettings returns the Settings field value if set, zero value otherwise.
@@ -111,7 +140,8 @@ func (o DeviceRegistration) MarshalJSON() ([]byte, error) {
 
 func (o DeviceRegistration) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["channels"] = o.Channels
+	toSerialize["channelTemplates"] = o.ChannelTemplates
+	toSerialize["channelAssignments"] = o.ChannelAssignments
 	if !IsNil(o.Settings) {
 		toSerialize["settings"] = o.Settings
 	}
@@ -123,7 +153,8 @@ func (o *DeviceRegistration) UnmarshalJSON(data []byte) (err error) {
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"channels",
+		"channelTemplates",
+		"channelAssignments",
 	}
 
 	allProperties := make(map[string]interface{})

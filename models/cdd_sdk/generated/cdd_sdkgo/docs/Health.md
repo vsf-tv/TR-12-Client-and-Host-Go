@@ -5,14 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Healthy** | **map[string]interface{}** | Healthy state — no additional fields needed. | 
-**Degraded** | [**Error**](Error.md) |  | 
-**Critical** | [**Error**](Error.md) |  | 
+**Degraded** | [**HealthError**](HealthError.md) |  | 
+**Critical** | [**HealthError**](HealthError.md) |  | 
 
 ## Methods
 
 ### NewHealth
 
-`func NewHealth(healthy map[string]interface{}, degraded Error, critical Error, ) *Health`
+`func NewHealth(healthy map[string]interface{}, degraded HealthError, critical HealthError, ) *Health`
 
 NewHealth instantiates a new Health object
 This constructor will assign default values to properties that have it defined,
@@ -49,40 +49,40 @@ SetHealthy sets Healthy field to given value.
 
 ### GetDegraded
 
-`func (o *Health) GetDegraded() Error`
+`func (o *Health) GetDegraded() HealthError`
 
 GetDegraded returns the Degraded field if non-nil, zero value otherwise.
 
 ### GetDegradedOk
 
-`func (o *Health) GetDegradedOk() (*Error, bool)`
+`func (o *Health) GetDegradedOk() (*HealthError, bool)`
 
 GetDegradedOk returns a tuple with the Degraded field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetDegraded
 
-`func (o *Health) SetDegraded(v Error)`
+`func (o *Health) SetDegraded(v HealthError)`
 
 SetDegraded sets Degraded field to given value.
 
 
 ### GetCritical
 
-`func (o *Health) GetCritical() Error`
+`func (o *Health) GetCritical() HealthError`
 
 GetCritical returns the Critical field if non-nil, zero value otherwise.
 
 ### GetCriticalOk
 
-`func (o *Health) GetCriticalOk() (*Error, bool)`
+`func (o *Health) GetCriticalOk() (*HealthError, bool)`
 
 GetCriticalOk returns a tuple with the Critical field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCritical
 
-`func (o *Health) SetCritical(v Error)`
+`func (o *Health) SetCritical(v HealthError)`
 
 SetCritical sets Critical field to given value.
 

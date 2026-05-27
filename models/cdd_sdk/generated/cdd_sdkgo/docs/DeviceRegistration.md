@@ -4,14 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Channels** | [**[]Channel**](Channel.md) |  | 
-**Settings** | Pointer to [**[]Setting**](Setting.md) |  | [optional] 
+**ChannelTemplates** | [**[]ChannelTemplate**](ChannelTemplate.md) | Unique channel capability definitions. Most devices have a small number of distinct channel configurations shared across many channel IDs. See limits.smithy: MAX_CHANNEL_TEMPLATES | 
+**ChannelAssignments** | [**[]ChannelAssignment**](ChannelAssignment.md) | Maps individual channel IDs to their template definition. Total channel count across the device — max 50. See limits.smithy: MAX_CHANNELS | 
+**Settings** | Pointer to [**[]Setting**](Setting.md) | Device-level settings (not channel-specific). | [optional] 
 
 ## Methods
 
 ### NewDeviceRegistration
 
-`func NewDeviceRegistration(channels []Channel, ) *DeviceRegistration`
+`func NewDeviceRegistration(channelTemplates []ChannelTemplate, channelAssignments []ChannelAssignment, ) *DeviceRegistration`
 
 NewDeviceRegistration instantiates a new DeviceRegistration object
 This constructor will assign default values to properties that have it defined,
@@ -26,24 +27,44 @@ NewDeviceRegistrationWithDefaults instantiates a new DeviceRegistration object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetChannels
+### GetChannelTemplates
 
-`func (o *DeviceRegistration) GetChannels() []Channel`
+`func (o *DeviceRegistration) GetChannelTemplates() []ChannelTemplate`
 
-GetChannels returns the Channels field if non-nil, zero value otherwise.
+GetChannelTemplates returns the ChannelTemplates field if non-nil, zero value otherwise.
 
-### GetChannelsOk
+### GetChannelTemplatesOk
 
-`func (o *DeviceRegistration) GetChannelsOk() (*[]Channel, bool)`
+`func (o *DeviceRegistration) GetChannelTemplatesOk() (*[]ChannelTemplate, bool)`
 
-GetChannelsOk returns a tuple with the Channels field if it's non-nil, zero value otherwise
+GetChannelTemplatesOk returns a tuple with the ChannelTemplates field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetChannels
+### SetChannelTemplates
 
-`func (o *DeviceRegistration) SetChannels(v []Channel)`
+`func (o *DeviceRegistration) SetChannelTemplates(v []ChannelTemplate)`
 
-SetChannels sets Channels field to given value.
+SetChannelTemplates sets ChannelTemplates field to given value.
+
+
+### GetChannelAssignments
+
+`func (o *DeviceRegistration) GetChannelAssignments() []ChannelAssignment`
+
+GetChannelAssignments returns the ChannelAssignments field if non-nil, zero value otherwise.
+
+### GetChannelAssignmentsOk
+
+`func (o *DeviceRegistration) GetChannelAssignmentsOk() (*[]ChannelAssignment, bool)`
+
+GetChannelAssignmentsOk returns a tuple with the ChannelAssignments field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetChannelAssignments
+
+`func (o *DeviceRegistration) SetChannelAssignments(v []ChannelAssignment)`
+
+SetChannelAssignments sets ChannelAssignments field to given value.
 
 
 ### GetSettings

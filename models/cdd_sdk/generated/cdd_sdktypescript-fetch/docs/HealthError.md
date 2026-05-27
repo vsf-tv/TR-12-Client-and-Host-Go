@@ -1,26 +1,25 @@
 
-# Health
+# HealthError
 
+Shared description for degraded and critical states.
 
 ## Properties
 
 Name | Type
 ------------ | -------------
-`healthy` | object
-`degraded` | [HealthError](HealthError.md)
-`critical` | [HealthError](HealthError.md)
+`message` | string
+`timestamp` | Date
 
 ## Example
 
 ```typescript
-import type { Health } from ''
+import type { HealthError } from ''
 
 // TODO: Update the object below with actual values
 const example = {
-  "healthy": null,
-  "degraded": null,
-  "critical": null,
-} satisfies Health
+  "message": null,
+  "timestamp": null,
+} satisfies HealthError
 
 console.log(example)
 
@@ -29,7 +28,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as Health
+const exampleParsed = JSON.parse(exampleJSON) as HealthError
 console.log(exampleParsed)
 ```
 

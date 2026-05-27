@@ -40,10 +40,15 @@ func (h *PairingHandlers) Pair(c *gin.Context) {
 		return
 	}
 	log.Printf("[HOST /pair] Request: hostId=%s deviceType=%s version=%s", req.HostId, req.DeviceType, req.Version.GetVersion())
-	resp, err := h.deviceSvc.Pair(req)
+	resp, pairingErr, err := h.deviceSvc.Pair(req)
 	if err != nil {
 		log.Printf("[HOST /pair] Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "code": 500})
+		return
+	}
+	if pairingErr != nil {
+		log.Printf("[HOST /pair] Rejected: reason=%s", *pairingErr)
+		c.JSON(http.StatusBadRequest, gin.H{"reason": string(*pairingErr)})
 		return
 	}
 	respJSON, _ := json.Marshal(resp)

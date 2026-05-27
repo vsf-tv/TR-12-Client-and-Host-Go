@@ -17,7 +17,13 @@ package integration_test
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"net"
@@ -722,4 +728,42 @@ func createTestJPEG(t *testing.T, path string) {
 	if err := os.WriteFile(path, jpeg, 0644); err != nil {
 		t.Fatalf("createTestJPEG: %v", err)
 	}
+}
+
+// doPostRaw posts to url and returns the HTTP status code, decoding the response into out.
+func (e *testEnv) doPostRaw(url string, body interface{}, out interface{}) int {
+	e.t.Helper()
+	var r io.Reader
+	if body != nil {
+		data, _ := json.Marshal(body)
+		r = bytes.NewReader(data)
+	}
+	req, _ := http.NewRequest("POST", url, r)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := e.httpClient.Do(req)
+	if err != nil {
+		e.t.Fatalf("POST %s: %v", url, err)
+	}
+	defer resp.Body.Close()
+	if out != nil {
+		json.NewDecoder(resp.Body).Decode(out)
+	}
+	return resp.StatusCode
+}
+
+// generateMinimalCSR returns a PEM-encoded CSR for use in pairing rejection tests.
+func generateMinimalCSR(t *testing.T) string {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatalf("generateMinimalCSR: generate key: %v", err)
+	}
+	template := &x509.CertificateRequest{
+		Subject: pkix.Name{CommonName: "test-device"},
+	}
+	csrDER, err := x509.CreateCertificateRequest(rand.Reader, template, key)
+	if err != nil {
+		t.Fatalf("generateMinimalCSR: create CSR: %v", err)
+	}
+	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrDER}))
 }

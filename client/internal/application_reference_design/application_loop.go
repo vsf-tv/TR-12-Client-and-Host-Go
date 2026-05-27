@@ -178,7 +178,14 @@ func (l *ApplicationLoop) processConfiguration() {
 		}
 		l.logf("[LOOP] applying channel %s version=%s (was %s)", ch.Id, ch.Version, lastId)
 		l.shim.applyChannel(ch)
-		l.latestChannelConfigIds[ch.Id] = ch.Version
+		// Only record the version as applied if the channel is healthy.
+		// If health is degraded (device API errors or start timed out), leave
+		// the version unrecorded so the next cycle retries.
+		if h := l.callbacks.GetChannelHealth(ch.Id); h != nil && h.Degraded != nil {
+			l.logf("[LOOP] channel %s health=DEGRADED after apply — will retry next cycle", ch.Id)
+		} else {
+			l.latestChannelConfigIds[ch.Id] = ch.Version
+		}
 		anyApplied = true
 	}
 

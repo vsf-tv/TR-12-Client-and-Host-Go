@@ -111,19 +111,21 @@ func TestFullLifecycle(t *testing.T) {
 
 	// Parse registration to check structure
 	var reg struct {
-		Channels []struct {
-			ID              string        `json:"id"`
-			ChannelSettings []interface{} `json:"settings"`
-		} `json:"channels"`
+		ChannelAssignments []struct {
+			ChannelID string `json:"channelId"`
+		} `json:"channelAssignments"`
+		ChannelTemplates []struct {
+			Settings []interface{} `json:"settings"`
+		} `json:"channelTemplates"`
 	}
 	if err := json.Unmarshal(detail.Registration, &reg); err != nil {
 		t.Fatalf("Phase 6: cannot parse registration: %v", err)
 	}
-	if len(reg.Channels) != 1 || reg.Channels[0].ID != "CH01" {
-		t.Fatalf("Phase 6: expected 1 channel with id=CH01, got %+v", reg.Channels)
+	if len(reg.ChannelAssignments) != 1 || reg.ChannelAssignments[0].ChannelID != "CH01" {
+		t.Fatalf("Phase 6: expected 1 channel assignment with channelId=CH01, got %+v", reg.ChannelAssignments)
 	}
-	if len(reg.Channels[0].ChannelSettings) != 7 {
-		t.Fatalf("Phase 6: expected 7 standardSettings, got %d", len(reg.Channels[0].ChannelSettings))
+	if len(reg.ChannelTemplates) == 0 || len(reg.ChannelTemplates[0].Settings) != 7 {
+		t.Fatalf("Phase 6: expected 1 template with 7 settings, got %+v", reg.ChannelTemplates)
 	}
 	if !detail.Online {
 		t.Fatal("Phase 6: expected online=true")
@@ -138,7 +140,7 @@ func TestFullLifecycle(t *testing.T) {
 		t.Fatal("Phase 6: expected non-empty cert_expiration")
 	}
 	t.Logf("Phase 6: OK — registration channels=%d cert_expiration=%s",
-		len(reg.Channels), detail.CertExpiration)
+		len(reg.ChannelAssignments), detail.CertExpiration)
 
 	// ---------------------------------------------------------------
 	// Phase 7: Update Configuration
@@ -496,13 +498,13 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// Verify registration has 2 channels
 	detail := env.hostDescribeDevice(deviceID, token)
 	var reg struct {
-		Channels []struct{ ID string `json:"id"` } `json:"channels"`
+		ChannelAssignments []struct{ ChannelID string `json:"channelId"` } `json:"channelAssignments"`
 	}
 	json.Unmarshal(detail.Registration, &reg)
-	if len(reg.Channels) != 2 {
-		t.Fatalf("expected 2 channels in registration, got %d", len(reg.Channels))
+	if len(reg.ChannelAssignments) != 2 {
+		t.Fatalf("expected 2 channel assignments in registration, got %d", len(reg.ChannelAssignments))
 	}
-	t.Logf("Registration OK — channels: %s, %s", reg.Channels[0].ID, reg.Channels[1].ID)
+	t.Logf("Registration OK — channels: %s, %s", reg.ChannelAssignments[0].ChannelID, reg.ChannelAssignments[1].ChannelID)
 
 	// ---------------------------------------------------------------
 	// Phase 1: Full 2-channel config — both channels should be applied
@@ -1184,4 +1186,225 @@ func TestTwoChannelThumbnails(t *testing.T) {
 	t.Log("CH02: OK — thumbnail received")
 
 	t.Log("=== TestTwoChannelThumbnails PASSED ===")
+}
+
+// TestPairingRejections verifies that CreatePairingCode returns HTTP 400 with
+// the correct reason for each of the three rejection cases.
+func TestPairingRejections(t *testing.T) {
+	env := newTestEnv(t)
+	env.startHost()
+
+	csr := generateMinimalCSR(t)
+
+	type pairRequest struct {
+		DeviceType                string      `json:"deviceType"`
+		HostId                    string      `json:"hostId"`
+		CertificateSigningRequest string      `json:"certificateSigningRequest"`
+		Version                   interface{} `json:"version"`
+	}
+
+	type pairErrorResponse struct {
+		Reason string `json:"reason"`
+	}
+
+	doPairRaw := func(req pairRequest) (int, pairErrorResponse) {
+		t.Helper()
+		var errResp pairErrorResponse
+		code := env.doPostRaw(env.hostURL+"/pair", req, &errResp)
+		return code, errResp
+	}
+
+	goodVersion := map[string]string{"version": "5.0.0"}
+
+	// --- HOST_ID_MISMATCH ---
+	t.Log("Pairing rejection: HOST_ID_MISMATCH")
+	code, errResp := doPairRaw(pairRequest{
+		DeviceType:                "SOURCE",
+		HostId:                    "wrong-host-id",
+		CertificateSigningRequest: csr,
+		Version:                   goodVersion,
+	})
+	if code != 400 {
+		t.Fatalf("HOST_ID_MISMATCH: expected 400, got %d", code)
+	}
+	if errResp.Reason != "HOST_ID_MISMATCH" {
+		t.Fatalf("HOST_ID_MISMATCH: expected reason=HOST_ID_MISMATCH, got %q", errResp.Reason)
+	}
+	t.Log("HOST_ID_MISMATCH: OK")
+
+	// --- VERSION_NOT_SUPPORTED ---
+	t.Log("Pairing rejection: VERSION_NOT_SUPPORTED")
+	code, errResp = doPairRaw(pairRequest{
+		DeviceType:                "SOURCE",
+		HostId:                    "tr12-host",
+		CertificateSigningRequest: csr,
+		Version:                   map[string]string{"version": ""},
+	})
+	if code != 400 {
+		t.Fatalf("VERSION_NOT_SUPPORTED: expected 400, got %d", code)
+	}
+	if errResp.Reason != "VERSION_NOT_SUPPORTED" {
+		t.Fatalf("VERSION_NOT_SUPPORTED: expected reason=VERSION_NOT_SUPPORTED, got %q", errResp.Reason)
+	}
+	t.Log("VERSION_NOT_SUPPORTED: OK")
+
+	// --- DEVICE_TYPE_NOT_SUPPORTED ---
+	t.Log("Pairing rejection: DEVICE_TYPE_NOT_SUPPORTED")
+	code, errResp = doPairRaw(pairRequest{
+		DeviceType:                "INVALID_TYPE",
+		HostId:                    "tr12-host",
+		CertificateSigningRequest: csr,
+		Version:                   goodVersion,
+	})
+	if code != 400 {
+		t.Fatalf("DEVICE_TYPE_NOT_SUPPORTED: expected 400, got %d", code)
+	}
+	if errResp.Reason != "DEVICE_TYPE_NOT_SUPPORTED" {
+		t.Fatalf("DEVICE_TYPE_NOT_SUPPORTED: expected reason=DEVICE_TYPE_NOT_SUPPORTED, got %q", errResp.Reason)
+	}
+	t.Log("DEVICE_TYPE_NOT_SUPPORTED: OK")
+
+	t.Log("=== TestPairingRejections PASSED ===")
+}
+
+// TestMQTTEnvelopes verifies that all MQTT messages use the v6.0.0 envelope format.
+// It exercises every host→device and device→host topic and checks the envelope
+// field is present and the inner payload is correctly unwrapped.
+func TestMQTTEnvelopes(t *testing.T) {
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-envelope-001")
+
+	registration := loadRegistration(t)
+
+	// Setup: pair and connect
+	acct := env.hostRegisterAccount("envelopeuser", "testpass123", "Envelope Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// -----------------------------------------------------------------------
+	// 1. Registration envelope: device → host
+	//    The SDK sends {"deviceRegistration": {...}} on connect.
+	//    Verify the host stored the registration (unwrapped correctly).
+	// -----------------------------------------------------------------------
+	t.Log("Envelope check: deviceRegistration (device→host)")
+	detail := env.hostDescribeDevice(deviceID, token)
+	if len(detail.Registration) == 0 || string(detail.Registration) == "null" {
+		t.Fatal("registration envelope: host has no registration — envelope not unwrapped")
+	}
+	var reg struct {
+		ChannelAssignments []struct{ ChannelID string `json:"channelId"` } `json:"channelAssignments"`
+	}
+	if err := json.Unmarshal(detail.Registration, &reg); err != nil || len(reg.ChannelAssignments) == 0 {
+		t.Fatalf("registration envelope: stored registration is invalid: %v", err)
+	}
+	t.Log("registration envelope: OK")
+
+	// -----------------------------------------------------------------------
+	// 2. DesiredDeviceConfiguration envelope: host → device
+	//    Push a config and verify the SDK received and stored it correctly.
+	// -----------------------------------------------------------------------
+	t.Log("Envelope check: desiredDeviceConfiguration (host→device)")
+	cfg := json.RawMessage(`{
+		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
+		"channels": [{
+			"id": "CH01", "state": "IDLE",
+			"channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"},
+				{"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"},
+				{"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"},
+				{"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
+			]}
+		}]
+	}`)
+	code, body := env.hostUpdateConfig(deviceID, token, cfg)
+	if code != 200 {
+		t.Fatalf("desiredDeviceConfiguration envelope: push failed: %d %s", code, body)
+	}
+	time.Sleep(3 * time.Second)
+	sdkCfg := env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("desiredDeviceConfiguration envelope: SDK has no configuration — envelope not unwrapped")
+	}
+	cfgStr := string(mustMarshal(sdkCfg.Configuration))
+	if !strings.Contains(cfgStr, "CH01") {
+		t.Fatalf("desiredDeviceConfiguration envelope: SDK config missing CH01: %s", cfgStr)
+	}
+	if !strings.Contains(cfgStr, "PTP") {
+		t.Fatalf("desiredDeviceConfiguration envelope: SDK config missing PTP clock source: %s", cfgStr)
+	}
+	t.Log("desiredDeviceConfiguration envelope: OK")
+
+	// -----------------------------------------------------------------------
+	// 3. ActualDeviceConfiguration envelope: device → host
+	//    Report actual config and verify the host stored it (unwrapped correctly).
+	// -----------------------------------------------------------------------
+	t.Log("Envelope check: actualDeviceConfiguration (device→host)")
+	var actualCfg map[string]interface{}
+	if p, ok := sdkCfg.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &actualCfg)
+	}
+	if actualCfg == nil {
+		t.Fatal("actualDeviceConfiguration envelope: could not extract payload from SDK config")
+	}
+	cfgResp := env.sdkReportActualConfig(actualCfg)
+	if !cfgResp.Success {
+		t.Fatalf("actualDeviceConfiguration envelope: report failed: %s", cfgResp.Message)
+	}
+	time.Sleep(3 * time.Second)
+	detail2 := env.hostDescribeDevice(deviceID, token)
+	if len(detail2.ActualConfiguration) == 0 || string(detail2.ActualConfiguration) == "null" {
+		t.Fatal("actualDeviceConfiguration envelope: host has no actual config — envelope not unwrapped")
+	}
+	var actual struct {
+		Channels []struct{ ID string `json:"id"` } `json:"channels"`
+	}
+	if err := json.Unmarshal(detail2.ActualConfiguration, &actual); err != nil || len(actual.Channels) == 0 {
+		t.Fatalf("actualDeviceConfiguration envelope: stored actual config is invalid: %v", err)
+	}
+	t.Log("actualDeviceConfiguration envelope: OK")
+
+	// -----------------------------------------------------------------------
+	// 4. DeviceStatus envelope: device → host
+	//    Report status and verify the host stored it (unwrapped correctly).
+	// -----------------------------------------------------------------------
+	t.Log("Envelope check: deviceStatus (device→host)")
+	statusPayload := map[string]interface{}{
+		"channels": []map[string]interface{}{
+			{"id": "CH01", "state": "IDLE", "status": []map[string]interface{}{
+				{"name": "bitrate", "value": "0", "description": "Current bitrate"},
+			}},
+		},
+		"status": []map[string]interface{}{
+			{"name": "model", "value": "TestDevice", "description": "Device model"},
+		},
+	}
+	statusResp := env.sdkReportStatus(statusPayload)
+	if !statusResp.Success {
+		t.Fatalf("deviceStatus envelope: report failed: %s", statusResp.Message)
+	}
+	time.Sleep(3 * time.Second)
+	detail3 := env.hostDescribeDevice(deviceID, token)
+	if len(detail3.Status) == 0 || string(detail3.Status) == "null" {
+		t.Fatal("deviceStatus envelope: host has no status — envelope not unwrapped")
+	}
+	statusStr := string(detail3.Status)
+	if !strings.Contains(statusStr, "TestDevice") {
+		t.Fatalf("deviceStatus envelope: stored status missing TestDevice: %s", statusStr)
+	}
+	t.Log("deviceStatus envelope: OK")
+
+	t.Log("=== TestMQTTEnvelopes PASSED ===")
 }

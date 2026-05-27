@@ -46,9 +46,9 @@ func writeTempJPEG(t *testing.T, sizeBytes int) string {
 	return f.Name()
 }
 
-func makeRequest(remotePath string, period float32, expires time.Time, maxSizeKB float32) tr12models.ThumbnailRequest {
+func makeRequest(remotePath string, period float32, expires time.Time, maxSizeKB float32) tr12models.ThumbnailSubscription {
 	p, m, rp := period, maxSizeKB, remotePath
-	return tr12models.ThumbnailRequest{
+	return tr12models.ThumbnailSubscription{
 		PeriodSeconds: &p,
 		ExpiresAt:     &expires,
 		MaxSizeKB:     &m,
@@ -56,7 +56,7 @@ func makeRequest(remotePath string, period float32, expires time.Time, maxSizeKB
 	}
 }
 
-func makeSub(requests map[string]tr12models.ThumbnailRequest) *models.RequestThumbnailRequestContent {
+func makeSub(requests map[string]tr12models.ThumbnailSubscription) *models.RequestThumbnailRequestContent {
 	return &models.RequestThumbnailRequestContent{Requests: requests}
 }
 
@@ -74,7 +74,7 @@ func TestUploadHappyPath(t *testing.T) {
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 
@@ -105,7 +105,7 @@ func TestExpiredSubscriptionNotUploaded(t *testing.T) {
 	expires := time.Now().Add(-5 * time.Second) // already expired
 	m := NewManager(newTestLogger(t))
 
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 
@@ -129,7 +129,7 @@ func TestOversizedImageNotUploaded(t *testing.T) {
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500), // max 500KB
 	}))
 
@@ -153,7 +153,7 @@ func TestMissingFileNotUploaded(t *testing.T) {
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 
@@ -181,7 +181,7 @@ func TestSubscriptionReplacement(t *testing.T) {
 	m := NewManager(newTestLogger(t))
 
 	// Start first subscription with period=1s
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 	time.Sleep(1500 * time.Millisecond)
@@ -192,7 +192,7 @@ func TestSubscriptionReplacement(t *testing.T) {
 
 	// Replace with a new subscription pointing to a different (nonexistent) path
 	// — uploads should stop
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))
 	time.Sleep(1500 * time.Millisecond)
@@ -224,7 +224,7 @@ func TestMultipleSources(t *testing.T) {
 	expires := time.Now().Add(10 * time.Second)
 	m := NewManager(newTestLogger(t))
 
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1":  makeRequest(srv.URL+"/upload?src=SDI-1", 1, expires, 500),
 		"HDMI-1": makeRequest(srv.URL+"/upload?src=HDMI-1", 1, expires, 500),
 	}))
@@ -258,7 +258,7 @@ func TestStopAll(t *testing.T) {
 	expires := time.Now().Add(60 * time.Second)
 	m := NewManager(newTestLogger(t))
 
-	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailRequest{
+	m.UpdateThumbnail(makeSub(map[string]tr12models.ThumbnailSubscription{
 		"SDI-1":  makeRequest(srv.URL+"/upload", 1, expires, 500),
 		"HDMI-1": makeRequest(srv.URL+"/upload", 1, expires, 500),
 	}))

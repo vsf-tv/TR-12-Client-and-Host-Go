@@ -4,8 +4,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Status** | [**[]StatusValue**](StatusValue.md) |  | 
-**Channels** | Pointer to [**[]ChannelStatus**](ChannelStatus.md) |  | [optional] 
+**Status** | [**[]StatusValue**](StatusValue.md) | See limits.smithy: MAX_STATUS_VALUES | 
+**Channels** | Pointer to [**[]ChannelStatus**](ChannelStatus.md) | See limits.smithy: MAX_CHANNEL_STATUS | [optional] 
 
 ## Methods
 

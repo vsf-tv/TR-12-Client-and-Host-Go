@@ -28,7 +28,7 @@ import {
  */
 export interface StandardSettings {
     /**
-     * 
+     * See limits.smithy: MAX_SETTINGS_PER_SCOPE
      * @type {Array<IdAndValue>}
      * @memberof StandardSettings
      */

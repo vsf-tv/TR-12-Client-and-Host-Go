@@ -233,7 +233,9 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 			Error: utils.ExceptionToErrorDetails(err),
 		}
 	}
-	if err := s.doPublishMessage(payload, hs.DevicePublishesStatusTopic); err != nil {
+	// Wrap in envelope
+	envelope := map[string]interface{}{"deviceStatus": payload}
+	if err := s.doPublishMessage(envelope, hs.DevicePublishesStatusTopic); err != nil {
 		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state,
 			Message: fmt.Sprintf("Status update not sent: %v", err),
@@ -269,7 +271,9 @@ func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.ActualDeviceConfiguration
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())
 		return *resp
 	}
-	if err := s.doPublishMessage(payload, hs.DevicePublishesActualConfigurationTopic); err != nil {
+	// Wrap in envelope
+	envelope := map[string]interface{}{"actualDeviceConfiguration": payload}
+	if err := s.doPublishMessage(envelope, hs.DevicePublishesActualConfigurationTopic); err != nil {
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, fmt.Sprintf("Configuration update not sent: %v", err))
 		return *resp
 	}
@@ -300,16 +304,15 @@ func (s *CddSdk) informHostServiceDeprovision(hostID string) {
 	}
 	reason := tr12models.DEPROVISIONREASON_DEPROVISIONED
 	t := time.Now().UTC()
-	msg := models.DeprovisionRequest{
+	deprov := tr12models.DevicePublishesDeprovisionAcknowledgementRequestContent{
 		Reason:    &reason,
 		Timestamp: t,
 	}
-	data, _ := json.Marshal(msg)
+	data, _ := json.Marshal(deprov)
 	if s.mqttClient != nil {
 		token := s.mqttClient.Publish(hs.DevicePublishesDeprovisionAcknowledgementTopic, 1, false, data)
 		token.WaitTimeout(3 * time.Second)
 	}
-	// No sleep needed — WaitTimeout above ensures delivery before we proceed
 }
 
 func (s *CddSdk) deleteCredentials(hostID string) error {

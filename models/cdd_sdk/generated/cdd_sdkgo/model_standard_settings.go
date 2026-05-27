@@ -21,6 +21,7 @@ var _ MappedNullable = &StandardSettings{}
 
 // StandardSettings struct for StandardSettings
 type StandardSettings struct {
+	// See limits.smithy: MAX_SETTINGS_PER_SCOPE
 	StandardSettings []IdAndValue `json:"standardSettings"`
 }
 

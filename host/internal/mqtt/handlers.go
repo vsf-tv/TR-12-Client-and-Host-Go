@@ -48,20 +48,15 @@ func (h *Handlers) handleRegistration(topic string, payload []byte) {
 	if deviceID == "" {
 		return
 	}
-	// Store the registration JSON as-is (no lossy transformation)
-	var raw json.RawMessage
-	if err := json.Unmarshal(payload, &raw); err != nil {
-		log.Printf("[mqtt] invalid registration from %s: %v", deviceID, err)
+	// Unwrap the envelope: {"deviceRegistration": {...}}
+	var envelope struct {
+		DeviceRegistration json.RawMessage `json:"deviceRegistration"`
+	}
+	if err := json.Unmarshal(payload, &envelope); err != nil || len(envelope.DeviceRegistration) == 0 {
+		log.Printf("[mqtt] invalid registration envelope from %s: %v", deviceID, err)
 		return
 	}
-	// The payload may be wrapped in {"message": ...} per ReportMessage
-	var report struct {
-		Message json.RawMessage `json:"message"`
-	}
-	if err := json.Unmarshal(payload, &report); err == nil && len(report.Message) > 0 {
-		raw = report.Message
-	}
-	if err := h.store.UpdateDeviceRegistration(deviceID, raw); err != nil {
+	if err := h.store.UpdateDeviceRegistration(deviceID, envelope.DeviceRegistration); err != nil {
 		log.Printf("[mqtt] error storing registration for %s: %v", deviceID, err)
 	} else {
 		log.Printf("[mqtt] registration updated for %s", deviceID)
@@ -73,18 +68,15 @@ func (h *Handlers) handleStatus(topic string, payload []byte) {
 	if deviceID == "" {
 		return
 	}
-	var raw json.RawMessage
-	if err := json.Unmarshal(payload, &raw); err != nil {
-		log.Printf("[mqtt] invalid status from %s: %v", deviceID, err)
+	// Unwrap the envelope: {"deviceStatus": {...}}
+	var envelope struct {
+		DeviceStatus json.RawMessage `json:"deviceStatus"`
+	}
+	if err := json.Unmarshal(payload, &envelope); err != nil || len(envelope.DeviceStatus) == 0 {
+		log.Printf("[mqtt] invalid status envelope from %s: %v", deviceID, err)
 		return
 	}
-	var report struct {
-		Message json.RawMessage `json:"message"`
-	}
-	if err := json.Unmarshal(payload, &report); err == nil && len(report.Message) > 0 {
-		raw = report.Message
-	}
-	if err := h.store.UpdateDeviceStatus(deviceID, raw); err != nil {
+	if err := h.store.UpdateDeviceStatus(deviceID, envelope.DeviceStatus); err != nil {
 		log.Printf("[mqtt] error storing status for %s: %v", deviceID, err)
 	}
 }
@@ -94,18 +86,15 @@ func (h *Handlers) handleActualConfig(topic string, payload []byte) {
 	if deviceID == "" {
 		return
 	}
-	var raw json.RawMessage
-	if err := json.Unmarshal(payload, &raw); err != nil {
-		log.Printf("[mqtt] invalid actual config from %s: %v", deviceID, err)
+	// Unwrap the envelope: {"actualDeviceConfiguration": {...}}
+	var envelope struct {
+		ActualDeviceConfiguration json.RawMessage `json:"actualDeviceConfiguration"`
+	}
+	if err := json.Unmarshal(payload, &envelope); err != nil || len(envelope.ActualDeviceConfiguration) == 0 {
+		log.Printf("[mqtt] invalid actual config envelope from %s: %v", deviceID, err)
 		return
 	}
-	var report struct {
-		Message json.RawMessage `json:"message"`
-	}
-	if err := json.Unmarshal(payload, &report); err == nil && len(report.Message) > 0 {
-		raw = report.Message
-	}
-	if err := h.store.UpdateDeviceActualConfig(deviceID, raw); err != nil {
+	if err := h.store.UpdateDeviceActualConfig(deviceID, envelope.ActualDeviceConfiguration); err != nil {
 		log.Printf("[mqtt] error storing actual config for %s: %v", deviceID, err)
 	}
 }
@@ -121,8 +110,9 @@ func (h *Handlers) handleDeprovision(topic string, payload []byte) {
 		return
 	}
 
-	var msg models.DeprovisionRequest
-	json.Unmarshal(payload, &msg)
+	// Parse deprovision payload directly (no wrapper field)
+	var deprov models.DeprovisionRequest
+	json.Unmarshal(payload, &deprov)
 
 	if device.State == "DEPROVISIONED" {
 		// Phase 2: device acknowledged — full cleanup

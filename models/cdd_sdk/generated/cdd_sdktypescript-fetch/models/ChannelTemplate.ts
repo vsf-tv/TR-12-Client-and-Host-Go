@@ -43,45 +43,39 @@ import {
 } from './ChannelType';
 
 /**
- * 
+ * A channel template defines the capabilities shared by one or more channels.
  * @export
- * @interface Channel
+ * @interface ChannelTemplate
  */
-export interface Channel {
+export interface ChannelTemplate {
     /**
      * 
      * @type {string}
-     * @memberof Channel
-     */
-    name: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Channel
+     * @memberof ChannelTemplate
      */
     id: string;
     /**
      * 
      * @type {ChannelType}
-     * @memberof Channel
+     * @memberof ChannelTemplate
      */
     channelType: ChannelType;
     /**
-     * 
+     * Settings this channel type supports.
      * @type {Array<Setting>}
-     * @memberof Channel
+     * @memberof ChannelTemplate
      */
     settings?: Array<Setting>;
     /**
-     * 
+     * Profiles this channel type supports (mutually exclusive with settings in config).
      * @type {Array<ProfileDefinition>}
-     * @memberof Channel
+     * @memberof ChannelTemplate
      */
     profiles?: Array<ProfileDefinition>;
     /**
-     * 
+     * Transport protocols this channel type can use.
      * @type {Array<TransportProtocolName>}
-     * @memberof Channel
+     * @memberof ChannelTemplate
      */
     protocols?: Array<TransportProtocolName>;
 }
@@ -89,26 +83,24 @@ export interface Channel {
 
 
 /**
- * Check if a given object implements the Channel interface.
+ * Check if a given object implements the ChannelTemplate interface.
  */
-export function instanceOfChannel(value: object): value is Channel {
-    if (!('name' in value) || value['name'] === undefined) return false;
+export function instanceOfChannelTemplate(value: object): value is ChannelTemplate {
     if (!('id' in value) || value['id'] === undefined) return false;
     if (!('channelType' in value) || value['channelType'] === undefined) return false;
     return true;
 }
 
-export function ChannelFromJSON(json: any): Channel {
-    return ChannelFromJSONTyped(json, false);
+export function ChannelTemplateFromJSON(json: any): ChannelTemplate {
+    return ChannelTemplateFromJSONTyped(json, false);
 }
 
-export function ChannelFromJSONTyped(json: any, ignoreDiscriminator: boolean): Channel {
+export function ChannelTemplateFromJSONTyped(json: any, ignoreDiscriminator: boolean): ChannelTemplate {
     if (json == null) {
         return json;
     }
     return {
         
-        'name': json['name'],
         'id': json['id'],
         'channelType': ChannelTypeFromJSON(json['channelType']),
         'settings': json['settings'] == null ? undefined : ((json['settings'] as Array<any>).map(SettingFromJSON)),
@@ -117,18 +109,17 @@ export function ChannelFromJSONTyped(json: any, ignoreDiscriminator: boolean): C
     };
 }
 
-export function ChannelToJSON(json: any): Channel {
-    return ChannelToJSONTyped(json, false);
+export function ChannelTemplateToJSON(json: any): ChannelTemplate {
+    return ChannelTemplateToJSONTyped(json, false);
 }
 
-export function ChannelToJSONTyped(value?: Channel | null, ignoreDiscriminator: boolean = false): any {
+export function ChannelTemplateToJSONTyped(value?: ChannelTemplate | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
         
-        'name': value['name'],
         'id': value['id'],
         'channelType': ChannelTypeToJSON(value['channelType']),
         'settings': value['settings'] == null ? undefined : ((value['settings'] as Array<any>).map(SettingToJSON)),

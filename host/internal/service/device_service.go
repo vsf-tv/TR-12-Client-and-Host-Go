@@ -53,14 +53,17 @@ func (s *DeviceService) SetMQTT(mqtt MQTTPublisher) {
 }
 
 // Pair handles a device pairing request.
-func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*models.CreatePairingCodeResponseContent, error) {
+// Returns (response, pairingErr, internalErr) — pairingErr is a 400, internalErr is a 500.
+func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*models.CreatePairingCodeResponseContent, *models.CreatePairingCodeFailureReason, error) {
 	// Validate host ID
 	if req.HostId != s.cfg.ServiceID {
-		return failPair(models.PairFailureHostIDMismatch), nil
+		r := models.PairFailureHostIDMismatch
+		return nil, &r, nil
 	}
 	// Validate version
 	if req.Version.GetVersion() == "" {
-		return failPair(models.PairFailureVersionNotSupported), nil
+		r := models.PairFailureVersionNotSupported
+		return nil, &r, nil
 	}
 	// Validate device type
 	validType := false
@@ -71,7 +74,8 @@ func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*model
 		}
 	}
 	if !validType {
-		return failPair(models.PairFailureDeviceTypeNotSupported), nil
+		r := models.PairFailureDeviceTypeNotSupported
+		return nil, &r, nil
 	}
 
 	deviceID := generateDeviceID()
@@ -81,7 +85,7 @@ func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*model
 	// Sign CSR
 	certPEM, err := s.ca.SignCSR([]byte(req.CertificateSigningRequest), deviceID, s.cfg.CertExpiryDays)
 	if err != nil {
-		return nil, fmt.Errorf("sign CSR: %w", err)
+		return nil, nil, fmt.Errorf("sign CSR: %w", err)
 	}
 
 	now := time.Now().UTC()
@@ -99,18 +103,13 @@ func (s *DeviceService) Pair(req models.CreatePairingCodeRequestContent) (*model
 		PairingExpiresAt: now.Add(time.Duration(s.cfg.PairingTimeout) * time.Second).Format(time.RFC3339),
 	}
 	if err := s.store.InsertDevice(device); err != nil {
-		return nil, fmt.Errorf("insert device: %w", err)
+		return nil, nil, fmt.Errorf("insert device: %w", err)
 	}
 
-	successData := models.CreatePairingCodeSuccessData{
-		DeviceId:              deviceID,
-		PairingCode:           pairingCode,
-		AccessCode:            accessCode,
-		PairingTimeoutSeconds: float32(s.cfg.PairingTimeout),
-	}
-	return tr12models.NewCreatePairingCodeResponseContent(
-		tr12models.SuccessAsCreatePairingCodeResult(tr12models.NewSuccess(successData)),
-	), nil
+	resp := tr12models.NewCreatePairingCodeResponseContent(
+		deviceID, pairingCode, accessCode, float32(s.cfg.PairingTimeout),
+	)
+	return resp, nil, nil
 }
 
 // Authenticate handles device authentication polling.
@@ -414,15 +413,25 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	payload, _ := json.Marshal(wrapped)
 	topic := fmt.Sprintf("cdd/%s/config/update", deviceID)
 
-	// Store the stamped config so future pushes can compare correctly (no counter bump).
+	// Store the stamped config (flat, without envelope) so future pushes can compare correctly.
 	if err := s.store.StoreDeviceDesiredConfig(deviceID, payload); err != nil {
 		log.Printf("[HOST UpdateConfig] failed to store stamped config: %v", err)
 	}
 
-	log.Printf("[HOST UpdateConfig] deviceID=%s state=%s online=%v topic=%s updateID=%d payloadLen=%d",
-		deviceID, device.State, device.Online, topic, updateID, len(payload))
+	// Wrap in the MQTT envelope before publishing — v6.0.0 wire format.
+	// updateId is an envelope-level field; the inner desiredDeviceConfiguration
+	// must be a clean DesiredDeviceConfiguration (no extra fields).
+	updateIdVal := wrapped["updateId"]
+	delete(wrapped, "updateId")
+	envelopePayload, _ := json.Marshal(map[string]interface{}{
+		"updateId":                   updateIdVal,
+		"desiredDeviceConfiguration": wrapped,
+	})
 
-	if err := s.mqtt.Publish(topic, payload, true); err != nil { // retained — device picks up latest config on reconnect
+	log.Printf("[HOST UpdateConfig] deviceID=%s state=%s online=%v topic=%s updateID=%d payloadLen=%d",
+		deviceID, device.State, device.Online, topic, updateID, len(envelopePayload))
+
+	if err := s.mqtt.Publish(topic, envelopePayload, true); err != nil { // retained — device picks up latest config on reconnect
 		log.Printf("[HOST UpdateConfig] MQTT publish FAILED: %v", err)
 		return err
 	}
@@ -452,8 +461,11 @@ func (s *DeviceService) Deprovision(deviceID, accountID string) error {
 
 	reason := tr12models.DEPROVISIONREASON_DEPROVISIONED
 	t := time.Now().UTC()
-	msg := models.DeprovisionRequest{Reason: &reason, Timestamp: t}
-	payload, _ := json.Marshal(msg)
+	deprov := tr12models.DeviceSubscribesToDeprovisionResponseContent{
+		Reason:    &reason,
+		Timestamp: t,
+	}
+	payload, _ := json.Marshal(deprov)
 	topic := fmt.Sprintf("cdd/%s/deprovision", deviceID)
 	return s.mqtt.Publish(topic, payload, true) // retained — offline device deprovisions itself on reconnect
 }
@@ -521,7 +533,7 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 	}
 
 	mqttURI := fmt.Sprintf("tls://%s:%d", s.cfg.HostAddress, s.cfg.MQTTPort)
-	rotate := tr12models.DeviceSubscribesToCertificateRotationRequestContent{
+	rotate := tr12models.DeviceSubscribesToCertificateRotationResponseContent{
 		MqttUri:           mqttURI,
 		DeviceCertificate: string(newCert),
 		RegionName:        tr12models.PtrString("local"),
@@ -533,14 +545,6 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 }
 
 // --- Helpers ---
-
-func failPair(reason models.CreatePairingCodeFailureReason) *models.CreatePairingCodeResponseContent {
-	return tr12models.NewCreatePairingCodeResponseContent(
-		tr12models.FailureAsCreatePairingCodeResult(tr12models.NewFailure(
-			models.CreatePairingCodeFailureData{Reason: reason},
-		)),
-	)
-}
 
 func buildHostSettings(deviceID string, pairingTimeout int) *models.HostSettings {
 	hs := tr12models.NewHostSettings(
@@ -647,17 +651,45 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 	}
 
 	var reg struct {
-		Channels []struct {
+		ChannelTemplates []struct {
 			ID              string                            `json:"id"`
 			Name            string                            `json:"name"`
 			ChannelSettings []struct{ ID string `json:"id"` } `json:"settings,omitempty"`
 			Profiles        []struct{ ID string `json:"id"` } `json:"profiles,omitempty"`
 			Protocols       []string                          `json:"protocols,omitempty"`
-		} `json:"channels"`
+		} `json:"channelTemplates"`
+		ChannelAssignments []struct {
+			ChannelID  string `json:"channelId"`
+			TemplateID string `json:"templateId"`
+		} `json:"channelAssignments"`
 		DeviceRegistrationSettings []struct{ ID string `json:"id"` } `json:"settings,omitempty"`
 	}
 	if err := json.Unmarshal(regJSON, &reg); err != nil {
 		return fmt.Errorf("invalid registration JSON: %w", err)
+	}
+
+	// Build template lookup and resolved channel map from assignments
+	type resolvedRegChannel struct {
+		ID       string
+		Settings []struct{ ID string `json:"id"` }
+		Profiles []struct{ ID string `json:"id"` }
+		Protocols []string
+	}
+	templateByID := make(map[string]int, len(reg.ChannelTemplates))
+	for i, tmpl := range reg.ChannelTemplates {
+		templateByID[tmpl.ID] = i
+	}
+	regChannels := make(map[string]resolvedRegChannel, len(reg.ChannelAssignments))
+	for _, assignment := range reg.ChannelAssignments {
+		if idx, ok := templateByID[assignment.TemplateID]; ok {
+			tmpl := reg.ChannelTemplates[idx]
+			regChannels[assignment.ChannelID] = resolvedRegChannel{
+				ID:        assignment.ChannelID,
+				Settings:  tmpl.ChannelSettings,
+				Profiles:  tmpl.Profiles,
+				Protocols: tmpl.Protocols,
+			}
+		}
 	}
 
 	// Validate device-level standardSettings
@@ -677,17 +709,12 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 		}
 	}
 
-	regChannels := map[string]int{}
-	for i, ch := range reg.Channels {
-		regChannels[ch.ID] = i
-	}
-
 	for _, cfgCh := range cfg.Channels {
-		idx, ok := regChannels[cfgCh.ID]
+		regCh, ok := regChannels[cfgCh.ID]
 		if !ok {
-			validIDs := make([]string, len(reg.Channels))
-			for i, ch := range reg.Channels {
-				validIDs[i] = ch.ID
+			validIDs := make([]string, 0, len(regChannels))
+			for id := range regChannels {
+				validIDs = append(validIDs, id)
 			}
 			return fmt.Errorf("unknown channel ID %q, valid: %v", cfgCh.ID, validIDs)
 		}
@@ -695,8 +722,6 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 		if cfgCh.State != "" && cfgCh.State != "ACTIVE" && cfgCh.State != "IDLE" {
 			return fmt.Errorf("invalid channel state %q for channel %q, must be ACTIVE or IDLE", cfgCh.State, cfgCh.ID)
 		}
-
-		regCh := reg.Channels[idx]
 
 		if len(cfgCh.ChannelSettings) > 0 {
 			// ChannelSettings is a union: either {"standardSettings": {"standardSettings": [...]}} or {"profile": {"profile": {"id": "..."}}}
@@ -728,7 +753,7 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 			}
 			if settings.StandardSettings != nil && len(settings.StandardSettings.StandardSettings) > 0 {
 				regSettings := map[string]bool{}
-				for _, s := range regCh.ChannelSettings {
+				for _, s := range regCh.Settings {
 					regSettings[s.ID] = true
 				}
 				for _, s := range settings.StandardSettings.StandardSettings {

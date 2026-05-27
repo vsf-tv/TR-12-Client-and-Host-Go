@@ -35,6 +35,30 @@ func NewTr12ShimWithCallbacks(cb DeviceCallbacks) *Tr12Shim {
 	return &Tr12Shim{CB: cb}
 }
 
+// resolvedChannel pairs a channel ID with its resolved template.
+type resolvedChannel struct {
+	channelID string
+	template  cddsdkgo.ChannelTemplate
+}
+
+// resolveChannels expands channelAssignments → channelTemplates, returning one
+// entry per assigned channel in assignment order. Unresolvable assignments are skipped.
+func resolveChannels(registration *cddsdkgo.DeviceRegistration) []resolvedChannel {
+	templateByID := make(map[string]cddsdkgo.ChannelTemplate, len(registration.ChannelTemplates))
+	for _, tmpl := range registration.ChannelTemplates {
+		templateByID[tmpl.Id] = tmpl
+	}
+	var result []resolvedChannel
+	for _, assignment := range registration.ChannelAssignments {
+		tmpl, ok := templateByID[assignment.TemplateId]
+		if !ok {
+			continue
+		}
+		result = append(result, resolvedChannel{channelID: assignment.ChannelId, template: tmpl})
+	}
+	return result
+}
+
 // ApplyDesiredConfiguration walks a DesiredDeviceConfiguration and pushes all values to the device.
 // For selective per-channel application, use applyChannel directly from ApplicationLoop.
 func (s *Tr12Shim) ApplyDesiredConfiguration(desired *cddsdkgo.DesiredDeviceConfiguration) bool {
@@ -104,33 +128,32 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		result.StandardSettings = deviceSettings
 	}
 
-	// Channels — echo back the version the ARD actually applied per channel
+	// Channels — resolve assignments → templates, echo back the applied version per channel
 	var channels []cddsdkgo.ActualChannelConfiguration
-	for _, regCh := range registration.Channels {
-		chCfg := s.buildChannelConfig(regCh)
-		chCfg.Version = appliedChannelVersions[regCh.Id]
+	for _, rc := range resolveChannels(registration) {
+		chCfg := s.buildChannelConfig(rc.channelID, rc.template)
+		chCfg.Version = appliedChannelVersions[rc.channelID]
 		channels = append(channels, chCfg)
 	}
 	result.Channels = channels
 	return result
 }
 
-func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ActualChannelConfiguration {
-	chID := regCh.Id
+func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTemplate) cddsdkgo.ActualChannelConfiguration {
 	chCfg := cddsdkgo.ActualChannelConfiguration{
-		Id:    chID,
-		State: s.CB.GetChannelState(chID),
+		Id:    channelID,
+		State: s.CB.GetChannelState(channelID),
 	}
 
-	// Health — report device health for this channel
-	if health := s.CB.GetChannelHealth(chID); health != nil {
+	// Health
+	if health := s.CB.GetChannelHealth(channelID); health != nil {
 		chCfg.Health = health
 	}
 
 	// Check profiles first
 	hasProfile := false
-	if len(regCh.Profiles) > 0 {
-		if profileID, found := s.CB.GetChannelProfileValue(chID); found {
+	if len(tmpl.Profiles) > 0 {
+		if profileID, found := s.CB.GetChannelProfileValue(channelID); found {
 			chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
 				Profile: &cddsdkgo.Profile{
 					Profile: cddsdkgo.ChannelProfile{Id: profileID},
@@ -141,10 +164,10 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ActualCha
 	}
 
 	// Standard settings if no profile
-	if !hasProfile && len(regCh.Settings) > 0 {
+	if !hasProfile && len(tmpl.Settings) > 0 {
 		var kvList []cddsdkgo.IdAndValue
-		for _, setting := range regCh.Settings {
-			if val, found := s.CB.GetChannelUpdatedValue(chID, setting.Id); found {
+		for _, setting := range tmpl.Settings {
+			if val, found := s.CB.GetChannelUpdatedValue(channelID, setting.Id); found {
 				kvList = append(kvList, cddsdkgo.IdAndValue{
 					Id: setting.Id, Value: val,
 				})
@@ -160,13 +183,13 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ActualCha
 	}
 
 	// Protocol
-	proto := s.CB.GetChannelConnection(chID)
+	proto := s.CB.GetChannelConnection(channelID)
 	if proto != nil {
 		chCfg.Protocol = proto
 	}
 
 	// Thumbnail local path
-	if path, ok := s.CB.GetChannelThumbnailLocalPath(chID); ok && path != "" {
+	if path, ok := s.CB.GetChannelThumbnailLocalPath(channelID); ok && path != "" {
 		chCfg.ThumbnailLocalPath = &path
 	}
 
@@ -176,11 +199,11 @@ func (s *Tr12Shim) buildChannelConfig(regCh cddsdkgo.Channel) cddsdkgo.ActualCha
 // GetDeviceStatus builds the typed device status payload using registration channels.
 func (s *Tr12Shim) GetDeviceStatus(registration *cddsdkgo.DeviceRegistration) *cddsdkgo.DeviceStatus {
 	var channelStatuses []cddsdkgo.ChannelStatus
-	for _, regCh := range registration.Channels {
+	for _, rc := range resolveChannels(registration) {
 		channelStatuses = append(channelStatuses, cddsdkgo.ChannelStatus{
-			Id:     regCh.Id,
-			State:  s.CB.GetChannelState(regCh.Id),
-			Status: s.CB.GetChannelStatus(regCh.Id),
+			Id:     rc.channelID,
+			State:  s.CB.GetChannelState(rc.channelID),
+			Status: s.CB.GetChannelStatus(rc.channelID),
 		})
 	}
 	return &cddsdkgo.DeviceStatus{

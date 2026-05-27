@@ -65,31 +65,21 @@ func New(certs *credentials.Store, deviceType, hostID, pairingURL, authURL strin
 	}
 }
 
-// getSuccessData returns the CreatePairingCodeSuccessData if available.
-func (p *Pairing) getSuccessData() *tr12models.CreatePairingCodeSuccessData {
-	if p.PairResponse == nil || p.PairResponse.Result.Success == nil {
-		return nil
-	}
-	return &p.PairResponse.Result.Success.Success
-}
-
 // IsExpired returns true if the pairing code has expired.
 func (p *Pairing) IsExpired() bool {
-	sd := p.getSuccessData()
-	if sd == nil {
+	if p.PairResponse == nil {
 		return false
 	}
 	elapsed := time.Now().Unix() - p.StartTime
-	return float64(elapsed) > float64(sd.PairingTimeoutSeconds)
+	return float64(elapsed) > float64(p.PairResponse.PairingTimeoutSeconds)
 }
 
 // ExpiresIn returns seconds until the pairing code expires.
 func (p *Pairing) ExpiresIn() int {
-	sd := p.getSuccessData()
-	if sd == nil {
+	if p.PairResponse == nil {
 		return 0
 	}
-	remaining := float64(sd.PairingTimeoutSeconds) - float64(time.Now().Unix()-p.StartTime)
+	remaining := float64(p.PairResponse.PairingTimeoutSeconds) - float64(time.Now().Unix()-p.StartTime)
 	if remaining < 0 {
 		return 0
 	}
@@ -98,11 +88,10 @@ func (p *Pairing) ExpiresIn() int {
 
 // GetPairingCode returns the current pairing code.
 func (p *Pairing) GetPairingCode() string {
-	sd := p.getSuccessData()
-	if sd != nil {
-		return sd.PairingCode
+	if p.PairResponse == nil {
+		return ""
 	}
-	return ""
+	return p.PairResponse.PairingCode
 }
 
 // GetNewPairingCode requests a new pairing code from the host service.
@@ -125,46 +114,47 @@ func (p *Pairing) GetNewPairingCode() error {
 	defer resp.Body.Close()
 	respBody, _ := io.ReadAll(resp.Body)
 	log.Printf("[PAIR] Response status=%d body=%s", resp.StatusCode, string(respBody))
+
+	// 400 means the host rejected the request — parse the reason and return a descriptive error
+	if resp.StatusCode == http.StatusBadRequest {
+		var errResp struct {
+			Reason string `json:"reason"`
+		}
+		json.Unmarshal(respBody, &errResp)
+		switch tr12models.CreatePairingCodeFailureReason(errResp.Reason) {
+		case tr12models.CREATEPAIRINGCODEFAILUREREASON_VERSION_NOT_SUPPORTED:
+			return fmt.Errorf("TR-12 version not supported by this host")
+		case tr12models.CREATEPAIRINGCODEFAILUREREASON_DEVICE_TYPE_NOT_SUPPORTED:
+			return fmt.Errorf("device type %q is not supported by this host", p.DeviceType)
+		case tr12models.CREATEPAIRINGCODEFAILUREREASON_HOST_ID_MISMATCH:
+			return fmt.Errorf("host ID %q does not match this host service", p.HostID)
+		default:
+			return fmt.Errorf("pairing rejected by host: %s", errResp.Reason)
+		}
+	}
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("pairing API error - StatusCode: %d - Response: %s", resp.StatusCode, string(respBody))
 	}
+
 	var pairResp models.CreatePairingCodeResponseContent
 	if err := json.Unmarshal(respBody, &pairResp); err != nil {
 		return fmt.Errorf("pairing service response was not valid: %w", err)
 	}
 	p.PairResponse = &pairResp
 	p.StartTime = time.Now().Unix()
-
-	// Check for failure
-	if pairResp.Result.Failure != nil {
-		reason := pairResp.Result.Failure.Failure.Reason
-		switch reason {
-		case tr12models.CREATEPAIRINGCODEFAILUREREASON_VERSION_NOT_SUPPORTED:
-			return fmt.Errorf("TR-12 version not supported: %s", reason)
-		case tr12models.CREATEPAIRINGCODEFAILUREREASON_DEVICE_TYPE_NOT_SUPPORTED:
-			return fmt.Errorf("device type not supported: %s", reason)
-		case tr12models.CREATEPAIRINGCODEFAILUREREASON_HOST_ID_MISMATCH:
-			return fmt.Errorf("host ID does not match the host endpoint: %s", reason)
-		default:
-			return fmt.Errorf("unknown pairing failure: %s", reason)
-		}
-	}
-	if pairResp.Result.Success == nil {
-		return fmt.Errorf("unexpected pairing response: no success or failure data")
-	}
 	return nil
 }
 
 // AuthenticatePairingCode polls the auth endpoint. Returns true if claimed and certs written.
 func (p *Pairing) AuthenticatePairingCode() (bool, error) {
-	sd := p.getSuccessData()
-	if sd == nil {
+	if p.PairResponse == nil {
 		return false, fmt.Errorf("no pairing code to authenticate")
 	}
 	reqBody := models.AuthenticatePairingCodeRequestContent{
-		DeviceId:    sd.DeviceId,
-		PairingCode: sd.PairingCode,
-		AccessCode:  sd.AccessCode,
+		DeviceId:    p.PairResponse.DeviceId,
+		PairingCode: p.PairResponse.PairingCode,
+		AccessCode:  p.PairResponse.AccessCode,
 	}
 	body, _ := json.Marshal(reqBody)
 	log.Printf("[AUTH] POST %s/authenticate  body=%s", p.AuthURL, string(body))
@@ -191,8 +181,8 @@ func (p *Pairing) AuthenticatePairingCode() (bool, error) {
 	case tr12models.PAIRINGCODEAUTHORIZEDSTATUS_STANDBY:
 		return false, nil
 	case tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED:
-		log.Printf("[AUTH] Device CLAIMED — writing certs to filesystem for deviceId=%s", sd.DeviceId)
-		if err := p.Certs.WriteToFilesystem(sd.DeviceId, &authResp); err != nil {
+		log.Printf("[AUTH] Device CLAIMED — writing certs to filesystem for deviceId=%s", p.PairResponse.DeviceId)
+		if err := p.Certs.WriteToFilesystem(p.PairResponse.DeviceId, &authResp); err != nil {
 			return false, fmt.Errorf("unable to write certs to disk: %w", err)
 		}
 		return true, nil

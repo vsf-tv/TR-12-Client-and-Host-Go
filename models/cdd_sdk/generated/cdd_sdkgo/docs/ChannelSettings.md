@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**StandardSettings** | [**[]IdAndValue**](IdAndValue.md) |  | 
+**StandardSettings** | [**[]IdAndValue**](IdAndValue.md) | See limits.smithy: MAX_SETTINGS_PER_SCOPE | 
 **Profile** | [**ChannelProfile**](ChannelProfile.md) |  | 
 
 ## Methods

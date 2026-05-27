@@ -12,32 +12,9 @@
       }
     }
   ],
-  "channels": [
+  "channelTemplates": [
     {
-      "name": "Channel 1",
-      "id": "CH01",
-      "channelType": "SOURCE",
-      "protocols": ["SRT_CALLER", "SRT_LISTENER"],
-      "settings": [
-        { "name": "resolution", "description": "Output video dimensions.", "id": "RS01",
-          "constraint": { "enums": { "values": ["1920x1080","1280x720","640x480"], "defaultValue": "1920x1080" } } },
-        { "name": "framerate", "description": "Frames per second.", "id": "FR01",
-          "constraint": { "enums": { "values": ["30","60","25"], "defaultValue": "30" } } },
-        { "name": "max_bitrate", "description": "Maximum data rate (Kbps).", "id": "MB01",
-          "constraint": { "ranges": { "minimum": 5000, "maximum": 50000, "defaultValue": 10000 } } },
-        { "name": "rate_control", "description": "Bitrate control method.", "id": "RC01",
-          "constraint": { "enums": { "values": ["CBR","VBR"], "defaultValue": "CBR" } } },
-        { "name": "codec", "description": "Video compression standard.", "id": "CO01",
-          "constraint": { "enums": { "values": ["H.264","H.265"], "defaultValue": "H.264" } } },
-        { "name": "gop_size", "description": "I-frame interval in frames.", "id": "GP01",
-          "constraint": { "enums": { "values": ["30","60","90"], "defaultValue": "60" } } },
-        { "name": "selected_input", "description": "Hardware input source.", "id": "IN01",
-          "constraint": { "enums": { "values": ["SDI1","HDMI1"], "defaultValue": "SDI1" } } }
-      ]
-    },
-    {
-      "name": "Channel 2",
-      "id": "CH02",
+      "id": "source_encoder",
       "channelType": "SOURCE",
       "protocols": ["SRT_CALLER", "SRT_LISTENER"],
       "settings": [
@@ -57,5 +34,9 @@
           "constraint": { "enums": { "values": ["SDI1","HDMI1"], "defaultValue": "SDI1" } } }
       ]
     }
+  ],
+  "channelAssignments": [
+    { "channelId": "CH01", "name": "Channel 1", "templateId": "source_encoder" },
+    { "channelId": "CH02", "name": "Channel 2", "templateId": "source_encoder" }
   ]
 }

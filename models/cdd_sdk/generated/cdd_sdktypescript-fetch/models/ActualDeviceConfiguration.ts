@@ -49,13 +49,13 @@ export interface ActualDeviceConfiguration {
      */
     version: string;
     /**
-     * 
+     * See limits.smithy: MAX_CHANNELS
      * @type {Array<ActualChannelConfiguration>}
      * @memberof ActualDeviceConfiguration
      */
     channels: Array<ActualChannelConfiguration>;
     /**
-     * 
+     * See limits.smithy: MAX_SETTINGS_PER_SCOPE
      * @type {Array<IdAndValue>}
      * @memberof ActualDeviceConfiguration
      */

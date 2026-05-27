@@ -5,8 +5,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Version** | **string** |  | 
-**Channels** | [**[]ActualChannelConfiguration**](ActualChannelConfiguration.md) |  | 
-**StandardSettings** | Pointer to [**[]IdAndValue**](IdAndValue.md) |  | [optional] 
+**Channels** | [**[]ActualChannelConfiguration**](ActualChannelConfiguration.md) | See limits.smithy: MAX_CHANNELS | 
+**StandardSettings** | Pointer to [**[]IdAndValue**](IdAndValue.md) | See limits.smithy: MAX_SETTINGS_PER_SCOPE | [optional] 
 **Health** | Pointer to [**Health**](Health.md) |  | [optional] 
 
 ## Methods

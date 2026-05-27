@@ -55,7 +55,7 @@ func (s *ThumbnailService) RequestThumbnail(deviceID, channelID string) error {
 	maxSize := float32(500)
 	headers := map[string]string{"Content-Type": "image/jpeg"}
 	sub := models.RequestThumbnailRequestContent{
-		Requests: map[string]models.ThumbnailRequest{
+		Requests: map[string]models.ThumbnailSubscription{
 			channelID: {
 				PeriodSeconds: &period,
 				ExpiresAt:     &expiry,

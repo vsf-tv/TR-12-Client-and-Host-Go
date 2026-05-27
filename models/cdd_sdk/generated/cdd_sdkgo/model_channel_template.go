@@ -16,67 +16,44 @@ import (
 	"fmt"
 )
 
-// checks if the Channel type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &Channel{}
+// checks if the ChannelTemplate type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &ChannelTemplate{}
 
-// Channel struct for Channel
-type Channel struct {
-	Name string `json:"name"`
+// ChannelTemplate A channel template defines the capabilities shared by one or more channels.
+type ChannelTemplate struct {
 	Id string `json:"id"`
 	ChannelType ChannelType `json:"channelType"`
+	// Settings this channel type supports.
 	Settings []Setting `json:"settings,omitempty"`
+	// Profiles this channel type supports (mutually exclusive with settings in config).
 	Profiles []ProfileDefinition `json:"profiles,omitempty"`
+	// Transport protocols this channel type can use.
 	Protocols []TransportProtocolName `json:"protocols,omitempty"`
 }
 
-type _Channel Channel
+type _ChannelTemplate ChannelTemplate
 
-// NewChannel instantiates a new Channel object
+// NewChannelTemplate instantiates a new ChannelTemplate object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewChannel(name string, id string, channelType ChannelType) *Channel {
-	this := Channel{}
-	this.Name = name
+func NewChannelTemplate(id string, channelType ChannelType) *ChannelTemplate {
+	this := ChannelTemplate{}
 	this.Id = id
 	this.ChannelType = channelType
 	return &this
 }
 
-// NewChannelWithDefaults instantiates a new Channel object
+// NewChannelTemplateWithDefaults instantiates a new ChannelTemplate object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewChannelWithDefaults() *Channel {
-	this := Channel{}
+func NewChannelTemplateWithDefaults() *ChannelTemplate {
+	this := ChannelTemplate{}
 	return &this
 }
 
-// GetName returns the Name field value
-func (o *Channel) GetName() string {
-	if o == nil {
-		var ret string
-		return ret
-	}
-
-	return o.Name
-}
-
-// GetNameOk returns a tuple with the Name field value
-// and a boolean to check if the value has been set.
-func (o *Channel) GetNameOk() (*string, bool) {
-	if o == nil {
-		return nil, false
-	}
-	return &o.Name, true
-}
-
-// SetName sets field value
-func (o *Channel) SetName(v string) {
-	o.Name = v
-}
-
 // GetId returns the Id field value
-func (o *Channel) GetId() string {
+func (o *ChannelTemplate) GetId() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -87,7 +64,7 @@ func (o *Channel) GetId() string {
 
 // GetIdOk returns a tuple with the Id field value
 // and a boolean to check if the value has been set.
-func (o *Channel) GetIdOk() (*string, bool) {
+func (o *ChannelTemplate) GetIdOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -95,12 +72,12 @@ func (o *Channel) GetIdOk() (*string, bool) {
 }
 
 // SetId sets field value
-func (o *Channel) SetId(v string) {
+func (o *ChannelTemplate) SetId(v string) {
 	o.Id = v
 }
 
 // GetChannelType returns the ChannelType field value
-func (o *Channel) GetChannelType() ChannelType {
+func (o *ChannelTemplate) GetChannelType() ChannelType {
 	if o == nil {
 		var ret ChannelType
 		return ret
@@ -111,7 +88,7 @@ func (o *Channel) GetChannelType() ChannelType {
 
 // GetChannelTypeOk returns a tuple with the ChannelType field value
 // and a boolean to check if the value has been set.
-func (o *Channel) GetChannelTypeOk() (*ChannelType, bool) {
+func (o *ChannelTemplate) GetChannelTypeOk() (*ChannelType, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -119,12 +96,12 @@ func (o *Channel) GetChannelTypeOk() (*ChannelType, bool) {
 }
 
 // SetChannelType sets field value
-func (o *Channel) SetChannelType(v ChannelType) {
+func (o *ChannelTemplate) SetChannelType(v ChannelType) {
 	o.ChannelType = v
 }
 
 // GetSettings returns the Settings field value if set, zero value otherwise.
-func (o *Channel) GetSettings() []Setting {
+func (o *ChannelTemplate) GetSettings() []Setting {
 	if o == nil || IsNil(o.Settings) {
 		var ret []Setting
 		return ret
@@ -134,7 +111,7 @@ func (o *Channel) GetSettings() []Setting {
 
 // GetSettingsOk returns a tuple with the Settings field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetSettingsOk() ([]Setting, bool) {
+func (o *ChannelTemplate) GetSettingsOk() ([]Setting, bool) {
 	if o == nil || IsNil(o.Settings) {
 		return nil, false
 	}
@@ -142,7 +119,7 @@ func (o *Channel) GetSettingsOk() ([]Setting, bool) {
 }
 
 // HasSettings returns a boolean if a field has been set.
-func (o *Channel) HasSettings() bool {
+func (o *ChannelTemplate) HasSettings() bool {
 	if o != nil && !IsNil(o.Settings) {
 		return true
 	}
@@ -151,12 +128,12 @@ func (o *Channel) HasSettings() bool {
 }
 
 // SetSettings gets a reference to the given []Setting and assigns it to the Settings field.
-func (o *Channel) SetSettings(v []Setting) {
+func (o *ChannelTemplate) SetSettings(v []Setting) {
 	o.Settings = v
 }
 
 // GetProfiles returns the Profiles field value if set, zero value otherwise.
-func (o *Channel) GetProfiles() []ProfileDefinition {
+func (o *ChannelTemplate) GetProfiles() []ProfileDefinition {
 	if o == nil || IsNil(o.Profiles) {
 		var ret []ProfileDefinition
 		return ret
@@ -166,7 +143,7 @@ func (o *Channel) GetProfiles() []ProfileDefinition {
 
 // GetProfilesOk returns a tuple with the Profiles field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetProfilesOk() ([]ProfileDefinition, bool) {
+func (o *ChannelTemplate) GetProfilesOk() ([]ProfileDefinition, bool) {
 	if o == nil || IsNil(o.Profiles) {
 		return nil, false
 	}
@@ -174,7 +151,7 @@ func (o *Channel) GetProfilesOk() ([]ProfileDefinition, bool) {
 }
 
 // HasProfiles returns a boolean if a field has been set.
-func (o *Channel) HasProfiles() bool {
+func (o *ChannelTemplate) HasProfiles() bool {
 	if o != nil && !IsNil(o.Profiles) {
 		return true
 	}
@@ -183,12 +160,12 @@ func (o *Channel) HasProfiles() bool {
 }
 
 // SetProfiles gets a reference to the given []ProfileDefinition and assigns it to the Profiles field.
-func (o *Channel) SetProfiles(v []ProfileDefinition) {
+func (o *ChannelTemplate) SetProfiles(v []ProfileDefinition) {
 	o.Profiles = v
 }
 
 // GetProtocols returns the Protocols field value if set, zero value otherwise.
-func (o *Channel) GetProtocols() []TransportProtocolName {
+func (o *ChannelTemplate) GetProtocols() []TransportProtocolName {
 	if o == nil || IsNil(o.Protocols) {
 		var ret []TransportProtocolName
 		return ret
@@ -198,7 +175,7 @@ func (o *Channel) GetProtocols() []TransportProtocolName {
 
 // GetProtocolsOk returns a tuple with the Protocols field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Channel) GetProtocolsOk() ([]TransportProtocolName, bool) {
+func (o *ChannelTemplate) GetProtocolsOk() ([]TransportProtocolName, bool) {
 	if o == nil || IsNil(o.Protocols) {
 		return nil, false
 	}
@@ -206,7 +183,7 @@ func (o *Channel) GetProtocolsOk() ([]TransportProtocolName, bool) {
 }
 
 // HasProtocols returns a boolean if a field has been set.
-func (o *Channel) HasProtocols() bool {
+func (o *ChannelTemplate) HasProtocols() bool {
 	if o != nil && !IsNil(o.Protocols) {
 		return true
 	}
@@ -215,11 +192,11 @@ func (o *Channel) HasProtocols() bool {
 }
 
 // SetProtocols gets a reference to the given []TransportProtocolName and assigns it to the Protocols field.
-func (o *Channel) SetProtocols(v []TransportProtocolName) {
+func (o *ChannelTemplate) SetProtocols(v []TransportProtocolName) {
 	o.Protocols = v
 }
 
-func (o Channel) MarshalJSON() ([]byte, error) {
+func (o ChannelTemplate) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -227,9 +204,8 @@ func (o Channel) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o Channel) ToMap() (map[string]interface{}, error) {
+func (o ChannelTemplate) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["name"] = o.Name
 	toSerialize["id"] = o.Id
 	toSerialize["channelType"] = o.ChannelType
 	if !IsNil(o.Settings) {
@@ -244,12 +220,11 @@ func (o Channel) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *Channel) UnmarshalJSON(data []byte) (err error) {
+func (o *ChannelTemplate) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
 	requiredProperties := []string{
-		"name",
 		"id",
 		"channelType",
 	}
@@ -268,53 +243,53 @@ func (o *Channel) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varChannel := _Channel{}
+	varChannelTemplate := _ChannelTemplate{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varChannel)
+	err = decoder.Decode(&varChannelTemplate)
 
 	if err != nil {
 		return err
 	}
 
-	*o = Channel(varChannel)
+	*o = ChannelTemplate(varChannelTemplate)
 
 	return err
 }
 
-type NullableChannel struct {
-	value *Channel
+type NullableChannelTemplate struct {
+	value *ChannelTemplate
 	isSet bool
 }
 
-func (v NullableChannel) Get() *Channel {
+func (v NullableChannelTemplate) Get() *ChannelTemplate {
 	return v.value
 }
 
-func (v *NullableChannel) Set(val *Channel) {
+func (v *NullableChannelTemplate) Set(val *ChannelTemplate) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableChannel) IsSet() bool {
+func (v NullableChannelTemplate) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableChannel) Unset() {
+func (v *NullableChannelTemplate) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableChannel(val *Channel) *NullableChannel {
-	return &NullableChannel{value: val, isSet: true}
+func NewNullableChannelTemplate(val *ChannelTemplate) *NullableChannelTemplate {
+	return &NullableChannelTemplate{value: val, isSet: true}
 }
 
-func (v NullableChannel) MarshalJSON() ([]byte, error) {
+func (v NullableChannelTemplate) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableChannel) UnmarshalJSON(src []byte) error {
+func (v *NullableChannelTemplate) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
