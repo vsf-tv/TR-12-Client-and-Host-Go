@@ -48,6 +48,12 @@ If you already cloned without `--recurse-submodules`:
 git submodule update --init --recursive
 ```
 
+Updates should obtain the updated, underlying TR12Models  `--recurse-submodules`:
+This ensures the client update pulls in the latest TR12 models.
+```bash
+git pull --recurse-submodules
+```
+
 Without the submodule, the Go builds will fail because both `client/` and `host/` import types from `models/TR-12-Models/generated/tr12go/`.
 
 ## Building
