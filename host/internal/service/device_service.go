@@ -119,10 +119,17 @@ func (s *DeviceService) Authenticate(req models.AuthenticatePairingCodeRequestCo
 		return nil, err
 	}
 	if device == nil {
-		return nil, ErrNotFound
+		// Return STANDBY rather than 404 — the spec does not define an error case for
+		// AuthenticatePairingCode. Returning not-found would let callers enumerate valid device IDs.
+		resp := tr12models.NewAuthenticatePairingCodeResponseContent(models.AuthStatusSTANDBY)
+		return resp, nil
 	}
 	if device.PairingCode != req.PairingCode || device.AccessCode != req.AccessCode {
-		return nil, ErrUnauthorized
+		// Return STANDBY rather than an error — the spec does not define an error case for
+		// AuthenticatePairingCode. Returning STANDBY for bad credentials prevents callers
+		// from distinguishing a valid-but-unclaimed device from garbage credentials.
+		resp := tr12models.NewAuthenticatePairingCodeResponseContent(models.AuthStatusSTANDBY)
+		return resp, nil
 	}
 
 	// Check if pairing expired
@@ -724,21 +731,17 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 		}
 
 		if len(cfgCh.ChannelSettings) > 0 {
-			// ChannelSettings is a union: either {"standardSettings": {"standardSettings": [...]}} or {"profile": {"profile": {"id": "..."}}}
+			// ChannelSettings is a union: either {"standardSettings": [...]} or {"profile": {"id": "..."}}
 			var settings struct {
-				StandardSettings *struct {
-					StandardSettings []struct{ Id string `json:"id"` } `json:"standardSettings,omitempty"`
-				} `json:"standardSettings,omitempty"`
-				Profile *struct {
-					Profile struct{ ID string `json:"id"` } `json:"profile"`
-				} `json:"profile,omitempty"`
+				StandardSettings []struct{ Id string `json:"id"` } `json:"standardSettings,omitempty"`
+				Profile          *struct{ ID string `json:"id"` }  `json:"profile,omitempty"`
 			}
 			json.Unmarshal(cfgCh.ChannelSettings, &settings)
 
 			if settings.Profile != nil {
 				validProfile := false
 				for _, p := range regCh.Profiles {
-					if p.ID == settings.Profile.Profile.ID {
+					if p.ID == settings.Profile.ID {
 						validProfile = true
 						break
 					}
@@ -748,15 +751,15 @@ func validateConfiguration(cfgJSON, regJSON json.RawMessage) error {
 					for i, p := range regCh.Profiles {
 						validIDs[i] = p.ID
 					}
-					return fmt.Errorf("unknown profile ID %q for channel %q, valid: %v", settings.Profile.Profile.ID, cfgCh.ID, validIDs)
+					return fmt.Errorf("unknown profile ID %q for channel %q, valid: %v", settings.Profile.ID, cfgCh.ID, validIDs)
 				}
 			}
-			if settings.StandardSettings != nil && len(settings.StandardSettings.StandardSettings) > 0 {
+			if len(settings.StandardSettings) > 0 {
 				regSettings := map[string]bool{}
 				for _, s := range regCh.Settings {
 					regSettings[s.ID] = true
 				}
-				for _, s := range settings.StandardSettings.StandardSettings {
+				for _, s := range settings.StandardSettings {
 					if !regSettings[s.Id] {
 						return fmt.Errorf("unknown setting key %q for channel %q", s.Id, cfgCh.ID)
 					}

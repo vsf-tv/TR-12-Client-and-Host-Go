@@ -213,7 +213,11 @@ func (s *CddSdk) reportRegistration() {
 		s.logger.Errorf("Can't get host settings for registration: %v", err)
 		return
 	}
-	// Wrap registration in the envelope
+	if s.registration == nil {
+		s.logger.Error("No registration stored — cannot publish")
+		return
+	}
+	// s.registration is already a validated typed DeviceRegistration — publish directly.
 	envelope := map[string]interface{}{
 		"deviceRegistration": s.registration,
 	}
@@ -292,12 +296,16 @@ func (s *CddSdk) updateCertsCallback(_ mqtt.Client, msg mqtt.Message) {
 		return
 	}
 	if updated {
-		hostID := s.hostID
-		registration := s.registration
+		// Save registration before Disconnect clears it via reset().
+		// Snapshot hostID too since reset() clears it.
+		savedRegistration := s.registration
+		savedHostID := s.hostID
 		s.logger.Info("[CERTS] Cert changed — reconnecting with new credentials")
 		s.Disconnect()
 		time.Sleep(1 * time.Second)
-		s.Connect(registration, hostID)
+		// Re-connect using the public API method — it acquires apiLock internally.
+		// The MQTT callback does not hold apiLock so there is no deadlock risk here.
+		s.Connect(savedRegistration, savedHostID)
 	} else {
 		s.logger.Info("[CERTS] Device cert not changed. No action taken.")
 	}

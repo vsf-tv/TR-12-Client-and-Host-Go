@@ -46,7 +46,7 @@ type CddSdk struct {
 	thumbnailManager   *thumbnails.Manager
 	state              string
 	hostID             string
-	registration       map[string]interface{}
+	registration       *cddsdkgo.DeviceRegistration
 	configPayload      *cddsdkgo.DesiredDeviceConfiguration // deserialized MQTT config payload
 	actualConfig       atomic.Pointer[cddsdkgo.ActualDeviceConfiguration]
 	updateID           *utils.UpdateID
@@ -130,7 +130,7 @@ func (s *CddSdk) initThrottles(intervalSeconds int) {
 	s.configThrottle = utils.NewThrottle(intervalSeconds)
 }
 
-func (s *CddSdk) initializeHost(registration map[string]interface{}, hostID string) error {
+func (s *CddSdk) initializeHost(registration *cddsdkgo.DeviceRegistration, hostID string) error {
 	s.logger.Infof("initializeHost: loading host config for %s from basePath=%s", hostID, s.basePath)
 	s.registration = registration
 	hostConfig, err := utils.GetHostConfiguration(hostID, s.basePath)

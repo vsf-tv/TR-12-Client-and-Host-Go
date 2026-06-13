@@ -225,25 +225,35 @@ func TestAuthenticate_WrongCredentials(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, _, _ := doPair(t, svc)
 
-	_, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
+	// Per spec, AuthenticatePairingCode has no error case — wrong credentials
+	// return STANDBY rather than an error, to prevent device ID enumeration.
+	resp, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    deviceID,
 		PairingCode: "WRONG1",
 		AccessCode:  "wrong",
 	})
-	if err != ErrUnauthorized {
-		t.Fatalf("expected ErrUnauthorized, got %v", err)
+	if err != nil {
+		t.Fatalf("expected no error for wrong credentials, got %v", err)
+	}
+	if resp.GetStatus() != models.AuthStatusSTANDBY {
+		t.Fatalf("expected STANDBY for wrong credentials, got %v", resp.GetStatus())
 	}
 }
 
 func TestAuthenticate_NotFound(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	_, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
+	// Per spec, AuthenticatePairingCode has no error case — unknown device ID
+	// returns STANDBY rather than 404, to prevent device ID enumeration.
+	resp, err := svc.Authenticate(models.AuthenticatePairingCodeRequestContent{
 		DeviceId:    "nonexistent",
 		PairingCode: "ABC123",
 		AccessCode:  "secret",
 	})
-	if err != ErrNotFound {
-		t.Fatalf("expected ErrNotFound, got %v", err)
+	if err != nil {
+		t.Fatalf("expected no error for unknown device ID, got %v", err)
+	}
+	if resp.GetStatus() != models.AuthStatusSTANDBY {
+		t.Fatalf("expected STANDBY for unknown device ID, got %v", resp.GetStatus())
 	}
 }
 
@@ -347,7 +357,7 @@ func TestUpdateConfiguration_Success(t *testing.T) {
 	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
 	// Set registration so validation passes
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}],"channelAssignments":[{"channelId":"ch1","name":"Channel 1","templateId":"tmpl1"}]}`)
 	store.UpdateDeviceRegistration(deviceID, reg)
 
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
@@ -370,7 +380,7 @@ func TestUpdateConfiguration_ValidationError(t *testing.T) {
 	deviceID, pc, _ := doPair(t, svc)
 	svc.Claim(pc, "acc-1", 730, "", "", 365)
 
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Channel 1"}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE"}],"channelAssignments":[{"channelId":"ch1","name":"Channel 1","templateId":"tmpl1"}]}`)
 	store.UpdateDeviceRegistration(deviceID, reg)
 
 	// Unknown channel ID
@@ -506,15 +516,15 @@ func TestRotateCredentials_NotActive(t *testing.T) {
 // --- validateConfiguration ---
 
 func TestValidateConfiguration_ValidConfig(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","channelSettings":{"standardSettings":{"standardSettings":[{"id":"brightness","value":"low"}]}}}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","channelSettings":{"standardSettings":[{"id":"brightness","value":"low"}]}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
 	}
 }
 
 func TestValidateConfiguration_UnknownChannel(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE"}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch-bad"}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown channel ID") {
@@ -523,8 +533,8 @@ func TestValidateConfiguration_UnknownChannel(t *testing.T) {
 }
 
 func TestValidateConfiguration_UnknownSettingKey(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}]}]}`)
-	cfg := json.RawMessage(`{"channels":[{"id":"ch1","channelSettings":{"standardSettings":{"standardSettings":[{"id":"contrast","value":"50"}]}}}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
+	cfg := json.RawMessage(`{"channels":[{"id":"ch1","channelSettings":{"standardSettings":[{"id":"contrast","value":"50"}]}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown setting key") {
 		t.Fatalf("expected unknown setting key error, got %v", err)
@@ -532,7 +542,7 @@ func TestValidateConfiguration_UnknownSettingKey(t *testing.T) {
 }
 
 func TestValidateConfiguration_UnknownProfile(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","profiles":[{"id":"prof1","name":"P1","description":"P1"}]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","profiles":[{"id":"prof1","name":"P1","description":"P1"}]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","channelSettings":{"profile":{"id":"prof-bad"}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown profile ID") {
@@ -541,7 +551,7 @@ func TestValidateConfiguration_UnknownProfile(t *testing.T) {
 }
 
 func TestValidateConfiguration_InvalidChannelState(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE"}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"BROKEN"}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "invalid channel state") {
@@ -550,7 +560,7 @@ func TestValidateConfiguration_InvalidChannelState(t *testing.T) {
 }
 
 func TestValidateConfiguration_DeviceLevelSettingValid(t *testing.T) {
-	reg := json.RawMessage(`{"settings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	reg := json.RawMessage(`{"settings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE"}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"standardSettings":[{"id":"clock_source","value":"PTP"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
@@ -558,7 +568,7 @@ func TestValidateConfiguration_DeviceLevelSettingValid(t *testing.T) {
 }
 
 func TestValidateConfiguration_DeviceLevelSettingUnknown(t *testing.T) {
-	reg := json.RawMessage(`{"settings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channels":[{"id":"ch1","name":"Ch1"}]}`)
+	reg := json.RawMessage(`{"settings":[{"id":"clock_source","name":"Clock","description":"Clock","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE"}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"standardSettings":[{"id":"bogus_setting","value":"foo"}],"channels":[{"id":"ch1","state":"ACTIVE"}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown device-level setting key") {
@@ -570,7 +580,7 @@ func TestValidateConfiguration_DeviceLevelSettingUnknown(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionValid(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_CALLER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_CALLER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
@@ -578,7 +588,7 @@ func TestValidateConfiguration_ConnectionValid(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionUnknownProtocolType(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_CALLER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_CALLER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"rtmpCaller":{"address":"1.2.3.4"}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "unknown transport protocol type") {
@@ -587,7 +597,7 @@ func TestValidateConfiguration_ConnectionUnknownProtocolType(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionProtocolNotRegistered(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_LISTENER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_LISTENER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200}}}]}`)
 	err := validateConfiguration(cfg, reg)
 	if err == nil || !strings.Contains(err.Error(), "not supported by channel") {
@@ -596,7 +606,7 @@ func TestValidateConfiguration_ConnectionProtocolNotRegistered(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionUnknownField(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_CALLER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_CALLER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	// "address" and "ports" are wrong — "ports" should be "port"
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtCaller":{"address":"1.2.3.4","ports":9000,"minimumLatencyMilliseconds":200}}}]}`)
 	err := validateConfiguration(cfg, reg)
@@ -609,7 +619,7 @@ func TestValidateConfiguration_ConnectionUnknownField(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionMissingRequiredField(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_CALLER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_CALLER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	// Missing "address" which is required for srtCaller
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtCaller":{"port":9000,"minimumLatencyMilliseconds":200}}}]}`)
 	err := validateConfiguration(cfg, reg)
@@ -622,7 +632,7 @@ func TestValidateConfiguration_ConnectionMissingRequiredField(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionSrtListenerValid(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_LISTENER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_LISTENER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtListener":{"port":9000,"minimumLatencyMilliseconds":200}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid, got %v", err)
@@ -630,7 +640,7 @@ func TestValidateConfiguration_ConnectionSrtListenerValid(t *testing.T) {
 }
 
 func TestValidateConfiguration_ConnectionWithOptionalFields(t *testing.T) {
-	reg := json.RawMessage(`{"channels":[{"id":"ch1","name":"Ch1","protocols":["SRT_CALLER"]}]}`)
+	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_CALLER"]}],"channelAssignments":[{"channelId":"ch1","name":"Ch1","templateId":"tmpl1"}]}`)
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200,"streamId":"test123"}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid with optional streamId, got %v", err)

@@ -18,7 +18,8 @@ service CddService {
         Deprovision,
         GetConfiguration,
         ReportStatus,
-        ReportActualConfiguration
+        ReportActualConfiguration,
+        Register
     ]
 }
 
@@ -69,6 +70,13 @@ operation ReportActualConfiguration {
     output: BaseResponse
 }
 
+// PUT /register - re-publish registration while connected; only profile changes permitted
+@http(method: "PUT", uri: "/register")
+operation Register {
+    input: RegisterInput
+    output: BaseResponse
+}
+
 // Input structures
 structure ConnectInput {
     @required
@@ -93,6 +101,11 @@ structure ReportStatusInput {
 structure ReportActualConfigurationInput {
     @required
     configuration: ActualDeviceConfiguration
+}
+
+structure RegisterInput {
+    @required
+    registration: DeviceRegistration
 }
 
 // Output structures

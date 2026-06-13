@@ -61,17 +61,22 @@ func (s *Server) setupRoutes() {
 	s.engine.PUT("/report_actual_configuration", s.reportConfiguration)
 	s.engine.GET("/get_configuration", s.getConfiguration)
 	s.engine.PUT("/deprovision", s.deprovision)
+	s.engine.PUT("/register", s.register)
 }
 
 // --- Route handlers ---
 
 type connectRequest struct {
-	HostID       string                 `json:"hostId"`
-	HostIDSnake  string                 `json:"host_id"`
-	Registration map[string]interface{} `json:"registration"`
+	HostID       string                      `json:"hostId"`
+	HostIDSnake  string                      `json:"host_id"`
+	Registration *cddsdkgo.DeviceRegistration `json:"registration"`
 }
 
 func (s *Server) connect(c *gin.Context) {
+	// Deserialise registration into the typed DeviceRegistration struct.
+	// This validates structure at the HTTP boundary — unknown fields are
+	// ignored by encoding/json, but required fields and type mismatches
+	// are caught here before reaching the SDK or MQTT.
 	var req connectRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request body is required"})
@@ -83,6 +88,10 @@ func (s *Server) connect(c *gin.Context) {
 	}
 	if hostID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "host_id is required"})
+		return
+	}
+	if req.Registration == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "registration is required"})
 		return
 	}
 	resp := s.sdk.Connect(req.Registration, hostID)
@@ -100,13 +109,16 @@ func (s *Server) getState(c *gin.Context) {
 }
 
 type reportStatusRequest struct {
-	Status map[string]interface{} `json:"status"`
+	Status *cddsdkgo.DeviceStatus `json:"status"`
 }
 
 func (s *Server) reportStatus(c *gin.Context) {
+	// Deserialise directly into the typed DeviceStatus struct.
+	// This validates structure at the HTTP boundary — malformed payloads
+	// are rejected with 400 before they can reach the MQTT publish path.
 	var req reportStatusRequest
 	if err := c.ShouldBindJSON(&req); err != nil || req.Status == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "status is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "status is required and must be a valid DeviceStatus"})
 		return
 	}
 	resp := s.sdk.ReportStatus(req.Status)
@@ -152,5 +164,20 @@ func (s *Server) deprovision(c *gin.Context) {
 	forceStr := c.Query("force")
 	force := strings.EqualFold(forceStr, "true") || forceStr == "1"
 	resp := s.sdk.Deprovision(hostID, force)
+	c.JSON(http.StatusOK, resp)
+}
+
+type registerRequest struct {
+	Registration *cddsdkgo.DeviceRegistration `json:"registration"`
+}
+
+func (s *Server) register(c *gin.Context) {
+	// Deserialise into typed DeviceRegistration — validates structure at the HTTP boundary.
+	var req registerRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.Registration == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "registration is required and must be a valid DeviceRegistration"})
+		return
+	}
+	resp := s.sdk.Register(req.Registration)
 	c.JSON(http.StatusOK, resp)
 }

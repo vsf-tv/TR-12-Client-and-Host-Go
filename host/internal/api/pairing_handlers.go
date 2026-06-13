@@ -67,14 +67,6 @@ func (h *PairingHandlers) Authenticate(c *gin.Context) {
 	resp, err := h.deviceSvc.Authenticate(req)
 	if err != nil {
 		log.Printf("[HOST /authenticate] Error: %v", err)
-		if err == service.ErrNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "device not found", "code": 404})
-			return
-		}
-		if err == service.ErrUnauthorized {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials", "code": 401})
-			return
-		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "code": 500})
 		return
 	}

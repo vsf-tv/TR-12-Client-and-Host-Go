@@ -39,12 +39,22 @@ var _ DeviceCallbacks = (*ArdCallbacks)(nil)
 
 func (cb *ArdCallbacks) UpdateDeviceKeyValue(key, value string) {
 	fmt.Printf("[UPDATE] Device setting: %s = %s\n", key, value)
-	cb.Encoder.SetDeviceSetting(key, value)
+	if errMsg := cb.Encoder.SetDeviceSetting(key, value); errMsg != "" {
+		fmt.Printf("[UPDATE] Device setting FAILED: %s\n", errMsg)
+		// Real integrators: set device-level health here via your own health tracking.
+		// The ARD surfaces this via GetDeviceHealth() → actual_configuration.health.
+	}
 }
 
 func (cb *ArdCallbacks) UpdateChannelSettings(channelID, key, value string) {
 	fmt.Printf("[UPDATE] Channel %s setting: %s = %s\n", channelID, key, value)
-	cb.Encoder.SetChannelSetting(channelID, key, value)
+	// Pattern for device integrators: call your native API, check the result.
+	// On failure: accumulate the error and mark the channel DEGRADED.
+	// The ARD reports this via GetChannelHealth() → actual_configuration.channels[n].health.
+	if errMsg := cb.Encoder.SetChannelSetting(channelID, key, value); errMsg != "" {
+		fmt.Printf("[UPDATE] Channel setting FAILED: %s\n", errMsg)
+		cb.Encoder.SetChannelHealth(channelID, "DEGRADED", []string{errMsg})
+	}
 }
 
 func (cb *ArdCallbacks) UpdateChannelProfile(channelID, profileID string) {
@@ -58,7 +68,12 @@ func (cb *ArdCallbacks) UpdateChannelConnection(channelID string, protocol *cdds
 
 func (cb *ArdCallbacks) UpdateChannelState(channelID string, state cddsdkgo.ChannelState) {
 	fmt.Printf("[UPDATE] Channel %s state: %s\n", channelID, state)
-	cb.Encoder.HandleUpdateState(channelID, state)
+	// Pattern for device integrators: call your native API to start/stop the channel.
+	// On failure: mark the channel DEGRADED so the host can surface the error.
+	if errMsg := cb.Encoder.HandleUpdateState(channelID, state); errMsg != "" {
+		fmt.Printf("[UPDATE] Channel state change FAILED: %s\n", errMsg)
+		cb.Encoder.SetChannelHealth(channelID, "DEGRADED", []string{errMsg})
+	}
 }
 
 // --- Get (read-back) callbacks ---

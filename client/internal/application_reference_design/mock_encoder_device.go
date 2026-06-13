@@ -46,16 +46,42 @@ type Encoder struct {
 	channels        map[string]*channelState   // per-channel process + SRT state
 	deviceSettings  map[string]string
 	channelSettings map[string]map[string]string // channelID -> key -> value
+
+	// simulateFailureKeys contains setting keys (and the special key "__start_stop__")
+	// that will fail when applied. This is used exclusively by tests to simulate
+	// device-side failures so the health reporting path can be exercised.
+	// Real device integrations should remove this field and use actual API error returns.
+	simulateFailureKeys map[string]bool
 }
 
 // NewEncoder creates a new encoder instance with default settings.
 // Channel settings are initialized lazily when first set.
 func NewEncoder() *Encoder {
 	return &Encoder{
-		deviceSettings:  map[string]string{"sync_clock_source": "NTP"},
-		channelSettings: make(map[string]map[string]string),
-		channels:        make(map[string]*channelState),
+		deviceSettings:      map[string]string{"sync_clock_source": "NTP"},
+		channelSettings:     make(map[string]map[string]string),
+		channels:            make(map[string]*channelState),
+		simulateFailureKeys: make(map[string]bool),
 	}
+}
+
+// SimulateFailure marks a setting key (or "__start_stop__" for channel start/stop)
+// as failing. Subsequent calls to SetDeviceSetting, SetChannelSetting, or
+// HandleUpdateState for that key will return an error string instead of applying.
+// This is the test hook that exercises the health reporting path — see TestHealthReporting.
+//
+// Device integrators: replace this pattern with real error returns from your native API.
+func (e *Encoder) SimulateFailure(key string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.simulateFailureKeys[key] = true
+}
+
+// ClearFailure removes a simulated failure for the given key.
+func (e *Encoder) ClearFailure(key string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	delete(e.simulateFailureKeys, key)
 }
 
 func (e *Encoder) getOrCreateChannel(channelID string) *channelState {
@@ -173,10 +199,15 @@ func (e *Encoder) Stop() {
 }
 
 // SetDeviceSetting stores a device-level setting.
-func (e *Encoder) SetDeviceSetting(key, value string) {
+// Returns an error string if a simulated failure is active for this key.
+func (e *Encoder) SetDeviceSetting(key, value string) string {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	if e.simulateFailureKeys[key] {
+		return fmt.Sprintf("simulated device failure: cannot apply setting %q=%q", key, value)
+	}
 	e.deviceSettings[key] = value
+	return ""
 }
 
 // GetDeviceSetting returns a device-level setting value.
@@ -188,13 +219,18 @@ func (e *Encoder) GetDeviceSetting(key string) (string, bool) {
 }
 
 // SetChannelSetting stores a channel-level simple setting.
-func (e *Encoder) SetChannelSetting(channelID, key, value string) {
+// Returns an error string if a simulated failure is active for this key.
+func (e *Encoder) SetChannelSetting(channelID, key, value string) string {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	if e.simulateFailureKeys[key] {
+		return fmt.Sprintf("simulated device failure: cannot apply channel %s setting %q=%q", channelID, key, value)
+	}
 	if e.channelSettings[channelID] == nil {
 		e.channelSettings[channelID] = make(map[string]string)
 	}
 	e.channelSettings[channelID][key] = value
+	return ""
 }
 
 // GetChannelSetting returns a channel-level simple setting value.
@@ -235,7 +271,15 @@ func (e *Encoder) HandleTransportConfigChange(channelID string, protocol *cddsdk
 }
 
 // HandleUpdateState processes a channel state change (ACTIVE/IDLE).
-func (e *Encoder) HandleUpdateState(channelID string, state cddsdkgo.ChannelState) {
+// Returns an error string if a simulated start/stop failure is active.
+func (e *Encoder) HandleUpdateState(channelID string, state cddsdkgo.ChannelState) string {
+	if func() bool {
+		e.mu.Lock()
+		defer e.mu.Unlock()
+		return e.simulateFailureKeys["__start_stop__"]
+	}() {
+		return fmt.Sprintf("simulated device failure: cannot change channel %s state to %s", channelID, state)
+	}
 	switch state {
 	case cddsdkgo.CHANNELSTATE_IDLE:
 		fmt.Printf("[%s] Calling stop\n", channelID)
@@ -256,6 +300,7 @@ func (e *Encoder) HandleUpdateState(channelID string, state cddsdkgo.ChannelStat
 			fmt.Printf("[%s] Cannot start: no SRT config available\n", channelID)
 		}
 	}
+	return ""
 }
 
 // GetChannelConnection returns the current SRT connection config for the given channel.
@@ -297,6 +342,10 @@ func (e *Encoder) SetChannelHealth(channelID string, level string, messages []st
 	ch := e.getOrCreateChannel(channelID)
 	now := time.Now().UTC()
 	msg := strings.Join(messages, "; ")
+	const maxHealthMessageLen = 128
+	if len(msg) > maxHealthMessageLen {
+		msg = msg[:maxHealthMessageLen]
+	}
 	errVal := cddsdkgo.HealthError{Message: msg, Timestamp: now}
 	var h cddsdkgo.Health
 	if level == "CRITICAL" {

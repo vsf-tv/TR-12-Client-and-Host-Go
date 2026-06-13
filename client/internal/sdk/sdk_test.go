@@ -14,7 +14,6 @@ package sdk
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/client/internal/models"
@@ -47,16 +46,19 @@ func writeFakeCerts(t *testing.T, certsPath, deviceLocalID, hostID string) strin
 
 // --- Deprovision ---
 
-// TestDeprovision_NotConnected_NoForce: returns "must use --force" without deprovisioning.
+// TestDeprovision_NotConnected_NoForce: credentials are always deleted — force flag is ignored.
 func TestDeprovision_NotConnected_NoForce(t *testing.T) {
 	sdk := newTestSDK(t)
-	// SDK starts DISCONNECTED — not connected to any host
+	certsDir := writeFakeCerts(t, sdk.certsPath, sdk.deviceLocalID, "some-host")
+
 	resp := sdk.Deprovision("some-host", false)
 	if !resp.Success {
 		t.Fatalf("expected success=true, got false: %s", resp.Message)
 	}
-	if !strings.Contains(resp.Message, "force") {
-		t.Fatalf("expected 'force' in message, got: %s", resp.Message)
+
+	// Certs should be deleted regardless of force flag
+	if _, err := os.Stat(certsDir); !os.IsNotExist(err) {
+		t.Fatal("expected certs dir to be deleted even without force")
 	}
 }
 

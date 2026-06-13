@@ -418,6 +418,14 @@ func (e *testEnv) sdkDeprovision(hostID string) genericResponse {
 	return resp
 }
 
+func (e *testEnv) sdkRegister(registration map[string]interface{}) genericResponse {
+	e.t.Helper()
+	body := map[string]interface{}{"registration": registration}
+	var resp genericResponse
+	e.doPut(e.sdkURL+"/register", body, &resp, 0)
+	return resp
+}
+
 // ---------------------------------------------------------------------------
 // Host API helpers
 // ---------------------------------------------------------------------------

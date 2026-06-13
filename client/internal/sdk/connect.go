@@ -24,7 +24,7 @@ import (
 )
 
 // Connect implements the TR-12 connect state machine.
-func (s *CddSdk) Connect(registration map[string]interface{}, hostID string) cddsdkgo.ConnectResponseContent {
+func (s *CddSdk) Connect(registration *cddsdkgo.DeviceRegistration, hostID string) cddsdkgo.ConnectResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Connecting to host:" + hostID)
@@ -174,18 +174,16 @@ func (s *CddSdk) GetConnectionStatus() cddsdkgo.GetConnectionStatusResponseConte
 	}
 }
 
-// Deprovision removes the device from the host service and deletes credentials.
-func (s *CddSdk) Deprovision(hostID string, force bool) cddsdkgo.DeprovisionResponseContent {
+// Deprovision removes the device from the host service and deletes local credentials.
+// Credentials are always deleted regardless of connection state or the force flag.
+// The force parameter is accepted for API compatibility but ignored — deprovision
+// always proceeds. If the SDK is currently connected, it notifies the host first;
+// if offline, the notification is skipped and credentials are deleted directly.
+func (s *CddSdk) Deprovision(hostID string, _ bool) cddsdkgo.DeprovisionResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Deprovision")
 
-	if !s.connectedTo(hostID) && !force {
-		return cddsdkgo.DeprovisionResponseContent{
-			Success: true, State: s.state,
-			Message: fmt.Sprintf("Must use --force to deprovision client while not CONNECTED to: %s", hostID),
-		}
-	}
 	if err := s.handleDeprovision(hostID); err != nil {
 		return cddsdkgo.DeprovisionResponseContent{
 			Success: false, State: s.state,
@@ -215,7 +213,8 @@ func (s *CddSdk) GetConfiguration() cddsdkgo.GetConfigurationResponseContent {
 }
 
 // ReportStatus publishes a status payload to the host service.
-func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportStatusResponseContent {
+// The payload is already a validated DeviceStatus — deserialised at the HTTP boundary.
+func (s *CddSdk) ReportStatus(payload *cddsdkgo.DeviceStatus) cddsdkgo.ReportStatusResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
 	s.logger.Info("Report Status")
@@ -233,7 +232,6 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 			Error: utils.ExceptionToErrorDetails(err),
 		}
 	}
-	// Wrap in envelope
 	envelope := map[string]interface{}{"deviceStatus": payload}
 	if err := s.doPublishMessage(envelope, hs.DevicePublishesStatusTopic); err != nil {
 		return cddsdkgo.ReportStatusResponseContent{
@@ -247,7 +245,6 @@ func (s *CddSdk) ReportStatus(payload map[string]interface{}) cddsdkgo.ReportSta
 	}
 }
 
-// ReportConfiguration publishes an actual configuration payload to the host service.
 func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.ActualDeviceConfiguration) cddsdkgo.ReportActualConfigurationResponseContent {
 	s.apiLock.Lock()
 	defer s.apiLock.Unlock()
@@ -261,6 +258,21 @@ func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.ActualDeviceConfiguration
 
 	// Store the actual configuration for thumbnail path resolution
 	s.actualConfig.Store(payload)
+
+	// Truncate any health message exceeding the model limit before publishing.
+	// A long message from a device API error could push the MQTT payload over the
+	// 128KB broker limit. The spec defines max 128 chars on HealthError.message.
+	const healthMessageMaxLen = 128
+	if payload != nil {
+		if payload.Health != nil {
+			truncateHealthMessage(payload.Health, healthMessageMaxLen)
+		}
+		for i := range payload.Channels {
+			if payload.Channels[i].Health != nil {
+				truncateHealthMessage(payload.Channels[i].Health, healthMessageMaxLen)
+			}
+		}
+	}
 
 	if err := s.canPublishNow(s.configThrottle); err != nil {
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())
@@ -325,4 +337,18 @@ func (s *CddSdk) deleteCredentials(hostID string) error {
 		return store.Deprovision()
 	}
 	return nil
+}
+
+// truncateHealthMessage truncates the message field in a Health union to maxLen characters.
+// This prevents oversized health messages from bloating MQTT payloads.
+func truncateHealthMessage(h *cddsdkgo.Health, maxLen int) {
+	if h == nil {
+		return
+	}
+	if h.Degraded != nil && len(h.Degraded.Degraded.Message) > maxLen {
+		h.Degraded.Degraded.Message = h.Degraded.Degraded.Message[:maxLen]
+	}
+	if h.Critical != nil && len(h.Critical.Critical.Message) > maxLen {
+		h.Critical.Critical.Message = h.Critical.Critical.Message[:maxLen]
+	}
 }
