@@ -128,10 +128,20 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		result.StandardSettings = deviceSettings
 	}
 
+	// Build a lookup of desired channel settings keyed by channel ID.
+	// This drives whether actual reports a profile or standardSettings — the
+	// desired config is the single source of truth for which union branch to use.
+	desiredChannelSettings := make(map[string]*cddsdkgo.ChannelSettings)
+	if desired != nil {
+		for _, ch := range desired.Channels {
+			desiredChannelSettings[ch.Id] = ch.ChannelSettings
+		}
+	}
+
 	// Channels — resolve assignments → templates, echo back the applied version per channel
 	var channels []cddsdkgo.ActualChannelConfiguration
 	for _, rc := range resolveChannels(registration) {
-		chCfg := s.buildChannelConfig(rc.channelID, rc.template)
+		chCfg := s.buildChannelConfig(rc.channelID, rc.template, desiredChannelSettings[rc.channelID])
 		chCfg.Version = appliedChannelVersions[rc.channelID]
 		channels = append(channels, chCfg)
 	}
@@ -139,7 +149,7 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 	return result
 }
 
-func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTemplate) cddsdkgo.ActualChannelConfiguration {
+func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTemplate, desiredSettings *cddsdkgo.ChannelSettings) cddsdkgo.ActualChannelConfiguration {
 	chCfg := cddsdkgo.ActualChannelConfiguration{
 		Id:    channelID,
 		State: s.CB.GetChannelState(channelID),
@@ -150,21 +160,19 @@ func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTem
 		chCfg.Health = health
 	}
 
-	// Check profiles first
-	hasProfile := false
-	if len(tmpl.Profiles) > 0 {
-		if profileID, found := s.CB.GetChannelProfileValue(channelID); found {
-			chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
-				Profile: &cddsdkgo.Profile{
-					Profile: cddsdkgo.ChannelProfile{Id: profileID},
-				},
-			}
-			hasProfile = true
+	// The desired config is the single source of truth for which channelSettings union
+	// branch to report in actual. If desired has a profile, echo it. If desired has
+	// standardSettings (or is absent), read back individual values from the device.
+	// This eliminates any need for callbacks to track which mode is active.
+	if desiredSettings != nil && desiredSettings.Profile != nil {
+		// Desired is a profile — echo the profile ID back as actual.
+		chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
+			Profile: &cddsdkgo.Profile{
+				Profile: cddsdkgo.ChannelProfile{Id: desiredSettings.Profile.Profile.Id},
+			},
 		}
-	}
-
-	// Standard settings if no profile
-	if !hasProfile && len(tmpl.Settings) > 0 {
+	} else if len(tmpl.Settings) > 0 {
+		// Desired is standardSettings (or no desired yet) — read back from device.
 		var kvList []cddsdkgo.IdAndValue
 		for _, setting := range tmpl.Settings {
 			if val, found := s.CB.GetChannelUpdatedValue(channelID, setting.Id); found {

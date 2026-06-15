@@ -59,6 +59,10 @@ func (cb *ArdCallbacks) UpdateChannelSettings(channelID, key, value string) {
 
 func (cb *ArdCallbacks) UpdateChannelProfile(channelID, profileID string) {
 	fmt.Printf("[UPDATE] Channel %s profile: %s\n", channelID, profileID)
+	// Store the applied profile so the device can confirm it was received.
+	// A real device integration would call the native API to apply the profile here
+	// and return an error if it fails.
+	cb.Encoder.SetChannelProfile(channelID, profileID)
 }
 
 func (cb *ArdCallbacks) UpdateChannelConnection(channelID string, protocol *cddsdkgo.TransportProtocol) {
@@ -84,10 +88,6 @@ func (cb *ArdCallbacks) GetDeviceUpdatedValue(key string) (string, bool) {
 
 func (cb *ArdCallbacks) GetChannelUpdatedValue(channelID, key string) (string, bool) {
 	return cb.Encoder.GetChannelSetting(channelID, key)
-}
-
-func (cb *ArdCallbacks) GetChannelProfileValue(channelID string) (string, bool) {
-	return "", false // Use simple settings by default
 }
 
 func (cb *ArdCallbacks) GetChannelConnection(channelID string) *cddsdkgo.TransportProtocol {

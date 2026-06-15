@@ -46,6 +46,7 @@ type Encoder struct {
 	channels        map[string]*channelState   // per-channel process + SRT state
 	deviceSettings  map[string]string
 	channelSettings map[string]map[string]string // channelID -> key -> value
+	channelProfiles map[string]string            // channelID -> active profile ID
 
 	// simulateFailureKeys contains setting keys (and the special key "__start_stop__")
 	// that will fail when applied. This is used exclusively by tests to simulate
@@ -60,6 +61,7 @@ func NewEncoder() *Encoder {
 	return &Encoder{
 		deviceSettings:      map[string]string{"sync_clock_source": "NTP"},
 		channelSettings:     make(map[string]map[string]string),
+		channelProfiles:     make(map[string]string),
 		channels:            make(map[string]*channelState),
 		simulateFailureKeys: make(map[string]bool),
 	}
@@ -242,6 +244,23 @@ func (e *Encoder) GetChannelSetting(channelID, key string) (string, bool) {
 		return v, ok
 	}
 	return "", false
+}
+
+// SetChannelProfile stores the active profile ID for a channel.
+// Simulates the device "accepting" a profile selection.
+// A real device integration would call the native API to apply the profile here.
+func (e *Encoder) SetChannelProfile(channelID, profileID string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.channelProfiles[channelID] = profileID
+}
+
+// GetChannelProfile returns the active profile ID for a channel, or ("", false) if none set.
+func (e *Encoder) GetChannelProfile(channelID string) (string, bool) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	id, ok := e.channelProfiles[channelID]
+	return id, ok && id != ""
 }
 
 // HandleTransportConfigChange stores SRT config for the given channel.
