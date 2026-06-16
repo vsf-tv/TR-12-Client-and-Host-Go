@@ -2,8 +2,6 @@
 
 A Go implementation of the TR-12 Client Device Discovery SDK, providing discovery, monitoring, and connection management of streaming video devices using an internet-secure, cloud and NAT friendly, scalable pairing and communication protocol.
 
-This is a full port of the [Python CDD SDK](https://github.com/vsf-tv/gccg-cdd) with identical CLI arguments and REST API surface.
-
 ## TR-12 Working Group
 
 > Draft design documents related to this project are currently being discussed and revised in the VSF Bi-Weekly Forum.
@@ -157,7 +155,7 @@ callbacks := device.NewMyDeviceCallbacks(deviceURL)
 loop := ard.NewApplicationLoop(sdkURL, callbacks, &registration)
 ```
 
-### Thumbnail Model (v2.0.2)
+### Thumbnail Model
 
 Thumbnails are channel-centric. The host subscribes by `channelId`, and the SDK resolves the local file path from the latest `ActualConfiguration` reported by the application.
 
@@ -234,17 +232,25 @@ Publishes the device's actual configuration to the host service. The SDK stores 
 
 Returns the latest desired configuration received from the host service.
 
+### PUT /register
+
+Updates the device registration while connected. Only changes to `channelTemplates[n].profiles` are permitted — all other registration fields must remain identical to the original registration sent on connect. Returns an error if the device is not in `CONNECTED` state.
+
+```json
+{
+  "registration": { ... }
+}
+```
+
 ### PUT /deprovision
 
-Removes the device from the host service and deletes local credentials.
+Removes the device from the host service and deletes local credentials. If currently connected, the host is notified before credentials are deleted. Credentials are always deleted regardless of connection state — the `force` parameter is accepted for API compatibility but ignored.
 
 ```json
 {
   "hostId": "tr12-host"
 }
 ```
-
-Use `?force=true` to deprovision while not connected.
 
 ---
 
@@ -329,6 +335,7 @@ client/
 │   ├── sdk/
 │   │   ├── sdk.go                                # Core SDK struct and state machine
 │   │   ├── connect.go                            # Public API methods
+│   │   ├── register.go                           # PUT /register — profile-only re-registration
 │   │   └── mqtt.go                               # MQTT connection and callbacks
 │   ├── thumbnails/manager.go                     # Thumbnail upload manager
 │   └── utils/utils.go                            # TLS, upload, throttle, key gen
@@ -339,7 +346,7 @@ client/
 ## TR-12 Protocol Reference
 
 - Smithy Models: https://github.com/vsf-tv/TR-12-Models
-- Draft Protocol: https://github.com/vsf-tv/TR-12-Models/blob/main/VSF_TR-12-ClientDeviceDiscoveryDraft.pdf
+- Specification: https://github.com/vsf-tv/TR-12-Models/blob/main/VSF_TR-12-ClientDeviceDiscoverySpecification.md
 
 ## License
 
@@ -430,7 +437,7 @@ The interface has two sides:
 |---|---|
 | `GetDeviceUpdatedValue(key)` | Current value of a device-level setting |
 | `GetChannelUpdatedValue(channelID, key)` | Current value of a channel setting |
-| `GetChannelProfileValue(channelID)` | Active profile ID, or `("", false)` if using simple settings |
+| `GetChannelProfileValue(channelID)` | Active profile ID as confirmed by the device, or `("", false)` if the device has not yet confirmed the profile. This is called only when the desired config is in profile mode — the value must come from the device's native API, not be echoed from desired. |
 | `GetChannelConnection(channelID)` | Current transport protocol configuration |
 | `GetChannelState(channelID)` | `ACTIVE` or `IDLE` |
 | `GetDeviceHealth()` | `Healthy`, `Degraded`, or `Critical` |
@@ -493,23 +500,26 @@ The registration file declares your device's capabilities to the host service. T
 
 ```json
 {
-  "standardSettings": [
+  "version": { "version": "6.0.0" },
+  "deviceType": "SOURCE",
+  "settings": [
     {
       "id": "sync_clock_source",
       "name": "Clock Source",
       "description": "Sets the clock source for all active channels.",
-      "enums": {
-        "values": ["INTERNAL", "GENLOCK", "NTP", "PTP"],
-        "defaultValue": "NTP"
+      "constraint": {
+        "enums": {
+          "values": ["INTERNAL", "GENLOCK", "NTP", "PTP"],
+          "defaultValue": "NTP"
+        }
       }
     }
   ],
-  "channels": [
+  "channelTemplates": [
     {
-      "id": "CH01",
-      "name": "Encoder Channel 1",
+      "id": "encoder_hd",
       "channelType": "SOURCE",
-      "connectionProtocols": ["SRT_CALLER", "SRT_LISTENER"],
+      "protocols": ["SRT_CALLER", "SRT_LISTENER"],
       "profiles": [
         {
           "id": "h264_hd",
@@ -517,34 +527,38 @@ The registration file declares your device's capabilities to the host service. T
           "description": "H.264, 1080p, 10Mbps, 30fps"
         }
       ],
-      "standardSettings": [
+      "settings": [
         {
           "id": "RS01",
           "name": "Resolution",
           "description": "Output video dimensions.",
-          "enums": {
-            "values": ["1920x1080", "1280x720"],
-            "defaultValue": "1920x1080"
+          "constraint": {
+            "enums": {
+              "values": ["1920x1080", "1280x720"],
+              "defaultValue": "1920x1080"
+            }
           }
         },
         {
           "id": "MB01",
           "name": "Max Bitrate",
           "description": "Maximum output bitrate in Kbps.",
-          "ranges": {
-            "minimum": 1000,
-            "maximum": 50000,
-            "defaultValue": 10000
+          "constraint": {
+            "ranges": {
+              "minimum": 1000,
+              "maximum": 50000,
+              "defaultValue": 10000
+            }
           }
         }
       ]
     }
   ],
-  "thumbnails": [
+  "channelAssignments": [
     {
-      "id": "SDI1",
-      "name": "SDI Input 1",
-      "localPath": "/path/to/thumbnail.jpg"
+      "channelId": "CH01",
+      "templateId": "encoder_hd",
+      "name": "Encoder Channel 1"
     }
   ]
 }
@@ -552,15 +566,19 @@ The registration file declares your device's capabilities to the host service. T
 
 **Fields:**
 
-- `standardSettings` (device-level) — settings that apply to the whole device, not a specific channel. The `id` values are the keys passed to `UpdateDeviceKeyValue`.
-- `channels[].id` — the channel identifier used in all callback calls. Must be stable across restarts.
-- `channels[].channelType` — `SOURCE` or `DESTINATION`.
-- `channels[].connectionProtocols` — list of supported transport protocols. Valid values: `SRT_CALLER`, `SRT_LISTENER`, `RIST_SIMPLE_CALLER`, `RIST_SIMPLE_LISTENER`, `ZIXI_PUSH`, `ZIXI_PULL`, `RTP`.
-- `channels[].profiles` — optional named presets. If present, the host can send a profile ID instead of individual settings. The `id` is passed to `UpdateChannelProfile`.
-- `channels[].standardSettings` — per-channel settings. The `id` values are the keys passed to `UpdateChannelSettings`. Use `enums` for discrete values or `ranges` for numeric ranges.
-- `thumbnails[].localPath` — the filesystem path the SDK reads to upload thumbnails. Can be a static path or updated dynamically via `GetChannelThumbnailLocalPath`.
-
-The `id` values in `standardSettings` are the keys your callbacks receive. Choose short, stable identifiers — they appear in configuration payloads and are stored by the host service.
+- `version` — TR-12 protocol version. Must be `{ "version": "6.0.0" }`.
+- `deviceType` — `SOURCE`, `DESTINATION`, or `BOTH`.
+- `settings` (device-level) — settings that apply to the whole device. The `id` values are the keys passed to `UpdateDeviceKeyValue`.
+- `channelTemplates` — reusable channel capability definitions. Multiple channel assignments can share the same template.
+  - `id` — template identifier referenced by `channelAssignments`.
+  - `channelType` — `SOURCE` or `DESTINATION`.
+  - `protocols` — supported transport protocols. Valid values: `SRT_CALLER`, `SRT_LISTENER`, `RIST_SIMPLE_CALLER`, `RIST_SIMPLE_LISTENER`, `ZIXI_PUSH`, `ZIXI_PULL`, `RTP`.
+  - `profiles` — optional named presets. If present, the host can send a profile ID instead of individual settings. The `id` is passed to `UpdateChannelProfile`.
+  - `settings` — per-channel settings. The `id` values are the keys passed to `UpdateChannelSettings`. Use `enums` for discrete values or `ranges` for numeric ranges.
+- `channelAssignments` — maps logical channel IDs to templates.
+  - `channelId` — the channel identifier used in all callback calls. Must be stable across restarts.
+  - `templateId` — references a `channelTemplates` entry.
+  - `name` — display name shown in the console.
 
 ---
 
@@ -590,4 +608,4 @@ These are practical lessons for anyone building a real device integration. They 
 
 **Report health accurately.** If a native API call fails during configuration apply, set the channel health to DEGRADED or CRITICAL. The host and console display this to the operator. Do not silently swallow errors — an operator looking at a "healthy" device that is actually misconfigured has no way to know something is wrong.
 
-**Read-back must use live device state.** When reporting actual configuration back to the host, read values from the device's native API — not from a cache simply refect the desired configuration. Reporting desired values as actual values misleads the operator and the host. If the native API is unavailable, return nothing rather than stale data.
+**Read-back must use live device state.** When reporting actual configuration back to the host, read values from the device's native API — not from a cache or by echoing the desired values. The one exception is the `channelSettings` union branch: the desired config determines whether actual reports a profile or standard settings (you should not report a profile if standard settings were requested, and vice versa). But within that branch, the values must come from the device. For standard settings, read each key from the device API. For profile mode, call your device's API to confirm which profile is currently active — do not simply echo back the profile ID the host asked for. If the device has not yet confirmed the profile, return `("", false)` from `GetChannelProfileValue` and omit channelSettings from the actual config until it is confirmed.
