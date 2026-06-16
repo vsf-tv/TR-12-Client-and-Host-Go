@@ -1,6 +1,6 @@
 # TR-12 Client and Host — Go
 
-A complete Go implementation of the [VSF TR-12 Client Device Discovery](https://github.com/vsf-tv/TR-12-Models/blob/main/VSF_TR-12-ClientDeviceDiscoveryDraft.pdf) protocol, covering both the device side (client SDK + application reference design) and the host/cloud side (self-contained host service with embedded MQTT broker).
+A complete Go implementation of the [VSF TR-12 Client Device Discovery](https://github.com/vsf-tv/TR-12-Models/blob/main/VSF_TR-12-ClientDeviceDiscoverySpecification.md) protocol, covering both the device side (client SDK + application reference design) and the host/cloud side (self-contained host service with embedded MQTT broker).
 
 TR-12 defines a secure, NAT-friendly pairing and communication protocol for professional streaming video devices. This repo provides everything needed to pair devices, exchange configurations, rotate credentials, stream thumbnails, and manage device lifecycles — all from pure Go binaries with no external service dependencies.
 
@@ -104,17 +104,19 @@ On first run this auto-generates a CA, server cert, JWT secret, and SQLite datab
 ### Terminal 2 — CDD SDK
 
 ```bash
+# The client SDK holds certs in: CERTS/LOCAL_DEVICE_ID/<host_id>
+export LOCAL_DEVICE_ID=my_test_device
 export CERTS=~/TR-12-Certs
 mkdir -p $CERTS
 cd client
-./bin/cdd-sdk --internal_device_id test001 --certs_path $CERTS --log_path /tmp/sdk-logs--ip 127.0.0.1 --port 8603 --device_type SOURCE
+./bin/cdd-sdk --internal_device_id $LOCAL_DEVICE_ID --certs_path $CERTS --log_path /tmp/sdk-logs--ip 127.0.0.1 --port 8603 --device_type SOURCE
 ```
 
 ### Terminal 3 — ARD (simulated device application)
 
 ```ba sh
 cd client
-./bin/ard --host_id local_go_host
+./bin/ard --host_id my_local_go_host
 ```
 
 The ARD will print a pairing code, e.g. `Device is not paired. Pairing Code: A3B7K9 Expires in: 1800s.`
@@ -123,6 +125,9 @@ The ARD will print a pairing code, e.g. `Device is not paired. Pairing Code: A3B
 
 You can use curl, Postman, or any REST client to manage accounts, claim devices, push configurations, etc.
 
+
+
+
 #### Option A: curl
 
 ```bash
@@ -130,6 +135,7 @@ You can use curl, Postman, or any REST client to manage accounts, claim devices,
 TOKEN=$(curl -s -X POST http://127.0.0.1:8080/account/register \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"changeme1","display_name":"Admin"}' | jq -r .token)
+# Host service maintains registered user accounts in a date store: TR-12-Client-and-Host-Go/host/tr12-host.db 
 
 # Claim the device using the pairing code from the ARD output
 curl -X PUT http://127.0.0.1:8080/authorize/A3B7K9 \
@@ -139,15 +145,21 @@ curl -X PUT http://127.0.0.1:8080/authorize/A3B7K9 \
 curl http://127.0.0.1:8080/devices \
   -H "Authorization: Bearer $TOKEN" | jq .
 
-# Push a configuration update
-curl -X PUT http://127.0.0.1:8080/device/<DEVICE_ID> \
+# Get the device details
+curl http://127.0.0.1:8080/device/<DEVICE_ID> \
+  -H "Authorization: Bearer $TOKEN" | jq .
+
+# Request a thumbnail (note: using CH01 from device details request above)
+# Note: Starts a new thumbnail subscription request.  First response is
+# expected to be empty as it takes some time for the client to send images.
+curl "http://127.0.0.1:8080/thumbnail/<DEVICE_ID>?channel=CH01" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Push a configuration update — start channel CH01 as SRT caller to 192.168.1.100:9000
+curl -s -X PUT "http://127.0.0.1:8080/device/<DEVICE_ID>" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"channels":[{"id":"SDI-1","state":"ACTIVE"}]}'
-
-# Request a thumbnail
-curl "http://127.0.0.1:8080/thumbnail/<DEVICE_ID>?source=SDI-1" \
-  -H "Authorization: Bearer $TOKEN"
+  -d '{"channels":[{"id":"CH01","state":"ACTIVE","protocol":{"srtCaller":{"address":"<srt listener ip>","port":<srt listener port>,"minimumLatencyMilliseconds":200}}}]}' | jq .
 
 # Rotate device credentials
 curl -X PUT http://127.0.0.1:8080/credentials/<DEVICE_ID> \
@@ -269,7 +281,7 @@ TR-12-Client-and-Host-Go/
 ## TR-12 Protocol Reference
 
 - [TR-12 Smithy Models](https://github.com/vsf-tv/TR-12-Models)
-- [Draft Protocol Specification (PDF)](https://github.com/vsf-tv/TR-12-Models/blob/main/VSF_TR-12-ClientDeviceDiscoveryDraft.pdf)
+- [Protocol Specification](https://github.com/vsf-tv/TR-12-Models/blob/main/VSF_TR-12-ClientDeviceDiscoverySpecification.md)
 
 ## License
 
