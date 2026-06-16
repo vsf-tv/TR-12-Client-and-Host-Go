@@ -52,6 +52,13 @@ type DeviceCallbacks interface {
 	// GetChannelUpdatedValue returns the current value of a channel-level setting.
 	GetChannelUpdatedValue(channelID, key string) (string, bool)
 
+	// GetChannelProfileValue returns the profile ID currently active on the device for
+	// a channel. Called only when desired config is in profile mode — the actual profile
+	// ID must come from the device, not be echoed from desired.
+	// Returns ("", false) if the device has not yet confirmed a profile is active
+	// (e.g. the native API is not yet implemented).
+	GetChannelProfileValue(channelID string) (string, bool)
+
 	// GetChannelConnection returns the current transport protocol configuration.
 	GetChannelConnection(channelID string) *cddsdkgo.TransportProtocol
 

@@ -90,6 +90,10 @@ func (cb *ArdCallbacks) GetChannelUpdatedValue(channelID, key string) (string, b
 	return cb.Encoder.GetChannelSetting(channelID, key)
 }
 
+func (cb *ArdCallbacks) GetChannelProfileValue(channelID string) (string, bool) {
+	return cb.Encoder.GetChannelProfile(channelID)
+}
+
 func (cb *ArdCallbacks) GetChannelConnection(channelID string) *cddsdkgo.TransportProtocol {
 	return cb.Encoder.GetChannelConnection(channelID)
 }

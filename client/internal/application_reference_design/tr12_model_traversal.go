@@ -161,16 +161,20 @@ func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTem
 	}
 
 	// The desired config is the single source of truth for which channelSettings union
-	// branch to report in actual. If desired has a profile, echo it. If desired has
-	// standardSettings (or is absent), read back individual values from the device.
-	// This eliminates any need for callbacks to track which mode is active.
+	// branch to report in actual. If desired has a profile, ask the device what profile
+	// it currently has active. If desired has standardSettings (or is absent), read back
+	// individual values from the device.
 	if desiredSettings != nil && desiredSettings.Profile != nil {
-		// Desired is a profile — echo the profile ID back as actual.
-		chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
-			Profile: &cddsdkgo.Profile{
-				Profile: cddsdkgo.ChannelProfile{Id: desiredSettings.Profile.Profile.Id},
-			},
+		// Desired is profile mode — ask the device for the actual profile ID.
+		if profileID, found := s.CB.GetChannelProfileValue(channelID); found {
+			chCfg.ChannelSettings = &cddsdkgo.ChannelSettings{
+				Profile: &cddsdkgo.Profile{
+					Profile: cddsdkgo.ChannelProfile{Id: profileID},
+				},
+			}
 		}
+		// If GetChannelProfileValue returns false, the device hasn't confirmed the
+		// profile yet (e.g. native API not implemented) — omit channelSettings from actual.
 	} else if len(tmpl.Settings) > 0 {
 		// Desired is standardSettings (or no desired yet) — read back from device.
 		var kvList []cddsdkgo.IdAndValue
