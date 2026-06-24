@@ -3,7 +3,6 @@
   "sources": ["smithy", "../TR-12-Models/model"],
   "maven": {
     "dependencies": [
-      "software.amazon.smithy.python.codegen.plugins:types:0.1.0",
       "software.amazon.smithy:smithy-aws-traits:1.65.0",
       "software.amazon.smithy:smithy-openapi:1.65.0"
     ]
