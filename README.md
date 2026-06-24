@@ -109,7 +109,7 @@ export LOCAL_DEVICE_ID=my_test_device
 export CERTS=~/TR-12-Certs
 mkdir -p $CERTS
 cd client
-./bin/cdd-sdk --internal_device_id $LOCAL_DEVICE_ID --certs_path $CERTS --log_path /tmp/sdk-logs--ip 127.0.0.1 --port 8603 --device_type SOURCE
+./bin/cdd-sdk --internal_device_id $LOCAL_DEVICE_ID --certs_path $CERTS --log_path /tmp/sdk-logs --ip 127.0.0.1 --port 8603 --device_type SOURCE
 ```
 
 ### Terminal 3 — ARD (simulated device application)
