@@ -138,7 +138,7 @@ TOKEN=$(curl -s -X POST http://127.0.0.1:8080/account/register \
 # Host service maintains registered user accounts in a date store: TR-12-Client-and-Host-Go/host/tr12-host.db 
 
 # Claim the device using the pairing code from the ARD output
-curl -X PUT http://127.0.0.1:8080/authorize/A3B7K9 \
+curl -X PUT http://127.0.0.1:8080/authorize/<pairing code from application reference design> \
   -H "Authorization: Bearer $TOKEN"
 
 # List connected devices
