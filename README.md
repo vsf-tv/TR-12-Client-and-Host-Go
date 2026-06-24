@@ -116,7 +116,7 @@ cd client
 
 ```ba sh
 cd client
-./bin/ard --host_id my_local_go_host
+./bin/ard --host_id local_go_host
 ```
 
 The ARD will print a pairing code, e.g. `Device is not paired. Pairing Code: A3B7K9 Expires in: 1800s.`
