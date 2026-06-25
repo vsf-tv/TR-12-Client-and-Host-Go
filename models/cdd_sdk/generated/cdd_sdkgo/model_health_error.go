@@ -20,7 +20,7 @@ import (
 // checks if the HealthError type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &HealthError{}
 
-// HealthError Shared description for degraded and critical states.
+// HealthError Maximum 128 characters. Messages exceeding this limit are truncated before transmission to prevent MQTT payload bloat on devices with many channels.
 type HealthError struct {
 	Message string `json:"message"`
 	Timestamp time.Time `json:"timestamp"`

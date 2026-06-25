@@ -9,6 +9,7 @@ Method | HTTP request | Description
 [**Disconnect**](DefaultAPI.md#Disconnect) | **Put** /disconnect | 
 [**GetConfiguration**](DefaultAPI.md#GetConfiguration) | **Get** /get_configuration | 
 [**GetConnectionStatus**](DefaultAPI.md#GetConnectionStatus) | **Get** /get_state | 
+[**Register**](DefaultAPI.md#Register) | **Put** /register | 
 [**ReportActualConfiguration**](DefaultAPI.md#ReportActualConfiguration) | **Put** /report_actual_configuration | 
 [**ReportStatus**](DefaultAPI.md#ReportStatus) | **Put** /report_status | 
 
@@ -314,6 +315,70 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## Register
+
+> RegisterResponseContent Register(ctx).RegisterRequestContent(registerRequestContent).Execute()
+
+
+
+### Example
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+	openapiclient "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
+)
+
+func main() {
+	registerRequestContent := *openapiclient.NewRegisterRequestContent(*openapiclient.NewDeviceRegistration([]openapiclient.ChannelTemplate{*openapiclient.NewChannelTemplate("Id_example", openapiclient.ChannelType("SOURCE"))}, []openapiclient.ChannelAssignment{*openapiclient.NewChannelAssignment("ChannelId_example", "Name_example", "TemplateId_example")})) // RegisterRequestContent | 
+
+	configuration := openapiclient.NewConfiguration()
+	apiClient := openapiclient.NewAPIClient(configuration)
+	resp, r, err := apiClient.DefaultAPI.Register(context.Background()).RegisterRequestContent(registerRequestContent).Execute()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error when calling `DefaultAPI.Register``: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+	}
+	// response from `Register`: RegisterResponseContent
+	fmt.Fprintf(os.Stdout, "Response from `DefaultAPI.Register`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiRegisterRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **registerRequestContent** | [**RegisterRequestContent**](RegisterRequestContent.md) |  | 
+
+### Return type
+
+[**RegisterResponseContent**](RegisterResponseContent.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

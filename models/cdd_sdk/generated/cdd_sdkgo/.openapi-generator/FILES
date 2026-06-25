@@ -45,6 +45,8 @@ docs/Profile.md
 docs/ProfileDefinition.md
 docs/RangeValues.md
 docs/Ranges.md
+docs/RegisterRequestContent.md
+docs/RegisterResponseContent.md
 docs/ReportActualConfigurationRequestContent.md
 docs/ReportActualConfigurationResponseContent.md
 docs/ReportStatusRequestContent.md
@@ -112,6 +114,8 @@ model_profile.go
 model_profile_definition.go
 model_range_values.go
 model_ranges.go
+model_register_request_content.go
+model_register_response_content.go
 model_report_actual_configuration_request_content.go
 model_report_actual_configuration_response_content.go
 model_report_status_request_content.go

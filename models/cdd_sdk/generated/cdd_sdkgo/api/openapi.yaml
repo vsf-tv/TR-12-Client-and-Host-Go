@@ -76,6 +76,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/GetConnectionStatusResponseContent"
           description: GetConnectionStatus 200 response
+  /register:
+    put:
+      operationId: Register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequestContent"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponseContent"
+          description: Register 200 response
   /report_actual_configuration:
     put:
       operationId: ReportActualConfiguration
@@ -2404,9 +2420,12 @@ components:
       - $ref: "#/components/schemas/degraded"
       - $ref: "#/components/schemas/critical"
     HealthError:
-      description: Shared description for degraded and critical states.
+      description: |-
+        Maximum 128 characters. Messages exceeding this limit are truncated before transmission
+        to prevent MQTT payload bloat on devices with many channels.
       properties:
         message:
+          maxLength: 128
           type: string
         timestamp:
           format: date-time
@@ -2463,6 +2482,541 @@ components:
       - defaultValue
       - maximum
       - minimum
+      type: object
+    RegisterRequestContent:
+      example:
+        registration:
+          settings:
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          - name: name
+            description: description
+            constraint:
+              enums:
+                defaultValue: defaultValue
+                values:
+                - values
+                - values
+                - values
+                - values
+                - values
+            id: id
+          channelTemplates:
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          - settings:
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            - name: name
+              description: description
+              constraint:
+                enums:
+                  defaultValue: defaultValue
+                  values:
+                  - values
+                  - values
+                  - values
+                  - values
+                  - values
+              id: id
+            profiles:
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            - name: name
+              description: description
+              id: id
+            channelType: SOURCE
+            id: id
+            protocols:
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+            - SRT_LISTENER
+          channelAssignments:
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+          - name: name
+            templateId: templateId
+            channelId: channelId
+      properties:
+        registration:
+          $ref: "#/components/schemas/DeviceRegistration"
+      required:
+      - registration
+      type: object
+    RegisterResponseContent:
+      example:
+        success: true
+        state: state
+        message: message
+        error:
+          details: details
+          type: type
+          message: message
+      properties:
+        success:
+          type: boolean
+        state:
+          type: string
+        message:
+          type: string
+        error:
+          $ref: "#/components/schemas/ErrorDetails"
+      required:
+      - message
+      - state
+      - success
       type: object
     ReportActualConfigurationRequestContent:
       example:

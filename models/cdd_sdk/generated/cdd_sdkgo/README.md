@@ -83,6 +83,7 @@ Class | Method | HTTP request | Description
 *DefaultAPI* | [**Disconnect**](docs/DefaultAPI.md#disconnect) | **Put** /disconnect | 
 *DefaultAPI* | [**GetConfiguration**](docs/DefaultAPI.md#getconfiguration) | **Get** /get_configuration | 
 *DefaultAPI* | [**GetConnectionStatus**](docs/DefaultAPI.md#getconnectionstatus) | **Get** /get_state | 
+*DefaultAPI* | [**Register**](docs/DefaultAPI.md#register) | **Put** /register | 
 *DefaultAPI* | [**ReportActualConfiguration**](docs/DefaultAPI.md#reportactualconfiguration) | **Put** /report_actual_configuration | 
 *DefaultAPI* | [**ReportStatus**](docs/DefaultAPI.md#reportstatus) | **Put** /report_status | 
 
@@ -127,6 +128,8 @@ Class | Method | HTTP request | Description
  - [ProfileDefinition](docs/ProfileDefinition.md)
  - [RangeValues](docs/RangeValues.md)
  - [Ranges](docs/Ranges.md)
+ - [RegisterRequestContent](docs/RegisterRequestContent.md)
+ - [RegisterResponseContent](docs/RegisterResponseContent.md)
  - [ReportActualConfigurationRequestContent](docs/ReportActualConfigurationRequestContent.md)
  - [ReportActualConfigurationResponseContent](docs/ReportActualConfigurationResponseContent.md)
  - [ReportStatusRequestContent](docs/ReportStatusRequestContent.md)
