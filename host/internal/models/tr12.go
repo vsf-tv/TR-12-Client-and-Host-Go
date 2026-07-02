@@ -52,10 +52,11 @@ var PtrFloat32 = tr12models.PtrFloat32
 // --- Host-service-only types ---
 
 type ClaimRequest struct {
-	ExpirationDays       int    `json:"expiration_days,omitempty"`
-	LocationName         string `json:"location_name,omitempty"`
-	DeviceName           string `json:"device_name,omitempty"`
-	RotationIntervalDays int    `json:"rotation_interval_days,omitempty"`
+	ExpirationDays           int    `json:"expiration_days,omitempty"`
+	CredentialExpirationDays int    `json:"credential_expiration_days,omitempty"`
+	LocationName             string `json:"location_name,omitempty"`
+	DeviceName               string `json:"device_name,omitempty"`
+	RotationIntervalDays     int    `json:"rotation_interval_days,omitempty"`
 }
 
 type UpdateDeviceMetadata struct {

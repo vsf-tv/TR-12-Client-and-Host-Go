@@ -162,29 +162,30 @@ func (e *Encoder) StartChannel(channelID, ip string, port int, streamID string) 
 // StopChannel terminates the ffmpeg process for the given channel.
 func (e *Encoder) StopChannel(channelID string) {
 	e.mu.Lock()
-	defer e.mu.Unlock()
 	ch, ok := e.channels[channelID]
 	if !ok || ch.process == nil || ch.process.Process == nil {
+		e.mu.Unlock()
 		fmt.Printf("[%s] Already stopped\n", channelID)
 		return
 	}
+	proc := ch.process
+	ch.process = nil
+	e.mu.Unlock()
 
 	fmt.Printf("[%s] ************* Stopping *****************\n", channelID)
-	if err := ch.process.Process.Signal(syscall.SIGINT); err != nil {
+	if err := proc.Process.Signal(syscall.SIGINT); err != nil {
 		fmt.Printf("[%s] SIGINT failed: %v\n", channelID, err)
 	} else {
-		fmt.Printf("[%s] Sent SIGINT to process %d\n", channelID, ch.process.Process.Pid)
+		fmt.Printf("[%s] Sent SIGINT to process %d\n", channelID, proc.Process.Pid)
 	}
 
+	// Wait outside the lock so other channels can proceed.
 	time.Sleep(3 * time.Second)
-	if ch.process.Process != nil {
-		if ch.process.Process.Signal(syscall.Signal(0)) == nil {
-			fmt.Printf("[%s] Process didn't respond to SIGINT, trying SIGTERM...\n", channelID)
-			_ = ch.process.Process.Signal(syscall.SIGTERM)
-			time.Sleep(2 * time.Second)
-		}
+	if proc.Process.Signal(syscall.Signal(0)) == nil {
+		fmt.Printf("[%s] Process didn't respond to SIGINT, trying SIGTERM...\n", channelID)
+		_ = proc.Process.Signal(syscall.SIGTERM)
+		time.Sleep(2 * time.Second)
 	}
-	ch.process = nil
 }
 
 // Stop stops all channel processes (used on shutdown).

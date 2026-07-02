@@ -59,6 +59,8 @@ func NewRouter(
 		auth.GET("/devices", devices.ListDevices)
 		auth.GET("/device/:deviceId", devices.DescribeDevice)
 		auth.PUT("/device/:deviceId", devices.UpdateConfiguration)
+		auth.PUT("/device/:deviceId/channel/:channelId", devices.UpdateChannelConfig)
+		auth.PUT("/device/:deviceId/settings", devices.UpdateDeviceSettings)
 		auth.PUT("/authorize/:pairingCode", devices.Claim)
 		auth.PUT("/deprovision/:deviceId", devices.Deprovision)
 		auth.GET("/thumbnail/:deviceId", devices.GetThumbnail)

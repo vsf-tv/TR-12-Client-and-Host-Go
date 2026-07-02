@@ -158,7 +158,10 @@ func (s *DeviceService) Authenticate(req models.AuthenticatePairingCodeRequestCo
 }
 
 // Claim associates a device with an account.
-func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays int, locationName, deviceName string, rotationIntervalDays int) error {
+// credentialExpirationDays, if > 0, re-signs the device certificate with that
+// lifetime so the operator can set a per-device cert duration at claim time.
+// If 0 or omitted the cert signed at pair time (service default, typically 30 days) is kept.
+func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays, credentialExpirationDays int, locationName, deviceName string, rotationIntervalDays int) error {
 	device, err := s.store.GetDeviceByPairingCode(pairingCode)
 	if err != nil {
 		return err
@@ -193,6 +196,19 @@ func (s *DeviceService) Claim(pairingCode, accountID string, expirationDays int,
 		deviceName = deviceName[:40]
 	}
 	regExpires := time.Now().UTC().Add(time.Duration(expirationDays) * 24 * time.Hour).Format(time.RFC3339)
+
+	// Re-sign the device certificate if a custom credential lifetime was requested.
+	if credentialExpirationDays > 0 && device.CSRPEM != "" {
+		newCert, err := s.ca.SignCSR([]byte(device.CSRPEM), device.DeviceID, credentialExpirationDays)
+		if err != nil {
+			return fmt.Errorf("re-sign cert for claim: %w", err)
+		}
+		newExpires := time.Now().UTC().Add(time.Duration(credentialExpirationDays) * 24 * time.Hour).Format(time.RFC3339)
+		if err := s.store.SetInitialCert(device.DeviceID, string(newCert), newExpires); err != nil {
+			return fmt.Errorf("update cert at claim: %w", err)
+		}
+	}
+
 	return s.store.ClaimDevice(device.DeviceID, accountID, regExpires, locationName, deviceName, rotationIntervalDays)
 }
 
@@ -231,6 +247,9 @@ func (s *DeviceService) DescribeDevice(deviceID, accountID string) (*models.Devi
 	}
 	if device.AccountID != accountID {
 		return nil, ErrForbidden
+	}
+	if device.State == "DEPROVISIONED" {
+		return nil, ErrNotFound // hide deprovisioned devices from get as well as list
 	}
 	onlineDetails := formatOnlineDetails(device)
 	certExp := formatCertExpiration(device.CertExpiresAt)
@@ -289,7 +308,213 @@ func (s *DeviceService) UpdateDeviceMetadata(deviceID, accountID string, meta *m
 	return s.store.UpdateDeviceMetadata(deviceID, name, location, rotInterval)
 }
 
-// UpdateConfiguration validates and pushes desired config to a device.
+// UpdateChannelConfig updates a single channel's content, unconditionally bumps
+// that channel's version, and preserves all other channels' existing versions.
+// The console sends only the fields for the one channel being updated.
+func (s *DeviceService) UpdateChannelConfig(deviceID, accountID, channelID string, channelCfg json.RawMessage) error {
+	device, err := s.store.GetDevice(deviceID)
+	if err != nil {
+		return err
+	}
+	if device == nil {
+		return ErrNotFound
+	}
+	if device.AccountID != accountID {
+		return ErrForbidden
+	}
+	if device.State == "DEPROVISIONED" {
+		return fmt.Errorf("%w: device is deprovisioned", ErrConflict)
+	}
+
+	// Validate that channelID exists in the registration.
+	if len(device.Registration) > 0 {
+		if err := validateChannelExistsInRegistration(channelID, device.Registration); err != nil {
+			return fmt.Errorf("%w: %s", ErrNotFound, err.Error())
+		}
+	}
+
+	// Load the stored full config and merge the updated channel into it.
+	merged, mqttChannel, err := s.mergeChannelUpdate(device.DesiredConfig, channelID, channelCfg)
+	if err != nil {
+		return fmt.Errorf("merge channel update: %w", err)
+	}
+
+	// Only publish the single updated channel in MQTT — not the full config.
+	// This prevents the device from re-processing channels that weren't part of this update.
+	return s.persistAndPublish(device, merged, []interface{}{mqttChannel})
+}
+
+// UpdateDeviceSettings updates only the device-level standardSettings, unconditionally
+// bumps the device version, and preserves all channel versions unchanged.
+func (s *DeviceService) UpdateDeviceSettings(deviceID, accountID string, settingsJSON json.RawMessage) error {
+	device, err := s.store.GetDevice(deviceID)
+	if err != nil {
+		return err
+	}
+	if device == nil {
+		return ErrNotFound
+	}
+	if device.AccountID != accountID {
+		return ErrForbidden
+	}
+	if device.State == "DEPROVISIONED" {
+		return fmt.Errorf("%w: device is deprovisioned", ErrConflict)
+	}
+
+	// Merge the new standardSettings into the stored config, preserving all channel versions.
+	merged, err := s.mergeDeviceSettingsUpdate(device.DesiredConfig, settingsJSON)
+	if err != nil {
+		return fmt.Errorf("merge device settings: %w", err)
+	}
+
+	// Device settings update publishes all channels — the device needs the full config
+	// to apply the new standardSettings alongside the current channel state.
+	return s.persistAndPublish(device, merged, nil)
+}
+
+// mergeChannelUpdate loads the stored full config and replaces the target channel's content,
+// assigning a fresh version to that channel only. All other channel versions are preserved.
+// Returns the merged full config (for DB storage) and the single updated channel entry
+// (for MQTT — so the device only sees the one channel that changed).
+func (s *DeviceService) mergeChannelUpdate(storedConfig json.RawMessage, channelID string, channelCfg json.RawMessage) (merged map[string]interface{}, mqttChannel interface{}, err error) {
+	merged = s.loadOrInitFullConfig(storedConfig)
+
+	// Parse incoming channel update.
+	var incoming map[string]interface{}
+	if err = json.Unmarshal(channelCfg, &incoming); err != nil {
+		return nil, nil, fmt.Errorf("invalid channel config JSON: %w", err)
+	}
+
+	newVersion := strconv.FormatInt(time.Now().UnixNano(), 10)
+
+	channels, _ := merged["channels"].([]interface{})
+	found := false
+	for i, ch := range channels {
+		chMap, ok := ch.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if chMap["id"] == channelID {
+			// Merge incoming fields — preserve version key explicitly.
+			for k, v := range incoming {
+				chMap[k] = v
+			}
+			chMap["id"] = channelID
+			chMap["version"] = newVersion
+			channels[i] = chMap
+			mqttChannel = chMap
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		// Channel not in stored config yet — add it with the incoming data.
+		newCh := map[string]interface{}{"id": channelID, "version": newVersion}
+		for k, v := range incoming {
+			newCh[k] = v
+		}
+		channels = append(channels, newCh)
+		mqttChannel = newCh
+	}
+
+	merged["channels"] = channels
+	// The device model requires a top-level version on DesiredDeviceConfiguration.
+	// Bump it alongside the channel version so the MQTT payload is always valid.
+	merged["version"] = newVersion
+	log.Printf("[HOST UpdateChannelConfig] channel %s → version=%s", channelID, newVersion)
+	return merged, mqttChannel, nil
+}
+
+// mergeDeviceSettingsUpdate replaces standardSettings in the stored config and bumps
+// the device-level version. Channel versions are left untouched.
+func (s *DeviceService) mergeDeviceSettingsUpdate(storedConfig json.RawMessage, settingsJSON json.RawMessage) (map[string]interface{}, error) {
+	merged := s.loadOrInitFullConfig(storedConfig)
+
+	var incoming map[string]interface{}
+	if err := json.Unmarshal(settingsJSON, &incoming); err != nil {
+		return nil, fmt.Errorf("invalid settings JSON: %w", err)
+	}
+
+	if ss, ok := incoming["standardSettings"]; ok {
+		merged["standardSettings"] = ss
+	}
+
+	newVersion := strconv.FormatInt(time.Now().UnixNano(), 10)
+	merged["version"] = newVersion
+	log.Printf("[HOST UpdateDeviceSettings] device → version=%s", newVersion)
+	return merged, nil
+}
+
+// loadOrInitFullConfig parses the stored desired config into a mutable map.
+// If no stored config exists, returns an empty skeleton with a channels slice.
+func (s *DeviceService) loadOrInitFullConfig(storedConfig json.RawMessage) map[string]interface{} {
+	result := map[string]interface{}{"channels": []interface{}{}}
+	if len(storedConfig) > 0 {
+		json.Unmarshal(storedConfig, &result)
+		// Ensure channels key is always a slice.
+		if result["channels"] == nil {
+			result["channels"] = []interface{}{}
+		}
+	}
+	return result
+}
+
+// persistAndPublish saves the merged config and publishes it via MQTT.
+// mqttChannels: if non-nil, only these channels are included in the MQTT payload.
+//               The DB always stores the full merged config regardless.
+// This lets per-channel updates avoid re-triggering unchanged channels on the device.
+func (s *DeviceService) persistAndPublish(device *models.Device, merged map[string]interface{}, mqttChannels []interface{}) error {
+	// Remove envelope fields before storing.
+	delete(merged, "updateId")
+
+	cfgPayload, err := json.Marshal(merged)
+	if err != nil {
+		return fmt.Errorf("marshal config: %w", err)
+	}
+
+	updateID, err := s.store.UpdateDeviceDesiredConfig(device.DeviceID, cfgPayload)
+	if err != nil {
+		return err
+	}
+
+	// Build the MQTT payload. If mqttChannels is set, use only those channels so the
+	// device does not re-process channels that weren't part of this update.
+	mqttConfig := merged
+	if mqttChannels != nil {
+		mqttConfig = make(map[string]interface{}, len(merged))
+		for k, v := range merged {
+			mqttConfig[k] = v
+		}
+		mqttConfig["channels"] = mqttChannels
+	}
+
+	topic := fmt.Sprintf("cdd/%s/config/update", device.DeviceID)
+	envelopePayload, _ := json.Marshal(map[string]interface{}{
+		"updateId":                   updateID,
+		"desiredDeviceConfiguration": mqttConfig,
+	})
+
+	log.Printf("[HOST publish] deviceID=%s topic=%s updateID=%d payloadLen=%d mqttChannelCount=%d",
+		device.DeviceID, topic, updateID, len(envelopePayload), channelCount(mqttConfig))
+
+	if err := s.mqtt.Publish(topic, envelopePayload, true); err != nil {
+		log.Printf("[HOST publish] MQTT publish FAILED: %v", err)
+		return err
+	}
+	return nil
+}
+
+func channelCount(cfg map[string]interface{}) int {
+	if chs, ok := cfg["channels"].([]interface{}); ok {
+		return len(chs)
+	}
+	return 0
+}
+
+// UpdateConfiguration is the legacy full-device update path (kept for backward compat).
+// It unconditionally bumps every channel's version — use UpdateChannelConfig for
+// per-channel operations.
 func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON json.RawMessage) error {
 	device, err := s.store.GetDevice(deviceID)
 	if err != nil {
@@ -305,145 +530,28 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 		return fmt.Errorf("%w: device is deprovisioned", ErrConflict)
 	}
 
-	// Validate config against registration (if registration exists)
 	if len(device.Registration) > 0 {
 		if err := validateConfiguration(cfgJSON, device.Registration); err != nil {
 			return fmt.Errorf("%w: %s", ErrBadRequest, err.Error())
 		}
 	}
 
-	updateID, err := s.store.UpdateDeviceDesiredConfig(deviceID, cfgJSON)
-	if err != nil {
-		return err
-	}
+	var full map[string]interface{}
+	json.Unmarshal(cfgJSON, &full)
 
-	// Build the outgoing payload with smart per-entity configurationId stamping.
-	// configurationId is now a STRING (epoch seconds) — no float32 precision issues.
-	// Each entity that changes gets its own independent time.Now().Unix() call.
+	// Bump device version.
+	full["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
 
-	type prevChannel struct {
-		ConfigurationId string
-		State           string
-		Settings        string
-		Connection      string
-	}
-	prevDeviceConfigId := ""
-	prevDeviceSettings := ""
-	prevChannels := map[string]prevChannel{}
-
-	if len(device.DesiredConfig) > 0 {
-		var prev struct {
-			Version        string          `json:"version"`
-			SimpleSettings json.RawMessage `json:"standardSettings"`
-			Channels       []struct {
-				Id      string          `json:"id"`
-				Version string          `json:"version"`
-				State   string          `json:"state"`
-				Settings json.RawMessage `json:"channelSettings"`
-				Protocol json.RawMessage `json:"protocol"`
-			} `json:"channels"`
-		}
-		if json.Unmarshal(device.DesiredConfig, &prev) == nil {
-			prevDeviceConfigId = prev.Version
-			prevDeviceSettings = canonicalJSON(prev.SimpleSettings)
-			for _, ch := range prev.Channels {
-				if ch.Id != "" {
-					prevChannels[ch.Id] = prevChannel{
-						ConfigurationId: ch.Version,
-						State:           ch.State,
-						Settings:        canonicalJSON(ch.Settings),
-						Connection:      canonicalJSON(ch.Protocol),
-					}
-				}
-			}
-		}
-	}
-
-	var newCfg struct {
-		SimpleSettings json.RawMessage `json:"standardSettings"`
-		Channels       []struct {
-			Id       string          `json:"id"`
-			State    string          `json:"state"`
-			Settings json.RawMessage `json:"channelSettings"`
-			Protocol json.RawMessage `json:"protocol"`
-		} `json:"channels"`
-	}
-	json.Unmarshal(cfgJSON, &newCfg)
-
-	newDeviceSettings := canonicalJSON(newCfg.SimpleSettings)
-	deviceConfigId := prevDeviceConfigId
-	if prevDeviceConfigId == "" || newDeviceSettings != prevDeviceSettings {
-		deviceConfigId = strconv.FormatInt(time.Now().UnixNano(), 10)
-		log.Printf("[HOST UpdateConfig] device simpleSettings changed → version=%s", deviceConfigId)
-	} else {
-		log.Printf("[HOST UpdateConfig] device simpleSettings unchanged → version=%s", deviceConfigId)
-	}
-
-	wrapped := map[string]interface{}{}
-	json.Unmarshal(cfgJSON, &wrapped)
-	wrapped["updateId"] = updateID
-	wrapped["version"] = deviceConfigId
-
-	if channels, ok := wrapped["channels"].([]interface{}); ok {
+	// Unconditionally bump every channel version.
+	if channels, ok := full["channels"].([]interface{}); ok {
 		for _, ch := range channels {
-			chMap, ok := ch.(map[string]interface{})
-			if !ok {
-				continue
+			if chMap, ok := ch.(map[string]interface{}); ok {
+				chMap["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
 			}
-			chID, _ := chMap["id"].(string)
-			newChConfigId := strconv.FormatInt(time.Now().UnixNano(), 10) // default: first push
-			for _, newCh := range newCfg.Channels {
-				if newCh.Id != chID {
-					continue
-				}
-				prev, hasPrev := prevChannels[chID]
-				if hasPrev &&
-					newCh.State == prev.State &&
-					canonicalJSON(newCh.Settings) == prev.Settings &&
-					canonicalJSON(newCh.Protocol) == prev.Connection {
-					newChConfigId = prev.ConfigurationId
-					log.Printf("[HOST UpdateConfig] channel %s unchanged → version=%s", chID, newChConfigId)
-				} else {
-					newChConfigId = strconv.FormatInt(time.Now().UnixNano(), 10)
-					log.Printf("[HOST UpdateConfig] channel %s changed (state:%s→%s settings_changed=%v protocol_changed=%v) → version=%s",
-						chID, prev.State, newCh.State,
-						canonicalJSON(newCh.Settings) != prev.Settings,
-						canonicalJSON(newCh.Protocol) != prev.Connection,
-						newChConfigId)
-				}
-				break
-			}
-			chMap["version"] = newChConfigId
 		}
 	}
 
-	payload, _ := json.Marshal(wrapped)
-	topic := fmt.Sprintf("cdd/%s/config/update", deviceID)
-
-	// Store the stamped config (flat, without envelope) so future pushes can compare correctly.
-	if err := s.store.StoreDeviceDesiredConfig(deviceID, payload); err != nil {
-		log.Printf("[HOST UpdateConfig] failed to store stamped config: %v", err)
-	}
-
-	// Wrap in the MQTT envelope before publishing — v6.0.0 wire format.
-	// updateId is an envelope-level field; the inner desiredDeviceConfiguration
-	// must be a clean DesiredDeviceConfiguration (no extra fields).
-	updateIdVal := wrapped["updateId"]
-	delete(wrapped, "updateId")
-	envelopePayload, _ := json.Marshal(map[string]interface{}{
-		"updateId":                   updateIdVal,
-		"desiredDeviceConfiguration": wrapped,
-	})
-
-	log.Printf("[HOST UpdateConfig] deviceID=%s state=%s online=%v topic=%s updateID=%d payloadLen=%d",
-		deviceID, device.State, device.Online, topic, updateID, len(envelopePayload))
-
-	if err := s.mqtt.Publish(topic, envelopePayload, true); err != nil { // retained — device picks up latest config on reconnect
-		log.Printf("[HOST UpdateConfig] MQTT publish FAILED: %v", err)
-		return err
-	}
-	log.Printf("[HOST UpdateConfig] MQTT publish succeeded for device=%s", deviceID)
-	return nil
+	return s.persistAndPublish(device, full, nil)
 }
 
 // Deprovision marks a device as deprovisioned (Phase 1).
@@ -908,20 +1016,29 @@ func validateProtocol(protoJSON json.RawMessage, registeredProtocols []string, c
 	return nil
 }
 
-// canonicalJSON normalizes a JSON value by round-tripping through interface{}.
-// This ensures consistent key ordering and number representation for comparison.
-// Returns "" for nil or invalid input.
-func canonicalJSON(raw json.RawMessage) string {
-	if len(raw) == 0 || string(raw) == "null" {
-		return ""
+// validateChannelExistsInRegistration checks that channelID is known in the device registration.
+func validateChannelExistsInRegistration(channelID string, regJSON json.RawMessage) error {
+	var reg struct {
+		ChannelAssignments []struct {
+			ChannelID string `json:"channelId"`
+		} `json:"channelAssignments"`
+		// Legacy flat format
+		Channels []struct {
+			ID string `json:"id"`
+		} `json:"channels"`
 	}
-	var v interface{}
-	if err := json.Unmarshal(raw, &v); err != nil {
-		return string(raw)
+	if err := json.Unmarshal(regJSON, &reg); err != nil {
+		return nil // can't parse registration, skip validation
 	}
-	b, err := json.Marshal(v)
-	if err != nil {
-		return string(raw)
+	for _, a := range reg.ChannelAssignments {
+		if a.ChannelID == channelID {
+			return nil
+		}
 	}
-	return string(b)
+	for _, ch := range reg.Channels {
+		if ch.ID == channelID {
+			return nil
+		}
+	}
+	return fmt.Errorf("channel %q not found in device registration", channelID)
 }

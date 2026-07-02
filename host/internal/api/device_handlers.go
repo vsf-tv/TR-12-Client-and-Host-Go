@@ -100,7 +100,7 @@ func (h *DeviceHandlers) Claim(c *gin.Context) {
 	pairingCode := c.Param("pairingCode")
 	var req models.ClaimRequest
 	c.ShouldBindJSON(&req) // optional body
-	if err := h.deviceSvc.Claim(pairingCode, accountID, req.ExpirationDays, req.LocationName, req.DeviceName, req.RotationIntervalDays); err != nil {
+	if err := h.deviceSvc.Claim(pairingCode, accountID, req.ExpirationDays, req.CredentialExpirationDays, req.LocationName, req.DeviceName, req.RotationIntervalDays); err != nil {
 		writeServiceError(c, err)
 		return
 	}
@@ -169,6 +169,39 @@ func (h *DeviceHandlers) RotateCredentials(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"device_id": deviceID, "message": "Credentials rotated"})
+}
+
+// UpdateChannelConfig handles PUT /device/:deviceId/channel/:channelId.
+func (h *DeviceHandlers) UpdateChannelConfig(c *gin.Context) {
+	accountID := c.GetString("account_id")
+	deviceID := c.Param("deviceId")
+	channelID := c.Param("channelId")
+	body, err := c.GetRawData()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "code": 400})
+		return
+	}
+	if err := h.deviceSvc.UpdateChannelConfig(deviceID, accountID, channelID, body); err != nil {
+		writeServiceError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"device_id": deviceID, "channel_id": channelID, "message": "Channel updated"})
+}
+
+// UpdateDeviceSettings handles PUT /device/:deviceId/settings.
+func (h *DeviceHandlers) UpdateDeviceSettings(c *gin.Context) {
+	accountID := c.GetString("account_id")
+	deviceID := c.Param("deviceId")
+	body, err := c.GetRawData()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "code": 400})
+		return
+	}
+	if err := h.deviceSvc.UpdateDeviceSettings(deviceID, accountID, body); err != nil {
+		writeServiceError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"device_id": deviceID, "message": "Device settings updated"})
 }
 
 func writeServiceError(c *gin.Context, err error) {

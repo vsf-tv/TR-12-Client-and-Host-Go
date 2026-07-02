@@ -53,8 +53,23 @@ This ensures the client update pulls in the latest TR12 models.
 ```bash
 git pull --recurse-submodules
 ```
-
 Without the submodule, the Go builds will fail because both `client/` and `host/` import types from `models/TR-12-Models/generated/tr12go/`.
+
+## Dependencies
+Smithy
+```bash
+brew install smithy-lang/tap/smithy-cli
+```
+
+Open API Generator
+```bash
+brew install openapi-generator
+```
+
+Some corporate networks may block GO build process (below) unless using...
+```bash
+go env -w GOPROXY=direct
+```
 
 ## Building
 
@@ -70,6 +85,7 @@ The generated Go model code is committed to the repo — no code generation step
 cd host && go build -o bin/tr12-host ./cmd/tr12-host/
 
 # CDD SDK (device-side daemon)
+cd ..
 cd client && go build -o bin/cdd-sdk ./cmd/cdd-sdk/
 
 # Application Reference Design (simulated encoder)
@@ -155,11 +171,18 @@ curl http://127.0.0.1:8080/device/<DEVICE_ID> \
 curl "http://127.0.0.1:8080/thumbnail/<DEVICE_ID>?channel=CH01" \
   -H "Authorization: Bearer $TOKEN"
 
-# Push a configuration update — start channel CH01 as SRT caller to 192.168.1.100:9000
+# Push a configuration update — starts channel CH01 as SRT caller to 192.168.1.100:9000
 curl -s -X PUT "http://127.0.0.1:8080/device/<DEVICE_ID>" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"channels":[{"id":"CH01","state":"ACTIVE","protocol":{"srtCaller":{"address":"<srt listener ip>","port":<srt listener port>,"minimumLatencyMilliseconds":200}}}]}' | jq .
+
+# Push a configuration update — stops channel CH01 (passes state=IDLE)
+curl -s -X PUT "http://127.0.0.1:8080/device/<DEVICE_ID>" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"channels":[{"id":"CH01","state":"IDLE","protocol":{"srtCaller":{"address":"<srt listener ip>","port":<srt listener port>,"minimumLatencyMilliseconds":200}}}]}' | jq .
+
 
 # Rotate device credentials
 curl -X PUT http://127.0.0.1:8080/credentials/<DEVICE_ID> \

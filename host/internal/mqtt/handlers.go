@@ -19,7 +19,6 @@ import (
 
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/broker"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/db"
-	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/models"
 	"github.com/vsf-tv/TR-12-Client-and-Host-Go/host/internal/service"
 )
 
@@ -99,32 +98,26 @@ func (h *Handlers) handleActualConfig(topic string, payload []byte) {
 	}
 }
 
+// MQTT deprovision ack — device has acknowledged. No IoT resource cleanup
+// is performed here; resources persist indefinitely until a future cleanup
+// mechanism is implemented. Simply log the acknowledgement.
 func (h *Handlers) handleDeprovision(topic string, payload []byte) {
 	deviceID := extractDeviceID(topic)
 	if deviceID == "" {
 		return
 	}
-
 	device, err := h.store.GetDevice(deviceID)
 	if err != nil || device == nil {
 		return
 	}
-
-	// Parse deprovision payload directly (no wrapper field)
-	var deprov models.DeprovisionRequest
-	json.Unmarshal(payload, &deprov)
-
 	if device.State == "DEPROVISIONED" {
-		// Phase 2: device acknowledged — full cleanup
-		log.Printf("[mqtt] device %s acknowledged deprovision, cleaning up", deviceID)
-		if err := h.deviceSvc.FullCleanup(deviceID); err != nil {
-			log.Printf("[mqtt] cleanup error for %s: %v", deviceID, err)
-		}
+		log.Printf("[mqtt] device %s acknowledged deprovision", deviceID)
 	} else {
-		// Device-initiated deprovision — immediate full cleanup
-		log.Printf("[mqtt] device %s initiated deprovision, cleaning up", deviceID)
-		if err := h.deviceSvc.FullCleanup(deviceID); err != nil {
-			log.Printf("[mqtt] cleanup error for %s: %v", deviceID, err)
+		// Device-initiated deprovision — mark deprovisioned in DB so it no longer
+		// appears in list/get. IoT resources are left intact for now.
+		log.Printf("[mqtt] device %s self-deprovisioned", deviceID)
+		if err := h.store.UpdateDeviceState(deviceID, "DEPROVISIONED", true); err != nil {
+			log.Printf("[mqtt] error marking %s deprovisioned: %v", deviceID, err)
 		}
 	}
 }

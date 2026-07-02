@@ -198,7 +198,7 @@ func TestAuthenticate_Claimed(t *testing.T) {
 	deviceID, pairingCode, accessCode := doPair(t, svc)
 
 	// Claim the device
-	if err := svc.Claim(pairingCode, "acc-1", 730, "", "", 365); err != nil {
+	if err := svc.Claim(pairingCode, "acc-1", 730, 0, "", "", 365); err != nil {
 		t.Fatalf("Claim: %v", err)
 	}
 
@@ -263,7 +263,7 @@ func TestClaim_Success(t *testing.T) {
 	svc, _, store := newTestDeviceService(t)
 	_, pairingCode, _ := doPair(t, svc)
 
-	if err := svc.Claim(pairingCode, "acc-1", 730, "", "", 365); err != nil {
+	if err := svc.Claim(pairingCode, "acc-1", 730, 0, "", "", 365); err != nil {
 		t.Fatalf("Claim: %v", err)
 	}
 
@@ -279,7 +279,7 @@ func TestClaim_Success(t *testing.T) {
 
 func TestClaim_NotFound(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
-	err := svc.Claim("NOPE00", "acc-1", 730, "", "", 365)
+	err := svc.Claim("NOPE00", "acc-1", 730, 0, "", "", 365)
 	if err != ErrNotFound {
 		t.Fatalf("expected ErrNotFound, got %v", err)
 	}
@@ -288,9 +288,9 @@ func TestClaim_NotFound(t *testing.T) {
 func TestClaim_AlreadyClaimed(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	_, pairingCode, _ := doPair(t, svc)
-	svc.Claim(pairingCode, "acc-1", 730, "", "", 365)
+	svc.Claim(pairingCode, "acc-1", 730, 0, "", "", 365)
 
-	err := svc.Claim(pairingCode, "acc-2", 730, "", "", 365)
+	err := svc.Claim(pairingCode, "acc-2", 730, 0, "", "", 365)
 	if err != ErrConflict {
 		t.Fatalf("expected ErrConflict, got %v", err)
 	}
@@ -302,8 +302,8 @@ func TestListDevices(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	_, pc1, _ := doPair(t, svc)
 	_, pc2, _ := doPair(t, svc)
-	svc.Claim(pc1, "acc-1", 730, "", "", 365)
-	svc.Claim(pc2, "acc-1", 730, "", "", 365)
+	svc.Claim(pc1, "acc-1", 730, 0, "", "", 365)
+	svc.Claim(pc2, "acc-1", 730, 0, "", "", 365)
 
 	summaries, err := svc.ListDevices("acc-1")
 	if err != nil {
@@ -319,7 +319,7 @@ func TestListDevices(t *testing.T) {
 func TestDescribeDevice_Success(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	detail, err := svc.DescribeDevice(deviceID, "acc-1")
 	if err != nil {
@@ -341,7 +341,7 @@ func TestDescribeDevice_NotFound(t *testing.T) {
 func TestDescribeDevice_Forbidden(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	_, err := svc.DescribeDevice(deviceID, "acc-other")
 	if err != ErrForbidden {
@@ -354,7 +354,7 @@ func TestDescribeDevice_Forbidden(t *testing.T) {
 func TestUpdateConfiguration_Success(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	// Set registration so validation passes
 	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE","settings":[{"id":"brightness","name":"Brightness","description":"Brightness","constraint":{"enums":{"values":["low","high"],"defaultValue":"low"}}}],"profiles":[{"id":"prof1","name":"P1","description":"P1"}]}],"channelAssignments":[{"channelId":"ch1","name":"Channel 1","templateId":"tmpl1"}]}`)
@@ -378,7 +378,7 @@ func TestUpdateConfiguration_Success(t *testing.T) {
 func TestUpdateConfiguration_ValidationError(t *testing.T) {
 	svc, _, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	reg := json.RawMessage(`{"channelTemplates":[{"id":"tmpl1","channelType":"SOURCE"}],"channelAssignments":[{"channelId":"ch1","name":"Channel 1","templateId":"tmpl1"}]}`)
 	store.UpdateDeviceRegistration(deviceID, reg)
@@ -396,7 +396,7 @@ func TestUpdateConfiguration_ValidationError(t *testing.T) {
 func TestDeprovision(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	if err := svc.Deprovision(deviceID, "acc-1"); err != nil {
 		t.Fatalf("Deprovision: %v", err)
@@ -428,7 +428,7 @@ func TestDeprovision(t *testing.T) {
 func TestDeprovision_Forbidden(t *testing.T) {
 	svc, _, _ := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	err := svc.Deprovision(deviceID, "acc-other")
 	if err != ErrForbidden {
@@ -441,7 +441,7 @@ func TestDeprovision_Forbidden(t *testing.T) {
 func TestFullCleanup(t *testing.T) {
 	svc, _, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	// Add thumbnail and log
 	store.UpsertThumbnail(&db.Thumbnail{DeviceID: deviceID, ChannelID: "ch1", ImageData: []byte{1}, Timestamp: "now", ImageType: "jpeg", ImageSizeKB: 1})
@@ -470,7 +470,7 @@ func TestFullCleanup(t *testing.T) {
 func TestRotateCredentials(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID, pc, _ := doPair(t, svc)
-	svc.Claim(pc, "acc-1", 730, "", "", 365)
+	svc.Claim(pc, "acc-1", 730, 0, "", "", 365)
 
 	if err := svc.RotateCredentials(deviceID, "acc-1"); err != nil {
 		t.Fatalf("RotateCredentials: %v", err)
@@ -644,6 +644,343 @@ func TestValidateConfiguration_ConnectionWithOptionalFields(t *testing.T) {
 	cfg := json.RawMessage(`{"channels":[{"id":"ch1","state":"ACTIVE","protocol":{"srtCaller":{"address":"1.2.3.4","port":9000,"minimumLatencyMilliseconds":200,"streamId":"test123"}}}]}`)
 	if err := validateConfiguration(cfg, reg); err != nil {
 		t.Fatalf("expected valid with optional streamId, got %v", err)
+	}
+}
+
+// --- UpdateChannelConfig (TC-H01 through TC-H08) ---
+
+// fourChannelReg is a 4-channel registration used by most per-channel tests.
+// It includes a device-level setting (sync_clock_source) so that pushInitialConfig
+// can include standardSettings in its payload without triggering a validation error.
+const fourChannelReg = `{
+	"settings":[{"id":"sync_clock_source","name":"Clock Source","description":"Clock source","constraint":{"enums":{"values":["NTP","PTP"],"defaultValue":"NTP"}}}],
+	"channelTemplates":[
+		{"id":"tmpl1","channelType":"SOURCE","protocols":["SRT_CALLER"],"settings":[{"id":"RS01","name":"res","description":"res","constraint":{"enums":{"values":["1920x1080"],"defaultValue":"1920x1080"}}}]}
+	],
+	"channelAssignments":[
+		{"channelId":"CH01","name":"Channel 1","templateId":"tmpl1"},
+		{"channelId":"CH02","name":"Channel 2","templateId":"tmpl1"},
+		{"channelId":"CH03","name":"Channel 3","templateId":"tmpl1"},
+		{"channelId":"CH04","name":"Channel 4","templateId":"tmpl1"}
+	]
+}`
+
+// doClaimWithReg pairs, claims, and sets registration for a device.
+func doClaimWithReg(t *testing.T, svc *DeviceService, store interface {
+	UpdateDeviceRegistration(string, json.RawMessage) error
+}, accountID string) string {
+	t.Helper()
+	deviceID, pc, _ := doPair(t, svc)
+	if err := svc.Claim(pc, accountID, 730, 0, "", "", 365); err != nil {
+		t.Fatalf("Claim: %v", err)
+	}
+	if err := store.UpdateDeviceRegistration(deviceID, json.RawMessage(fourChannelReg)); err != nil {
+		t.Fatalf("UpdateDeviceRegistration: %v", err)
+	}
+	return deviceID
+}
+
+// pushInitialConfig pushes a 4-channel config so the stored config is populated.
+func pushInitialConfig(t *testing.T, svc *DeviceService, deviceID, accountID string) {
+	t.Helper()
+	cfg := json.RawMessage(`{
+		"channels":[
+			{"id":"CH01","state":"IDLE","channelSettings":{"standardSettings":[{"id":"RS01","value":"1920x1080"}]}},
+			{"id":"CH02","state":"IDLE","channelSettings":{"standardSettings":[{"id":"RS01","value":"1920x1080"}]}},
+			{"id":"CH03","state":"IDLE","channelSettings":{"standardSettings":[{"id":"RS01","value":"1920x1080"}]}},
+			{"id":"CH04","state":"IDLE","channelSettings":{"standardSettings":[{"id":"RS01","value":"1920x1080"}]}}
+		],
+		"standardSettings":[{"id":"sync_clock_source","value":"NTP"}]
+	}`)
+	if err := svc.UpdateConfiguration(deviceID, accountID, cfg); err != nil {
+		t.Fatalf("pushInitialConfig: %v", err)
+	}
+}
+
+// channelVersions extracts channel versions from the DB-stored desired config
+// (via the last MQTT payload's updateId, but we read from the stored config directly
+// since per-channel updates only send the updated channel in MQTT).
+// For tests we read back the device's desired config from the store.
+func channelVersionsFromStore(t *testing.T, store *db.Store, deviceID string) map[string]string {
+	t.Helper()
+	device, err := store.GetDevice(deviceID)
+	if err != nil || device == nil {
+		t.Fatalf("channelVersionsFromStore: device not found: %v", err)
+	}
+	if len(device.DesiredConfig) == 0 {
+		return map[string]string{}
+	}
+	var cfg struct {
+		Channels []struct {
+			ID      string `json:"id"`
+			Version string `json:"version"`
+		} `json:"channels"`
+	}
+	if err := json.Unmarshal(device.DesiredConfig, &cfg); err != nil {
+		t.Fatalf("channelVersionsFromStore: unmarshal: %v", err)
+	}
+	out := map[string]string{}
+	for _, ch := range cfg.Channels {
+		out[ch.ID] = ch.Version
+	}
+	return out
+}
+
+// channelVersions reads the MQTT payload for the channel count in the MQTT message
+// (for verifying isolation), but version truth comes from the DB store.
+func channelVersions(t *testing.T, mqtt *mockMQTT) map[string]string {
+	t.Helper()
+	if len(mqtt.messages) == 0 {
+		t.Fatal("no MQTT messages published")
+	}
+	last := mqtt.messages[len(mqtt.messages)-1]
+	var env struct {
+		Config struct {
+			Channels []struct {
+				ID      string `json:"id"`
+				Version string `json:"version"`
+			} `json:"channels"`
+		} `json:"desiredDeviceConfiguration"`
+	}
+	if err := json.Unmarshal(last.Payload, &env); err != nil {
+		t.Fatalf("channelVersions: unmarshal: %v", err)
+	}
+	out := map[string]string{}
+	for _, ch := range env.Config.Channels {
+		out[ch.ID] = ch.Version
+	}
+	return out
+}
+
+// TC-H01: Updating CH03 bumps only CH03's version.
+func TestUpdateChannelConfig_OnlyTargetChannelVersionBumped(t *testing.T) {
+	svc, mqtt, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	pushInitialConfig(t, svc, deviceID, "acc-1")
+
+	// Record versions from DB after initial push.
+	v0 := channelVersionsFromStore(t, store, deviceID)
+
+	// Update only CH03.
+	ch03cfg := json.RawMessage(`{"state":"ACTIVE","channelSettings":{"standardSettings":[{"id":"RS01","value":"1920x1080"}]}}`)
+	if err := svc.UpdateChannelConfig(deviceID, "acc-1", "CH03", ch03cfg); err != nil {
+		t.Fatalf("UpdateChannelConfig: %v", err)
+	}
+
+	// Read versions from DB (source of truth for all channels).
+	v1 := channelVersionsFromStore(t, store, deviceID)
+
+	if v1["CH03"] == v0["CH03"] {
+		t.Errorf("TC-H01: CH03 version should have changed, still %q", v1["CH03"])
+	}
+	if v1["CH01"] != v0["CH01"] {
+		t.Errorf("TC-H01: CH01 version changed unexpectedly: %q → %q", v0["CH01"], v1["CH01"])
+	}
+	if v1["CH02"] != v0["CH02"] {
+		t.Errorf("TC-H01: CH02 version changed unexpectedly: %q → %q", v0["CH02"], v1["CH02"])
+	}
+	if v1["CH04"] != v0["CH04"] {
+		t.Errorf("TC-H01: CH04 version changed unexpectedly: %q → %q", v0["CH04"], v1["CH04"])
+	}
+
+	// Also verify the MQTT message only contains CH03 (not the full 4-channel list).
+	mqttVersions := channelVersions(t, mqtt)
+	if len(mqttVersions) != 1 {
+		t.Errorf("TC-H01: MQTT payload should contain exactly 1 channel, got %d — would re-trigger unchanged channels", len(mqttVersions))
+	}
+	if _, ok := mqttVersions["CH03"]; !ok {
+		t.Errorf("TC-H01: MQTT payload should contain CH03, got keys: %v", mqttVersions)
+	}
+}
+
+// TC-H02: Updating CH03 twice bumps CH03 version each time (monotonic).
+func TestUpdateChannelConfig_VersionMonotonic(t *testing.T) {
+	svc, _, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	pushInitialConfig(t, svc, deviceID, "acc-1")
+
+	ch03cfg := json.RawMessage(`{"state":"ACTIVE"}`)
+	svc.UpdateChannelConfig(deviceID, "acc-1", "CH03", ch03cfg)
+	v1 := channelVersionsFromStore(t, store, deviceID)
+
+	svc.UpdateChannelConfig(deviceID, "acc-1", "CH03", ch03cfg)
+	v2 := channelVersionsFromStore(t, store, deviceID)
+
+	if v2["CH03"] == v1["CH03"] {
+		t.Errorf("TC-H02: CH03 version did not change on second update: %q", v2["CH03"])
+	}
+	if v2["CH03"] < v1["CH03"] {
+		t.Errorf("TC-H02: CH03 version went backwards: %q → %q", v1["CH03"], v2["CH03"])
+	}
+}
+
+// TC-H03: Updating CH03 does not alter CH01's content.
+func TestUpdateChannelConfig_OtherChannelContentUnchanged(t *testing.T) {
+	svc, _, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	pushInitialConfig(t, svc, deviceID, "acc-1")
+
+	// Give CH01 a specific state first.
+	svc.UpdateChannelConfig(deviceID, "acc-1", "CH01", json.RawMessage(`{"state":"ACTIVE"}`))
+
+	// Now update only CH03.
+	svc.UpdateChannelConfig(deviceID, "acc-1", "CH03", json.RawMessage(`{"state":"IDLE"}`))
+
+	// Read CH01 state from DB — it should still be ACTIVE.
+	device, _ := store.GetDevice(deviceID)
+	var cfg struct {
+		Channels []struct {
+			ID    string `json:"id"`
+			State string `json:"state"`
+		} `json:"channels"`
+	}
+	json.Unmarshal(device.DesiredConfig, &cfg)
+	for _, ch := range cfg.Channels {
+		if ch.ID == "CH01" && ch.State != "ACTIVE" {
+			t.Errorf("TC-H03: CH01 state was mutated by CH03 update, got %q", ch.State)
+		}
+	}
+}
+
+// TC-H04: Device settings update bumps device version, preserves all channel versions.
+func TestUpdateDeviceSettings_OnlyDeviceVersionBumped(t *testing.T) {
+	svc, mqtt, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	pushInitialConfig(t, svc, deviceID, "acc-1")
+
+	v0 := channelVersionsFromStore(t, store, deviceID)
+
+	settings := json.RawMessage(`{"standardSettings":[{"id":"sync_clock_source","value":"PTP"}]}`)
+	if err := svc.UpdateDeviceSettings(deviceID, "acc-1", settings); err != nil {
+		t.Fatalf("UpdateDeviceSettings: %v", err)
+	}
+
+	v1 := channelVersionsFromStore(t, store, deviceID)
+
+	for _, chID := range []string{"CH01", "CH02", "CH03", "CH04"} {
+		if v1[chID] != v0[chID] {
+			t.Errorf("TC-H04: %s version changed after device settings update: %q → %q", chID, v0[chID], v1[chID])
+		}
+	}
+
+	// Verify device version was bumped (device settings publishes full config).
+	last := mqtt.messages[len(mqtt.messages)-1]
+	var env struct {
+		Config struct {
+			Version string `json:"version"`
+		} `json:"desiredDeviceConfiguration"`
+	}
+	json.Unmarshal(last.Payload, &env)
+	if env.Config.Version == "" {
+		t.Error("TC-H04: device version is empty after UpdateDeviceSettings")
+	}
+}
+
+// TC-H05: Channel update on non-existent channel → ErrNotFound.
+func TestUpdateChannelConfig_UnknownChannel(t *testing.T) {
+	svc, _, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+
+	err := svc.UpdateChannelConfig(deviceID, "acc-1", "CH99", json.RawMessage(`{"state":"IDLE"}`))
+	if err == nil {
+		t.Fatal("TC-H05: expected error for unknown channel")
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("TC-H05: expected not found, got %v", err)
+	}
+}
+
+// TC-H06: Channel update on deprovisioned device → ErrConflict.
+func TestUpdateChannelConfig_DeprovisionedDevice(t *testing.T) {
+	svc, _, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	svc.Deprovision(deviceID, "acc-1")
+
+	err := svc.UpdateChannelConfig(deviceID, "acc-1", "CH01", json.RawMessage(`{"state":"IDLE"}`))
+	if err == nil {
+		t.Fatal("TC-H06: expected error for deprovisioned device")
+	}
+	if !strings.Contains(err.Error(), "deprovisioned") {
+		t.Errorf("TC-H06: expected deprovisioned error, got %v", err)
+	}
+}
+
+// TC-H07: First channel update (no prior config) creates full config with defaults for other channels.
+func TestUpdateChannelConfig_FirstUpdate_CreatesFullConfig(t *testing.T) {
+	svc, mqtt, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	// No pushInitialConfig — no prior stored config.
+
+	ch03cfg := json.RawMessage(`{"state":"ACTIVE"}`)
+	if err := svc.UpdateChannelConfig(deviceID, "acc-1", "CH03", ch03cfg); err != nil {
+		t.Fatalf("TC-H07: UpdateChannelConfig: %v", err)
+	}
+
+	last := mqtt.messages[len(mqtt.messages)-1]
+	var env struct {
+		Config struct {
+			Channels []struct {
+				ID      string `json:"id"`
+				Version string `json:"version"`
+			} `json:"channels"`
+		} `json:"desiredDeviceConfiguration"`
+	}
+	json.Unmarshal(last.Payload, &env)
+
+	found := false
+	for _, ch := range env.Config.Channels {
+		if ch.ID == "CH03" {
+			found = true
+			if ch.Version == "" {
+				t.Error("TC-H07: CH03 has no version")
+			}
+		}
+	}
+	if !found {
+		t.Error("TC-H07: CH03 not present in published config")
+	}
+}
+
+// TC-H08: Published MQTT payload is valid envelope with desiredDeviceConfiguration.
+// For a per-channel update, the MQTT payload must contain ONLY the updated channel —
+// not the full channel list. This is the key isolation guarantee.
+func TestUpdateChannelConfig_MQTTEnvelopeValid(t *testing.T) {
+	svc, mqtt, store := newTestDeviceService(t)
+	deviceID := doClaimWithReg(t, svc, store, "acc-1")
+	pushInitialConfig(t, svc, deviceID, "acc-1")
+
+	svc.UpdateChannelConfig(deviceID, "acc-1", "CH01", json.RawMessage(`{"state":"ACTIVE"}`))
+
+	last := mqtt.messages[len(mqtt.messages)-1]
+	var env map[string]interface{}
+	if err := json.Unmarshal(last.Payload, &env); err != nil {
+		t.Fatalf("TC-H08: invalid JSON in MQTT payload: %v", err)
+	}
+	if _, ok := env["desiredDeviceConfiguration"]; !ok {
+		t.Error("TC-H08: MQTT payload missing desiredDeviceConfiguration key")
+	}
+	if _, ok := env["updateId"]; !ok {
+		t.Error("TC-H08: MQTT payload missing updateId key")
+	}
+	if !last.Retain {
+		t.Error("TC-H08: MQTT message should be retained")
+	}
+
+	// Key isolation check: MQTT payload must contain ONLY CH01, not all 4 channels.
+	// If the full config were published, the device would re-process CH02/CH03/CH04.
+	var typedEnv struct {
+		Config struct {
+			Channels []struct {
+				ID string `json:"id"`
+			} `json:"channels"`
+		} `json:"desiredDeviceConfiguration"`
+	}
+	json.Unmarshal(last.Payload, &typedEnv)
+	if len(typedEnv.Config.Channels) != 1 {
+		t.Errorf("TC-H08: expected 1 channel in MQTT payload, got %d — full config would re-trigger unchanged channels", len(typedEnv.Config.Channels))
+	}
+	if len(typedEnv.Config.Channels) == 1 && typedEnv.Config.Channels[0].ID != "CH01" {
+		t.Errorf("TC-H08: expected CH01 in MQTT payload, got %s", typedEnv.Config.Channels[0].ID)
 	}
 }
 

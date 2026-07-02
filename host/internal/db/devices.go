@@ -243,6 +243,16 @@ func (s *Store) UpdateDeviceOnline(deviceID string, online bool, sourceIP, lastS
 	return err
 }
 
+// SetInitialCert updates the current cert and expiry at claim time (e.g. when the
+// operator specifies a custom credential lifetime different from the service default).
+func (s *Store) SetInitialCert(deviceID, currentCert, certExpires string) error {
+	_, err := s.DB.Exec(
+		"UPDATE devices SET current_cert_pem = ?, cert_expires_at = ? WHERE device_id = ?",
+		currentCert, certExpires, deviceID,
+	)
+	return err
+}
+
 // UpdateDeviceCerts updates certificate fields after rotation.
 func (s *Store) UpdateDeviceCerts(deviceID, currentCert, previousCert, certExpires, prevCertExpires, lastRotation string) error {
 	_, err := s.DB.Exec(`UPDATE devices SET
