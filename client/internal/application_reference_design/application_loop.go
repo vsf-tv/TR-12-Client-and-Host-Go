@@ -42,7 +42,9 @@ import (
 	cddsdkgo "github.com/vsf-tv/TR-12-Client-and-Host-Go/models/cdd_sdk/generated/cdd_sdkgo"
 )
 
-// pollInterval is how often stopAndWait checks whether the channel has stopped.
+// actualReportInterval is how often the loop sends a periodic actual config
+// heartbeat to the host when no config change goroutine is in flight.
+const actualReportInterval = 60 * time.Second
 const pollInterval = 500 * time.Millisecond
 
 // stopTimeout is the maximum time stopAndWait will wait for a channel to reach
@@ -71,6 +73,7 @@ type ApplicationLoop struct {
 	latestChannelConfigIds map[string]string
 	channelWorkers         map[string]context.CancelFunc // at most one in-flight goroutine per channel
 	lastSeenConfig         *cddsdkgo.DesiredDeviceConfiguration // for actual-config reports from goroutines
+	lastActualReport       time.Time // tracks when actual config was last reported to the host
 
 	reportedInitialActualConfig bool
 
@@ -129,7 +132,7 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 			case <-ctx.Done():
 				l.cancelAllWorkers()
 				return
-			case <-time.After(3 * time.Second):
+			case <-time.After(5 * time.Second):
 			}
 			continue
 		}
@@ -159,7 +162,7 @@ func (l *ApplicationLoop) Run(ctx context.Context, hostID string) {
 		case <-ctx.Done():
 			l.cancelAllWorkers()
 			return
-		case <-time.After(3 * time.Second):
+		case <-time.After(5 * time.Second):
 		}
 	}
 }
@@ -220,14 +223,15 @@ func (l *ApplicationLoop) processConfiguration(ctx context.Context) {
 		l.mu.Unlock()
 	}
 
-	if !channelDispatched && !deviceSettingsApplied {
-		return
+	// Periodic heartbeat — report actual config every 60s when no channel
+	// goroutines were dispatched this cycle (goroutines report themselves on
+	// completion, so a simultaneous heartbeat would be redundant).
+	if !channelDispatched && time.Since(l.lastActualReport) >= actualReportInterval {
+		l.reportActual(cfg)
 	}
 
-	// If only device settings changed (no channel goroutines in flight), report
-	// now. Channel goroutines report actual config when they complete.
-	if deviceSettingsApplied && !channelDispatched {
-		l.reportActual(cfg)
+	if !channelDispatched && !deviceSettingsApplied {
+		return
 	}
 }
 
@@ -247,99 +251,49 @@ func (l *ApplicationLoop) dispatchChannelWork(ctx context.Context, ch cddsdkgo.D
 
 // channelWorkerFn applies a new desired configuration for one channel.
 //
-//   desired=ACTIVE: stops the channel if not already stopped (waits for stopped),
-//   applies settings and protocol, then issues start (fire and forget).
+// Sequence:
+//  1. Apply config (settings + protocol) while channel may be in any state.
+//     The device accepts writes regardless of state; changes take effect on next start.
+//  2. Drive to desired state via UpdateChannelStateWithContext, which handles
+//     the full two-phase polling (stop-poll → start-poll for ACTIVE, stop-poll for IDLE).
+//  3. Evaluate accumulated health errors from both apply and state transition.
+//  4. Mark version applied and report actual config.
 //
-//   desired=IDLE: issues stop and exits immediately (fire and forget).
-//
-// In both cases: updates latestChannelConfigIds and reports actual config when done.
-// Context cancellation (new version arriving) exits early without updating the version —
-// the next cycle will re-dispatch for the newer version.
+// Context cancellation (new version arrived) exits early without reporting —
+// the new goroutine will complete the transaction with the latest config.
 func (l *ApplicationLoop) channelWorkerFn(ctx context.Context, ch cddsdkgo.DesiredChannelConfiguration) {
 	chID := ch.Id
 
-	if ch.State == cddsdkgo.CHANNELSTATE_ACTIVE {
-		// Device requires channel to be fully stopped before settings can be applied.
-		// Use raw status when available — GetChannelState returns IDLE for both
-		// "stopped" and "stopping", so we must check the raw value to avoid
-		// applying settings or issuing start while the channel is mid-stop.
-		if !l.isFullyStopped(chID) {
-			l.logf("[LOOP] channel %s stopping before settings apply", chID)
-			if !l.stopAndWait(ctx, chID) {
-			if ctx.Err() != nil {
-				l.logf("[LOOP] channel %s stop aborted (new version or shutdown)", chID)
-			} else {
-				// Timed out — channel is stuck stopping. Mark DEGRADED and report
-				// so the host is informed; do not apply settings to a stuck channel.
-				l.logf("[LOOP] channel %s failed to stop within %s — aborting config apply", chID, stopTimeout)
-				msg := fmt.Sprintf("channel failed to stop within %s — config not applied", stopTimeout)
-				if cb, ok := l.callbacks.(interface{ SetChannelDegradedHealth(string, string) }); ok {
-					cb.SetChannelDegradedHealth(chID, msg)
-				}
-				l.mu.Lock()
-				cfg := l.lastSeenConfig
-				appliedVersions := make(map[string]string, len(l.latestChannelConfigIds))
-				for k, v := range l.latestChannelConfigIds {
-					appliedVersions[k] = v
-				}
-				l.mu.Unlock()
-				if cfg != nil {
-					actual := l.shim.GetActualConfiguration(l.registration, cfg, appliedVersions)
-					l.sdk.ReportActualConfiguration(actual)
-				}
-			}
-			return
-		}
-		}
-
-		if ctx.Err() != nil {
-			return
-		}
-
-		// Channel is stopped — safe to apply settings and protocol.
-		if cb, ok := l.callbacks.(interface{ BeginChannelUpdate(string) }); ok {
-			cb.BeginChannelUpdate(chID)
-		}
-		l.applyChannelConfigSync(ch)
-
-		// Evaluate settings-apply health (e.g. Talon API errors during PATCH calls).
-		if cb, ok := l.callbacks.(interface{ EvalChannelHealth(string) }); ok {
-			cb.EvalChannelHealth(chID)
-		}
-
-		if ctx.Err() != nil {
-			return
-		}
-
-		// Issue start — fire and forget. The device transitions on its own.
-		l.logf("[LOOP] channel %s issuing start", chID)
-		l.issueChannelState(ctx, chID, cddsdkgo.CHANNELSTATE_ACTIVE)
-
-	} else {
-		// Desired = IDLE: ensure stopped, apply settings (device requires stopped
-		// state to accept settings), then walk away. Settings are applied now so
-		// they take effect on the next start without needing another push.
-		if !l.isFullyStopped(chID) {
-			l.logf("[LOOP] channel %s stopping before settings apply (desired=IDLE)", chID)
-			if !l.stopAndWait(ctx, chID) {
-				l.logf("[LOOP] channel %s stop aborted", chID)
-				return
-			}
-		}
-		if cb, ok := l.callbacks.(interface{ BeginChannelUpdate(string) }); ok {
-			cb.BeginChannelUpdate(chID)
-		}
-		l.applyChannelConfigSync(ch)
-		if cb, ok := l.callbacks.(interface{ EvalChannelHealth(string) }); ok {
-			cb.EvalChannelHealth(chID)
-		}
+	// Reset error accumulator so stale errors from a cancelled previous cycle
+	// don't bleed into this one.
+	if cb, ok := l.callbacks.(interface{ BeginChannelUpdate(string) }); ok {
+		cb.BeginChannelUpdate(chID)
 	}
+
+	// Step 1: Apply config — settings and protocol are written to the device now.
+	// They take effect on next start (device accepts writes on running channels).
+	l.applyChannelConfigSync(ch)
 
 	if ctx.Err() != nil {
-		return
+		return // cancelled before state transition — new goroutine takes over
 	}
 
-	// Mark this version as handled and report actual config.
+	// Step 2: Drive to desired state.
+	// UpdateChannelStateWithContext handles the full polling loop:
+	//   ACTIVE → phase 1 (stop-poll) + phase 2 (start-poll)
+	//   IDLE   → phase 1 (stop-poll) only
+	l.issueChannelState(ctx, chID, ch.State)
+
+	if ctx.Err() != nil {
+		return // cancelled mid-transition — new goroutine takes over
+	}
+
+	// Step 3: Evaluate all errors accumulated during apply + state transition.
+	if cb, ok := l.callbacks.(interface{ EvalChannelHealth(string) }); ok {
+		cb.EvalChannelHealth(chID)
+	}
+
+	// Step 4: Mark version applied and report actual config to the host.
 	l.mu.Lock()
 	l.latestChannelConfigIds[chID] = ch.Version
 	cfg := l.lastSeenConfig
@@ -366,6 +320,7 @@ func (l *ApplicationLoop) channelWorkerFn(ctx context.Context, ch cddsdkgo.Desir
 	} else {
 		l.logf("[LOOP] channel %s report_actual state=%s message=%s",
 			chID, reportResp.State, reportResp.Message)
+		l.lastActualReport = time.Now()
 	}
 }
 
@@ -453,6 +408,7 @@ func (l *ApplicationLoop) reportActual(cfg *cddsdkgo.DesiredDeviceConfiguration)
 	} else {
 		l.logf("[LOOP] report_actual_configuration state=%s message=%s",
 			reportResp.State, reportResp.Message)
+		l.lastActualReport = time.Now()
 	}
 }
 
@@ -501,6 +457,7 @@ func (l *ApplicationLoop) reportInitialActualConfig() {
 		return
 	}
 	l.reportedInitialActualConfig = true
+	l.lastActualReport = time.Now()
 }
 
 func (l *ApplicationLoop) reportStatus() {

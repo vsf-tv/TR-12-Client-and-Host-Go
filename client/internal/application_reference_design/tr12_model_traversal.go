@@ -150,6 +150,10 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 }
 
 func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTemplate, desiredSettings *cddsdkgo.ChannelSettings) cddsdkgo.ActualChannelConfiguration {
+	if cb, ok := s.CB.(interface{ BeginGetActualConfiguration(string) }); ok {
+		cb.BeginGetActualConfiguration(channelID)
+	}
+
 	chCfg := cddsdkgo.ActualChannelConfiguration{
 		Id:    channelID,
 		State: s.CB.GetChannelState(channelID),
