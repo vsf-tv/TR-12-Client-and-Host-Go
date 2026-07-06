@@ -334,14 +334,18 @@ func (s *DeviceService) UpdateChannelConfig(deviceID, accountID, channelID strin
 	}
 
 	// Load the stored full config and merge the updated channel into it.
-	merged, mqttChannel, err := s.mergeChannelUpdate(device.DesiredConfig, channelID, channelCfg)
+	merged, _, err := s.mergeChannelUpdate(device.DesiredConfig, channelID, channelCfg)
 	if err != nil {
 		return fmt.Errorf("merge channel update: %w", err)
 	}
 
 	// Only publish the single updated channel in MQTT — not the full config.
 	// This prevents the device from re-processing channels that weren't part of this update.
-	return s.persistAndPublish(device, merged, []interface{}{mqttChannel})
+	// UPDATE: Publish the full config. The SDK replaces its cached config with whatever
+	// arrives on MQTT (retained message), so partial updates cause other channels to
+	// disappear. The client-side ApplicationLoop is version-gated and will skip
+	// channels whose version hasn't changed — so publishing all channels is safe.
+	return s.persistAndPublish(device, merged, nil)
 }
 
 // UpdateDeviceSettings updates only the device-level standardSettings, unconditionally

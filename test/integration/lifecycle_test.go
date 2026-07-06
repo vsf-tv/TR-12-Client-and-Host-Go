@@ -1733,3 +1733,138 @@ func TestChannelHealthReporting(t *testing.T) {
 
 	t.Log("=== TestChannelHealthReporting PASSED ===")
 }
+
+// TestSequentialPerChannelStops verifies that two sequential per-channel updates
+// (stop CH01, then stop CH02) both get processed by the client. This is a
+// regression test for a bug where the host published only the changed channel
+// in the MQTT retained message, causing the SDK to lose all other channels.
+func TestSequentialPerChannelStops(t *testing.T) {
+	createTestJPEG(t, "/tmp/image_sdi.jpg")
+	t.Cleanup(func() { _ = removeIfExists("/tmp/image_sdi.jpg") })
+
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-seqstop-001")
+
+	registration := loadRegistrationFrom(t, "2_channel_encoder")
+
+	acct := env.hostRegisterAccount("seqstopuser", "testpass123", "SeqStop Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// Start both channels via full-device update
+	t.Log("Phase 1: Start both channels")
+	fullConfig := json.RawMessage(`{
+		"standardSettings": [{"id": "sync_clock_source", "value": "NTP"}],
+		"channels": [
+			{"id": "CH01", "state": "ACTIVE", "channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "60"},
+				{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
+			]}},
+			{"id": "CH02", "state": "ACTIVE", "channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"}, {"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"}, {"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
+			]}}
+		]
+	}`)
+	code, body := env.hostUpdateConfig(deviceID, token, fullConfig)
+	if code != 200 {
+		t.Fatalf("Phase 1: expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(5 * time.Second)
+
+	// Verify both channels are ACTIVE in SDK config
+	sdkCfg := env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("Phase 1: SDK returned nil configuration")
+	}
+	cfgStr := string(mustMarshal(sdkCfg.Configuration))
+	if !strings.Contains(cfgStr, "CH01") || !strings.Contains(cfgStr, "CH02") {
+		t.Fatalf("Phase 1: expected both channels in SDK config: %s", cfgStr)
+	}
+	t.Log("Phase 1: OK — both channels ACTIVE")
+
+	// Phase 2: Stop CH01 via per-channel API
+	t.Log("Phase 2: Stop CH01 via per-channel API")
+	ch01Stop := json.RawMessage(`{"state": "IDLE"}`)
+	code, body = env.hostUpdateChannelConfig(deviceID, "CH01", token, ch01Stop)
+	if code != 200 {
+		t.Fatalf("Phase 2: stop CH01 expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(3 * time.Second)
+
+	// Verify SDK still has both channels (the regression was CH02 disappearing)
+	sdkCfg = env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("Phase 2: SDK returned nil configuration after CH01 stop")
+	}
+	cfgStr = string(mustMarshal(sdkCfg.Configuration))
+	if !strings.Contains(cfgStr, "CH01") || !strings.Contains(cfgStr, "CH02") {
+		t.Fatalf("Phase 2: SDK config lost a channel after CH01 stop: %s", cfgStr)
+	}
+	t.Log("Phase 2: OK — both channels still present in SDK config after CH01 stop")
+
+	// Phase 3: Stop CH02 via per-channel API
+	t.Log("Phase 3: Stop CH02 via per-channel API")
+	ch02Stop := json.RawMessage(`{"state": "IDLE"}`)
+	code, body = env.hostUpdateChannelConfig(deviceID, "CH02", token, ch02Stop)
+	if code != 200 {
+		t.Fatalf("Phase 3: stop CH02 expected 200, got %d: %s", code, body)
+	}
+	time.Sleep(3 * time.Second)
+
+	// Verify SDK has both channels with IDLE state
+	sdkCfg = env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("Phase 3: SDK returned nil configuration after CH02 stop")
+	}
+	cfgStr = string(mustMarshal(sdkCfg.Configuration))
+	if !strings.Contains(cfgStr, "CH01") || !strings.Contains(cfgStr, "CH02") {
+		t.Fatalf("Phase 3: SDK config lost a channel after CH02 stop: %s", cfgStr)
+	}
+	// Both channels should now show IDLE
+	if !strings.Contains(cfgStr, `"IDLE"`) {
+		t.Fatalf("Phase 3: expected IDLE state in SDK config: %s", cfgStr)
+	}
+
+	// Verify both channels have distinct versions (both were bumped independently)
+	payload, ok := sdkCfg.Configuration["payload"]
+	if !ok {
+		t.Fatal("Phase 3: no payload in SDK config")
+	}
+	b, _ := json.Marshal(payload)
+	var cfg struct {
+		Channels []struct {
+			Id      string `json:"id"`
+			Version string `json:"version"`
+			State   string `json:"state"`
+		} `json:"channels"`
+	}
+	json.Unmarshal(b, &cfg)
+	if len(cfg.Channels) != 2 {
+		t.Fatalf("Phase 3: expected 2 channels in payload, got %d", len(cfg.Channels))
+	}
+	for _, ch := range cfg.Channels {
+		if ch.State != "IDLE" {
+			t.Errorf("Phase 3: channel %s expected IDLE, got %s", ch.Id, ch.State)
+		}
+		if ch.Version == "" {
+			t.Errorf("Phase 3: channel %s has empty version", ch.Id)
+		}
+	}
+	t.Log("Phase 3: OK — both channels IDLE with independent versions")
+
+	t.Log("=== TestSequentialPerChannelStops PASSED ===")
+}

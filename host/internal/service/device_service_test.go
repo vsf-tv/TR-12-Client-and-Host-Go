@@ -783,10 +783,11 @@ func TestUpdateChannelConfig_OnlyTargetChannelVersionBumped(t *testing.T) {
 		t.Errorf("TC-H01: CH04 version changed unexpectedly: %q → %q", v0["CH04"], v1["CH04"])
 	}
 
-	// Also verify the MQTT message only contains CH03 (not the full 4-channel list).
+	// Verify the MQTT message contains all channels (full config). The client-side
+	// ApplicationLoop is version-gated and skips unchanged channels.
 	mqttVersions := channelVersions(t, mqtt)
-	if len(mqttVersions) != 1 {
-		t.Errorf("TC-H01: MQTT payload should contain exactly 1 channel, got %d — would re-trigger unchanged channels", len(mqttVersions))
+	if len(mqttVersions) != 4 {
+		t.Errorf("TC-H01: MQTT payload should contain all 4 channels (full config), got %d", len(mqttVersions))
 	}
 	if _, ok := mqttVersions["CH03"]; !ok {
 		t.Errorf("TC-H01: MQTT payload should contain CH03, got keys: %v", mqttVersions)
@@ -942,8 +943,9 @@ func TestUpdateChannelConfig_FirstUpdate_CreatesFullConfig(t *testing.T) {
 }
 
 // TC-H08: Published MQTT payload is valid envelope with desiredDeviceConfiguration.
-// For a per-channel update, the MQTT payload must contain ONLY the updated channel —
-// not the full channel list. This is the key isolation guarantee.
+// The MQTT payload must contain the full desired config (all channels) so the SDK
+// always has the complete state. The client-side ApplicationLoop is version-gated
+// and will skip channels whose version hasn't changed.
 func TestUpdateChannelConfig_MQTTEnvelopeValid(t *testing.T) {
 	svc, mqtt, store := newTestDeviceService(t)
 	deviceID := doClaimWithReg(t, svc, store, "acc-1")
@@ -966,8 +968,9 @@ func TestUpdateChannelConfig_MQTTEnvelopeValid(t *testing.T) {
 		t.Error("TC-H08: MQTT message should be retained")
 	}
 
-	// Key isolation check: MQTT payload must contain ONLY CH01, not all 4 channels.
-	// If the full config were published, the device would re-process CH02/CH03/CH04.
+	// Full config check: MQTT payload must contain ALL channels so the SDK has
+	// complete state. The client ApplicationLoop is version-gated and skips
+	// channels whose version hasn't changed.
 	var typedEnv struct {
 		Config struct {
 			Channels []struct {
@@ -976,11 +979,8 @@ func TestUpdateChannelConfig_MQTTEnvelopeValid(t *testing.T) {
 		} `json:"desiredDeviceConfiguration"`
 	}
 	json.Unmarshal(last.Payload, &typedEnv)
-	if len(typedEnv.Config.Channels) != 1 {
-		t.Errorf("TC-H08: expected 1 channel in MQTT payload, got %d — full config would re-trigger unchanged channels", len(typedEnv.Config.Channels))
-	}
-	if len(typedEnv.Config.Channels) == 1 && typedEnv.Config.Channels[0].ID != "CH01" {
-		t.Errorf("TC-H08: expected CH01 in MQTT payload, got %s", typedEnv.Config.Channels[0].ID)
+	if len(typedEnv.Config.Channels) != 4 {
+		t.Errorf("TC-H08: expected 4 channels in MQTT payload (full config), got %d", len(typedEnv.Config.Channels))
 	}
 }
 

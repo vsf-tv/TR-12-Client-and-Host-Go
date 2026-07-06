@@ -775,3 +775,20 @@ func generateMinimalCSR(t *testing.T) string {
 	}
 	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrDER}))
 }
+
+// hostUpdateChannelConfig sends a per-channel config update via
+// PUT /device/:deviceId/channel/:channelId.
+func (e *testEnv) hostUpdateChannelConfig(deviceID, channelID, token string, config json.RawMessage) (int, string) {
+	e.t.Helper()
+	url := fmt.Sprintf("%s/device/%s/channel/%s", e.hostURL, deviceID, channelID)
+	req, _ := http.NewRequest("PUT", url, bytes.NewReader(config))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := e.httpClient.Do(req)
+	if err != nil {
+		e.t.Fatalf("hostUpdateChannelConfig: %v", err)
+	}
+	defer resp.Body.Close()
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, string(bodyBytes)
+}
