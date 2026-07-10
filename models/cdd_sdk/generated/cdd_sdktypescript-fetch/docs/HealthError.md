@@ -1,7 +1,7 @@
 
 # HealthError
 
-Shared description for degraded and critical states.
+Maximum 128 characters. Messages exceeding this limit are truncated before transmission to prevent MQTT payload bloat on devices with many channels.
 
 ## Properties
 

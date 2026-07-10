@@ -10,8 +10,10 @@ Name | Type
 `srtCaller` | [SrtCallerTransportProtocol](SrtCallerTransportProtocol.md)
 `ristSimpleListener` | [RistSimpleListenerTransportProtocol](RistSimpleListenerTransportProtocol.md)
 `ristSimpleCaller` | [RistSimpleCallerTransportProtocol](RistSimpleCallerTransportProtocol.md)
-`zixiPush` | [ZixiPushTransportProtocol](ZixiPushTransportProtocol.md)
-`zixiPull` | [ZixiPullTransportProtocol](ZixiPullTransportProtocol.md)
+`zixiPushSender` | [ZixiPushSenderTransportProtocol](ZixiPushSenderTransportProtocol.md)
+`zixiPushReceiver` | [ZixiPushReceiverTransportProtocol](ZixiPushReceiverTransportProtocol.md)
+`zixiPullSender` | [ZixiPullSenderTransportProtocol](ZixiPullSenderTransportProtocol.md)
+`zixiPullReceiver` | [ZixiPullReceiverTransportProtocol](ZixiPullReceiverTransportProtocol.md)
 `rtp` | [RtpTransportProtocol](RtpTransportProtocol.md)
 
 ## Example
@@ -25,8 +27,10 @@ const example = {
   "srtCaller": null,
   "ristSimpleListener": null,
   "ristSimpleCaller": null,
-  "zixiPush": null,
-  "zixiPull": null,
+  "zixiPushSender": null,
+  "zixiPushReceiver": null,
+  "zixiPullSender": null,
+  "zixiPullReceiver": null,
   "rtp": null,
 } satisfies TransportProtocol
 

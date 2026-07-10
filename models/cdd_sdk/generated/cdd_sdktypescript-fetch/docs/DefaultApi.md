@@ -9,6 +9,7 @@ All URIs are relative to *http://localhost*
 | [**disconnect**](DefaultApi.md#disconnect) | **PUT** /disconnect |  |
 | [**getConfiguration**](DefaultApi.md#getconfiguration) | **GET** /get_configuration |  |
 | [**getConnectionStatus**](DefaultApi.md#getconnectionstatus) | **GET** /get_state |  |
+| [**register**](DefaultApi.md#register) | **PUT** /register |  |
 | [**reportActualConfiguration**](DefaultApi.md#reportactualconfiguration) | **PUT** /report_actual_configuration |  |
 | [**reportStatus**](DefaultApi.md#reportstatus) | **PUT** /report_status |  |
 
@@ -314,6 +315,71 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | GetConnectionStatus 200 response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## register
+
+> RegisterResponseContent register(registerRequestContent)
+
+
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DefaultApi,
+} from '';
+import type { RegisterRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new DefaultApi();
+
+  const body = {
+    // RegisterRequestContent
+    registerRequestContent: ...,
+  } satisfies RegisterRequest;
+
+  try {
+    const data = await api.register(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **registerRequestContent** | [RegisterRequestContent](RegisterRequestContent.md) |  | |
+
+### Return type
+
+[**RegisterResponseContent**](RegisterResponseContent.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Register 200 response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

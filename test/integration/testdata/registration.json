@@ -3,7 +3,7 @@
     {
       "name": "Clock Source",
       "description": "Sets the clock source for all active channels.",
-      "id": "sync_clock_source",
+      "id": "clocksync",
       "constraint": {
         "enums": {
           "values": ["INTERNAL", "GENLOCK", "NTP", "PTP"],
@@ -14,7 +14,7 @@
   ],
   "channelTemplates": [
     {
-      "id": "source_encoder",
+      "id": "main",
       "channelType": "SOURCE",
       "protocols": ["SRT_CALLER", "SRT_LISTENER"],
       "profiles": [
@@ -43,6 +43,6 @@
     }
   ],
   "channelAssignments": [
-    { "channelId": "CH01", "name": "Channel 1", "templateId": "source_encoder" }
+    { "channelId": "CH01", "name": "Channel 1", "templateId": "main" }
   ]
 }

@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { EncryptionAes } from './EncryptionAes';
+import type { RistEncryption } from './RistEncryption';
 import {
-    EncryptionAesFromJSON,
-    EncryptionAesFromJSONTyped,
-    EncryptionAesToJSON,
-    EncryptionAesToJSONTyped,
-} from './EncryptionAes';
+    RistEncryptionFromJSON,
+    RistEncryptionFromJSONTyped,
+    RistEncryptionToJSON,
+    RistEncryptionToJSONTyped,
+} from './RistEncryption';
 
 /**
  * 
@@ -47,10 +47,10 @@ export interface RistSimpleCallerTransportProtocol {
     minimumLatencyMilliseconds?: number;
     /**
      * 
-     * @type {EncryptionAes}
+     * @type {RistEncryption}
      * @memberof RistSimpleCallerTransportProtocol
      */
-    encryption?: EncryptionAes;
+    encryption?: RistEncryption;
 }
 
 /**
@@ -75,7 +75,7 @@ export function RistSimpleCallerTransportProtocolFromJSONTyped(json: any, ignore
         'address': json['address'],
         'port': json['port'],
         'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
-        'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
+        'encryption': json['encryption'] == null ? undefined : RistEncryptionFromJSON(json['encryption']),
     };
 }
 
@@ -93,7 +93,7 @@ export function RistSimpleCallerTransportProtocolToJSONTyped(value?: RistSimpleC
         'address': value['address'],
         'port': value['port'],
         'minimumLatencyMilliseconds': value['minimumLatencyMilliseconds'],
-        'encryption': EncryptionAesToJSON(value['encryption']),
+        'encryption': RistEncryptionToJSON(value['encryption']),
     };
 }
 

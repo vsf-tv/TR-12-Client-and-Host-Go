@@ -10,7 +10,6 @@ Name | Type
 `version` | string
 `channels` | [Array&lt;ActualChannelConfiguration&gt;](ActualChannelConfiguration.md)
 `standardSettings` | [Array&lt;IdAndValue&gt;](IdAndValue.md)
-`health` | [Health](Health.md)
 
 ## Example
 
@@ -22,7 +21,6 @@ const example = {
   "version": null,
   "channels": null,
   "standardSettings": null,
-  "health": null,
 } satisfies ActualDeviceConfiguration
 
 console.log(example)

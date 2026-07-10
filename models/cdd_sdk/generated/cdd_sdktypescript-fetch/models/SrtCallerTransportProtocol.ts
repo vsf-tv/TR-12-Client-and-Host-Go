@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { EncryptionAes } from './EncryptionAes';
+import type { SrtEncryption } from './SrtEncryption';
 import {
-    EncryptionAesFromJSON,
-    EncryptionAesFromJSONTyped,
-    EncryptionAesToJSON,
-    EncryptionAesToJSONTyped,
-} from './EncryptionAes';
+    SrtEncryptionFromJSON,
+    SrtEncryptionFromJSONTyped,
+    SrtEncryptionToJSON,
+    SrtEncryptionToJSONTyped,
+} from './SrtEncryption';
 
 /**
  * 
@@ -53,10 +53,10 @@ export interface SrtCallerTransportProtocol {
     minimumLatencyMilliseconds?: number;
     /**
      * 
-     * @type {EncryptionAes}
+     * @type {SrtEncryption}
      * @memberof SrtCallerTransportProtocol
      */
-    encryption?: EncryptionAes;
+    encryption?: SrtEncryption;
 }
 
 /**
@@ -82,7 +82,7 @@ export function SrtCallerTransportProtocolFromJSONTyped(json: any, ignoreDiscrim
         'address': json['address'],
         'port': json['port'],
         'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
-        'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
+        'encryption': json['encryption'] == null ? undefined : SrtEncryptionFromJSON(json['encryption']),
     };
 }
 
@@ -101,7 +101,7 @@ export function SrtCallerTransportProtocolToJSONTyped(value?: SrtCallerTransport
         'address': value['address'],
         'port': value['port'],
         'minimumLatencyMilliseconds': value['minimumLatencyMilliseconds'],
-        'encryption': EncryptionAesToJSON(value['encryption']),
+        'encryption': SrtEncryptionToJSON(value['encryption']),
     };
 }
 

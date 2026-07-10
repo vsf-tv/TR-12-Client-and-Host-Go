@@ -47,27 +47,41 @@ import {
     SrtListenerFromJSONTyped,
     SrtListenerToJSON,
 } from './SrtListener';
-import type { ZixiPull } from './ZixiPull';
+import type { ZixiPullReceiver } from './ZixiPullReceiver';
 import {
-    instanceOfZixiPull,
-    ZixiPullFromJSON,
-    ZixiPullFromJSONTyped,
-    ZixiPullToJSON,
-} from './ZixiPull';
-import type { ZixiPush } from './ZixiPush';
+    instanceOfZixiPullReceiver,
+    ZixiPullReceiverFromJSON,
+    ZixiPullReceiverFromJSONTyped,
+    ZixiPullReceiverToJSON,
+} from './ZixiPullReceiver';
+import type { ZixiPullSender } from './ZixiPullSender';
 import {
-    instanceOfZixiPush,
-    ZixiPushFromJSON,
-    ZixiPushFromJSONTyped,
-    ZixiPushToJSON,
-} from './ZixiPush';
+    instanceOfZixiPullSender,
+    ZixiPullSenderFromJSON,
+    ZixiPullSenderFromJSONTyped,
+    ZixiPullSenderToJSON,
+} from './ZixiPullSender';
+import type { ZixiPushReceiver } from './ZixiPushReceiver';
+import {
+    instanceOfZixiPushReceiver,
+    ZixiPushReceiverFromJSON,
+    ZixiPushReceiverFromJSONTyped,
+    ZixiPushReceiverToJSON,
+} from './ZixiPushReceiver';
+import type { ZixiPushSender } from './ZixiPushSender';
+import {
+    instanceOfZixiPushSender,
+    ZixiPushSenderFromJSON,
+    ZixiPushSenderFromJSONTyped,
+    ZixiPushSenderToJSON,
+} from './ZixiPushSender';
 
 /**
  * @type TransportProtocol
  * 
  * @export
  */
-export type TransportProtocol = RistSimpleCaller | RistSimpleListener | Rtp | SrtCaller | SrtListener | ZixiPull | ZixiPush;
+export type TransportProtocol = RistSimpleCaller | RistSimpleListener | Rtp | SrtCaller | SrtListener | ZixiPullReceiver | ZixiPullSender | ZixiPushReceiver | ZixiPushSender;
 
 export function TransportProtocolFromJSON(json: any): TransportProtocol {
     return TransportProtocolFromJSONTyped(json, false);
@@ -95,11 +109,17 @@ export function TransportProtocolFromJSONTyped(json: any, ignoreDiscriminator: b
     if (instanceOfSrtListener(json)) {
         return SrtListenerFromJSONTyped(json, true);
     }
-    if (instanceOfZixiPull(json)) {
-        return ZixiPullFromJSONTyped(json, true);
+    if (instanceOfZixiPullReceiver(json)) {
+        return ZixiPullReceiverFromJSONTyped(json, true);
     }
-    if (instanceOfZixiPush(json)) {
-        return ZixiPushFromJSONTyped(json, true);
+    if (instanceOfZixiPullSender(json)) {
+        return ZixiPullSenderFromJSONTyped(json, true);
+    }
+    if (instanceOfZixiPushReceiver(json)) {
+        return ZixiPushReceiverFromJSONTyped(json, true);
+    }
+    if (instanceOfZixiPushSender(json)) {
+        return ZixiPushSenderFromJSONTyped(json, true);
     }
     return {} as any;
 }
@@ -130,11 +150,17 @@ export function TransportProtocolToJSONTyped(value?: TransportProtocol | null, i
     if (instanceOfSrtListener(value)) {
         return SrtListenerToJSON(value as SrtListener);
     }
-    if (instanceOfZixiPull(value)) {
-        return ZixiPullToJSON(value as ZixiPull);
+    if (instanceOfZixiPullReceiver(value)) {
+        return ZixiPullReceiverToJSON(value as ZixiPullReceiver);
     }
-    if (instanceOfZixiPush(value)) {
-        return ZixiPushToJSON(value as ZixiPush);
+    if (instanceOfZixiPullSender(value)) {
+        return ZixiPullSenderToJSON(value as ZixiPullSender);
+    }
+    if (instanceOfZixiPushReceiver(value)) {
+        return ZixiPushReceiverToJSON(value as ZixiPushReceiver);
+    }
+    if (instanceOfZixiPushSender(value)) {
+        return ZixiPushSenderToJSON(value as ZixiPushSender);
     }
     return {};
 }

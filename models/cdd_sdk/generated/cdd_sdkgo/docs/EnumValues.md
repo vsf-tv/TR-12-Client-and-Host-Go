@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Values** | **[]string** |  | 
+**Values** | **[]string** | See limits.smithy: MAX_ENUM_VALUES | 
 **DefaultValue** | **string** |  | 
 
 ## Methods

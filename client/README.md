@@ -609,3 +609,183 @@ These are practical lessons for anyone building a real device integration. They 
 **Report health accurately.** If a native API call fails during configuration apply, set the channel health to DEGRADED or CRITICAL. The host and console display this to the operator. Do not silently swallow errors — an operator looking at a "healthy" device that is actually misconfigured has no way to know something is wrong.
 
 **Read-back must use live device state.** When reporting actual configuration back to the host, read values from the device's native API — not from a cache or by echoing the desired values. The one exception is the `channelSettings` union branch: the desired config determines whether actual reports a profile or standard settings (you should not report a profile if standard settings were requested, and vice versa). But within that branch, the values must come from the device. For standard settings, read each key from the device API. For profile mode, call your device's API to confirm which profile is currently active — do not simply echo back the profile ID the host asked for. If the device has not yet confirmed the profile, return `("", false)` from `GetChannelProfileValue` and omit channelSettings from the actual config until it is confirmed.
+
+---
+
+### Health Error Lifecycle
+
+Health is reported per-channel as a single `oneOf(Healthy, Degraded, Critical)` value in the actual configuration. Getting health right requires understanding *when* to set it, *when* to clear it, and *how* to merge multiple errors into a single value.
+
+**Two independent failure domains.** Track errors from two separate sources independently:
+
+1. **Desired config apply failures** — settings writes, protocol configuration, or state transitions that fail during the apply phase.
+2. **Actual config read failures** — device API calls that fail when reading back current values for the periodic actual config report.
+
+These are independent. A failed settings write does not resolve when a status read succeeds, and vice versa. A successful status read means the device API is reachable; it does not mean the settings were applied correctly.
+
+**Clear on cycle boundaries.** At the start of each config apply cycle, clear any accumulated apply errors. At the start of each actual-config read cycle, clear any accumulated read errors. This prevents stale errors from a cancelled or superseded attempt from bleeding into the current report.
+
+```go
+// Start of apply cycle — clear previous apply errors
+func BeginChannelUpdate(channelID string) {
+    pendingErrors[channelID] = nil
+    applyHealth[channelID] = Healthy
+}
+
+// Start of read-back cycle — clear previous read errors
+func BeginGetActualConfiguration(channelID string) {
+    readHealth[channelID] = Healthy
+}
+```
+
+**Clear on successful outcome.** If all settings are applied and the channel successfully reaches the desired state (confirmed "started" or "stopped"), transient errors accumulated during the apply phase are moot — the device is operating correctly. Clear them before evaluating final health. This prevents the operator from seeing a stale timeout error on a channel that is running perfectly.
+
+**Evaluate health at the end of the apply cycle.** After all settings, protocol, and state-transition work is complete (or has failed), evaluate the accumulated errors into a single health value. This is the value that `GetChannelHealth` returns.
+
+**Merge when both domains have errors.** If both apply-health and read-health indicate a problem, merge them: pick the worst severity (`Critical > Degraded > Healthy`), concatenate messages, and truncate to 128 characters.
+
+**The 128-character limit.** `HealthError.message` is limited to 128 characters by the TR-12 spec. The SDK enforces truncation before MQTT publish, but you should truncate at the source with a clean `"..."` suffix rather than getting a mid-word cut. When accumulating multiple errors, join them with `"; "` and truncate the result:
+
+```go
+msg := strings.Join(errors, "; ")
+if len(msg) > 128 {
+    msg = msg[:125] + "..."
+}
+```
+
+---
+
+### Handling Device Rejections vs Transient Failures
+
+Not all errors are equal. Your state-transition logic must distinguish between transient failures (which may resolve on retry) and permanent rejections (which will never succeed without external intervention).
+
+**Transient failures** — HTTP timeout, connection refused, device busy, "try again later" response codes. These warrant retrying within the current apply cycle up to a reasonable deadline (10–30 seconds). The device may recover, the network may stabilize, or the pipeline may finish its current operation.
+
+**Device rejections** — the device explicitly responds with an error indicating the operation is impossible in its current state. Examples: "SDI Source is not detected", "Unsupported codec for this input", "License expired". These will *never* succeed by retrying. The physical world must change first (operator plugs in a cable, uploads a license, changes an input).
+
+**How to distinguish them:**
+
+| Signal | Classification | Action |
+|--------|---------------|--------|
+| HTTP timeout or connection error | Transient | Retry until deadline |
+| Device returns its own error code with a message | Rejection | Stop immediately, report DEGRADED |
+| HTTP 200 but device status shows unexpected state | Transient | Poll again |
+| HTTP 200, device status stable in wrong state after deadline | Timeout | Report DEGRADED |
+
+**On rejection:** Record the error message, set health to DEGRADED, and exit the state-transition loop immediately. Do not retry — you are wasting time and potentially hammering a device that is telling you it cannot proceed. The host will need to send a new configuration to resolve it (e.g., the operator changes the input source, or plugs in the SDI cable and re-pushes config).
+
+```go
+// Example: device rejected start
+if deviceResponse.Code == "400" {
+    appendError(channelID, "start rejected: " + deviceResponse.Error)
+    return  // do not retry
+}
+```
+
+---
+
+### Periodic Actual Configuration Reporting
+
+Report actual configuration in two situations:
+
+1. **After every config apply cycle** — so the host sees the new state (including health) immediately.
+2. **Periodically (every 60 seconds)** — even when no config changes arrive.
+
+The periodic report serves several purposes:
+
+- The host sees updated health. If a transient error was reported earlier but the channel has since recovered, the periodic report reflects the current healthy state.
+- Device-level status values (CPU, temperature) and channel status values (bitrate) are refreshed.
+- If the actual-config read itself fails (device API unreachable), the health reflects that — the host knows the device is in trouble even though no config was pushed.
+
+**Avoid duplicating reports.** If a config-change report was just sent within the last few seconds, skip the periodic report for that cycle. The config-change path already provided fresh data.
+
+**Periodic reports re-read live state.** Each periodic report calls your `GetChannelUpdatedValue`, `GetChannelConnection`, `GetChannelState`, and `GetChannelHealth` methods. These must read from the device — not return cached values from the last apply cycle.
+
+---
+
+### Per-Channel Version Gating
+
+The host assigns a monotonically-increasing `version` string to each channel independently. The `ApplicationLoop` tracks the last-applied version per channel and only dispatches work for channels whose version changed.
+
+**What this means for integrators:**
+
+- Your callbacks will only be called for channels that actually changed. You do not need to implement change detection or idempotency checks yourself.
+- If `UpdateChannelState("CH01", IDLE)` is called, it means the host explicitly changed CH01's config — act on it unconditionally.
+- Unchanged channels are never touched. If CH01 changes and CH02 doesn't, only CH01's callbacks fire. CH02 continues running undisturbed.
+
+**Cancellation on new version.** If a newer version arrives while a previous apply is still in progress for the same channel, the in-flight work is cancelled and a new cycle starts fresh. This means:
+
+- Your `UpdateChannelState` implementation should accept cancellation (via `context.Context` if using Go, or equivalent in other languages) and exit promptly when cancelled.
+- Do not block indefinitely on a device API call. Use timeouts on all HTTP requests.
+- When cancelled, do not report health or actual config — the new cycle will handle that.
+
+```go
+// Optional interface for context-aware state transitions
+type ContextAwareStateUpdater interface {
+    UpdateChannelStateWithContext(ctx context.Context, channelID string, state ChannelState)
+}
+```
+
+If your callbacks implement this interface, the `ApplicationLoop` will use it automatically. Otherwise it falls back to the plain `UpdateChannelState` without cancellation support.
+
+---
+
+### Implementing UpdateChannelState
+
+`UpdateChannelState` is the most complex callback to implement correctly. It must drive the channel to the desired state, handle both transient failures and device rejections, and exit cleanly on cancellation.
+
+**Do not fire-and-forget.** If you issue a start command and return immediately, you cannot report failure if the start is rejected. You must poll the device until the desired state is confirmed or an error is reported.
+
+**Recommended pattern for ACTIVE:**
+
+```
+1. Phase 1 — Drive to stopped (restart requires clean stop):
+   - Poll device status
+   - If "started" or "starting" → issue stop, continue polling
+   - If "stopping" → wait
+   - If "stopped" → phase 1 done
+
+2. Phase 2 — Drive to started:
+   - Issue start
+   - Poll device status
+   - If "started" → success, clear transient errors, return
+   - If device rejects start → record error, return immediately
+   - If "stopped" still after timeout → record timeout, return
+   - If cancelled → return (new config version arrived)
+```
+
+**Recommended pattern for IDLE:**
+
+```
+1. Drive to stopped:
+   - Poll device status
+   - If "started" or "starting" → issue stop, continue polling
+   - If "stopping" → wait
+   - If "stopped" → done
+```
+
+**Key principles:**
+
+- **Issue commands only from valid precondition states.** Only issue start when the device reports "stopped" — not when it's "stopping" or "starting". Only issue stop when "started" or "starting". This avoids command-rejected errors from the device.
+- **Distinguish "device is transitioning" from "device is stuck."** If the device reports "stopping" for 20 seconds without reaching "stopped", that's a stuck state — report DEGRADED and exit.
+- **Clear transient errors on success.** If the channel reaches "started" successfully, any HTTP timeouts that occurred during earlier settings writes were clearly transient (the device processed them eventually). Clear accumulated errors so the health report shows HEALTHY.
+- **Exit on device rejection.** If the device returns an explicit error (e.g., "SDI Source is not detected"), do not retry. Record the error and return. The device cannot start without external intervention.
+
+---
+
+### Testing Your Integration
+
+The subtle interactions between configuration apply, state transitions, health reporting, and periodic heartbeats produce failure modes that are difficult to discover through casual testing. Design your test plan around these scenarios:
+
+| Scenario | What to verify |
+|----------|---------------|
+| Apply config with device API unreachable | Health reports DEGRADED; periodic report refreshes health |
+| Start channel with no input signal | Device rejection surfaces as DEGRADED immediately, not after 20s timeout |
+| Settings write times out but channel starts successfully | Health clears to HEALTHY (transient error is moot) |
+| New config version arrives mid-apply | Previous apply is cancelled; new apply starts fresh with no stale errors |
+| Sequential per-channel updates (stop CH01, then stop CH02) | Both channels process independently; second update is not lost |
+| Device API returns HTTP 200 with error in body | Error is detected and reported, not silently treated as success |
+| Periodic report while channel is degraded then recovers | Health transitions from DEGRADED back to HEALTHY within 60s |
+| Multiple settings fail in one apply cycle | Errors are joined and truncated to 128 chars, not one arbitrarily selected |
+
+**Integration tests beat manual testing.** The scenarios above are regressions waiting to happen. Automate them with real processes (host + SDK + your application) exercising the full protocol. A 60-second integration test catches bugs that weeks of manual testing miss.

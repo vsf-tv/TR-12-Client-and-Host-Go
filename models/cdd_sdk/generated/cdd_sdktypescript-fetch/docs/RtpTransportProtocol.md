@@ -9,8 +9,6 @@ Name | Type
 `address` | string
 `port` | number
 `sourceAddressFilter` | string
-`rtpPayloadType` | number
-`fecConfig` | [RtpFecConfiguration](RtpFecConfiguration.md)
 
 ## Example
 
@@ -22,8 +20,6 @@ const example = {
   "address": null,
   "port": null,
   "sourceAddressFilter": null,
-  "rtpPayloadType": null,
-  "fecConfig": null,
 } satisfies RtpTransportProtocol
 
 console.log(example)

@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **Address** | **string** |  | 
 **Port** | **float32** |  | 
 **MinimumLatencyMilliseconds** | Pointer to **float32** |  | [optional] [default to 1000]
-**Encryption** | Pointer to [**EncryptionAes**](EncryptionAes.md) |  | [optional] 
+**Encryption** | Pointer to [**RistEncryption**](RistEncryption.md) |  | [optional] 
 
 ## Methods
 
@@ -95,20 +95,20 @@ HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
 
 ### GetEncryption
 
-`func (o *RistSimpleCallerTransportProtocol) GetEncryption() EncryptionAes`
+`func (o *RistSimpleCallerTransportProtocol) GetEncryption() RistEncryption`
 
 GetEncryption returns the Encryption field if non-nil, zero value otherwise.
 
 ### GetEncryptionOk
 
-`func (o *RistSimpleCallerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool)`
+`func (o *RistSimpleCallerTransportProtocol) GetEncryptionOk() (*RistEncryption, bool)`
 
 GetEncryptionOk returns a tuple with the Encryption field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetEncryption
 
-`func (o *RistSimpleCallerTransportProtocol) SetEncryption(v EncryptionAes)`
+`func (o *RistSimpleCallerTransportProtocol) SetEncryption(v RistEncryption)`
 
 SetEncryption sets Encryption field to given value.
 

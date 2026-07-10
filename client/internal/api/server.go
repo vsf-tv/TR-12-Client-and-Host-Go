@@ -15,7 +15,11 @@
 package api
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -126,10 +130,15 @@ func (s *Server) reportStatus(c *gin.Context) {
 }
 
 func (s *Server) reportConfiguration(c *gin.Context) {
+	// Read raw body for debug logging, then restore for binding
+	rawBody, _ := io.ReadAll(c.Request.Body)
+	c.Request.Body = io.NopCloser(bytes.NewReader(rawBody))
+
 	var req struct {
 		Configuration *cddsdkgo.ActualDeviceConfiguration `json:"configuration"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Configuration == nil {
+		fmt.Fprintf(os.Stderr, "[API-DEBUG] report_actual_configuration bind error: %v body=%s\n", err, string(rawBody))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "configuration is required"})
 		return
 	}

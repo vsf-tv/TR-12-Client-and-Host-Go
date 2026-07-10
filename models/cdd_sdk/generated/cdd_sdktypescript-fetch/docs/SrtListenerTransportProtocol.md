@@ -9,7 +9,7 @@ Name | Type
 `streamId` | string
 `port` | number
 `minimumLatencyMilliseconds` | number
-`encryption` | [EncryptionAes](EncryptionAes.md)
+`encryption` | [SrtEncryption](SrtEncryption.md)
 `_interface` | string
 
 ## Example

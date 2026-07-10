@@ -24,8 +24,6 @@ type RtpTransportProtocol struct {
 	Address string `json:"address"`
 	Port float32 `json:"port"`
 	SourceAddressFilter *string `json:"sourceAddressFilter,omitempty"`
-	RtpPayloadType *float32 `json:"rtpPayloadType,omitempty"`
-	FecConfig *RtpFecConfiguration `json:"fecConfig,omitempty"`
 }
 
 type _RtpTransportProtocol RtpTransportProtocol
@@ -129,70 +127,6 @@ func (o *RtpTransportProtocol) SetSourceAddressFilter(v string) {
 	o.SourceAddressFilter = &v
 }
 
-// GetRtpPayloadType returns the RtpPayloadType field value if set, zero value otherwise.
-func (o *RtpTransportProtocol) GetRtpPayloadType() float32 {
-	if o == nil || IsNil(o.RtpPayloadType) {
-		var ret float32
-		return ret
-	}
-	return *o.RtpPayloadType
-}
-
-// GetRtpPayloadTypeOk returns a tuple with the RtpPayloadType field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *RtpTransportProtocol) GetRtpPayloadTypeOk() (*float32, bool) {
-	if o == nil || IsNil(o.RtpPayloadType) {
-		return nil, false
-	}
-	return o.RtpPayloadType, true
-}
-
-// HasRtpPayloadType returns a boolean if a field has been set.
-func (o *RtpTransportProtocol) HasRtpPayloadType() bool {
-	if o != nil && !IsNil(o.RtpPayloadType) {
-		return true
-	}
-
-	return false
-}
-
-// SetRtpPayloadType gets a reference to the given float32 and assigns it to the RtpPayloadType field.
-func (o *RtpTransportProtocol) SetRtpPayloadType(v float32) {
-	o.RtpPayloadType = &v
-}
-
-// GetFecConfig returns the FecConfig field value if set, zero value otherwise.
-func (o *RtpTransportProtocol) GetFecConfig() RtpFecConfiguration {
-	if o == nil || IsNil(o.FecConfig) {
-		var ret RtpFecConfiguration
-		return ret
-	}
-	return *o.FecConfig
-}
-
-// GetFecConfigOk returns a tuple with the FecConfig field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *RtpTransportProtocol) GetFecConfigOk() (*RtpFecConfiguration, bool) {
-	if o == nil || IsNil(o.FecConfig) {
-		return nil, false
-	}
-	return o.FecConfig, true
-}
-
-// HasFecConfig returns a boolean if a field has been set.
-func (o *RtpTransportProtocol) HasFecConfig() bool {
-	if o != nil && !IsNil(o.FecConfig) {
-		return true
-	}
-
-	return false
-}
-
-// SetFecConfig gets a reference to the given RtpFecConfiguration and assigns it to the FecConfig field.
-func (o *RtpTransportProtocol) SetFecConfig(v RtpFecConfiguration) {
-	o.FecConfig = &v
-}
-
 func (o RtpTransportProtocol) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -207,12 +141,6 @@ func (o RtpTransportProtocol) ToMap() (map[string]interface{}, error) {
 	toSerialize["port"] = o.Port
 	if !IsNil(o.SourceAddressFilter) {
 		toSerialize["sourceAddressFilter"] = o.SourceAddressFilter
-	}
-	if !IsNil(o.RtpPayloadType) {
-		toSerialize["rtpPayloadType"] = o.RtpPayloadType
-	}
-	if !IsNil(o.FecConfig) {
-		toSerialize["fecConfig"] = o.FecConfig
 	}
 	return toSerialize, nil
 }

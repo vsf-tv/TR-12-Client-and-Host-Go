@@ -219,6 +219,21 @@ func (s *CddSdk) ReportStatus(payload *cddsdkgo.DeviceStatus) cddsdkgo.ReportSta
 	defer s.apiLock.Unlock()
 	s.logger.Info("Report Status")
 
+	// Truncate any health message exceeding the model limit before publishing.
+	// A long message from a device API error could push the MQTT payload over the
+	// 128KB broker limit. The spec defines max 128 chars on HealthError.message.
+	const healthMessageMaxLen = 128
+	if payload != nil {
+		if payload.Health != nil {
+			truncateHealthMessage(payload.Health, healthMessageMaxLen)
+		}
+		for i := range payload.Channels {
+			if payload.Channels[i].Health != nil {
+				truncateHealthMessage(payload.Channels[i].Health, healthMessageMaxLen)
+			}
+		}
+	}
+
 	if err := s.canPublishNow(s.statusThrottle); err != nil {
 		return cddsdkgo.ReportStatusResponseContent{
 			Success: false, State: s.state, Message: err.Error(),
@@ -258,21 +273,6 @@ func (s *CddSdk) ReportConfiguration(payload *cddsdkgo.ActualDeviceConfiguration
 
 	// Store the actual configuration for thumbnail path resolution
 	s.actualConfig.Store(payload)
-
-	// Truncate any health message exceeding the model limit before publishing.
-	// A long message from a device API error could push the MQTT payload over the
-	// 128KB broker limit. The spec defines max 128 chars on HealthError.message.
-	const healthMessageMaxLen = 128
-	if payload != nil {
-		if payload.Health != nil {
-			truncateHealthMessage(payload.Health, healthMessageMaxLen)
-		}
-		for i := range payload.Channels {
-			if payload.Channels[i].Health != nil {
-				truncateHealthMessage(payload.Channels[i].Health, healthMessageMaxLen)
-			}
-		}
-	}
 
 	if err := s.canPublishNow(s.configThrottle); err != nil {
 		resp := cddsdkgo.NewReportActualConfigurationResponseContent(false, s.state, err.Error())

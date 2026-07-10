@@ -1,7 +1,7 @@
 {
   "standardSettings": [
       {
-        "id": "sync_clock_source",
+        "id": "syncclock",
         "value": "NTP"
       }
   ],

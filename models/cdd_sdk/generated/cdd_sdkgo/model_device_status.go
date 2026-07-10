@@ -25,6 +25,7 @@ type DeviceStatus struct {
 	Status []StatusValue `json:"status"`
 	// See limits.smithy: MAX_CHANNEL_STATUS
 	Channels []ChannelStatus `json:"channels,omitempty"`
+	Health *Health `json:"health,omitempty"`
 }
 
 type _DeviceStatus DeviceStatus
@@ -103,6 +104,38 @@ func (o *DeviceStatus) SetChannels(v []ChannelStatus) {
 	o.Channels = v
 }
 
+// GetHealth returns the Health field value if set, zero value otherwise.
+func (o *DeviceStatus) GetHealth() Health {
+	if o == nil || IsNil(o.Health) {
+		var ret Health
+		return ret
+	}
+	return *o.Health
+}
+
+// GetHealthOk returns a tuple with the Health field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *DeviceStatus) GetHealthOk() (*Health, bool) {
+	if o == nil || IsNil(o.Health) {
+		return nil, false
+	}
+	return o.Health, true
+}
+
+// HasHealth returns a boolean if a field has been set.
+func (o *DeviceStatus) HasHealth() bool {
+	if o != nil && !IsNil(o.Health) {
+		return true
+	}
+
+	return false
+}
+
+// SetHealth gets a reference to the given Health and assigns it to the Health field.
+func (o *DeviceStatus) SetHealth(v Health) {
+	o.Health = &v
+}
+
 func (o DeviceStatus) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -116,6 +149,9 @@ func (o DeviceStatus) ToMap() (map[string]interface{}, error) {
 	toSerialize["status"] = o.Status
 	if !IsNil(o.Channels) {
 		toSerialize["channels"] = o.Channels
+	}
+	if !IsNil(o.Health) {
+		toSerialize["health"] = o.Health
 	}
 	return toSerialize, nil
 }

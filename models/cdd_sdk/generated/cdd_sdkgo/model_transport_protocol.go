@@ -23,8 +23,10 @@ type TransportProtocol struct {
 	Rtp *Rtp
 	SrtCaller *SrtCaller
 	SrtListener *SrtListener
-	ZixiPull *ZixiPull
-	ZixiPush *ZixiPush
+	ZixiPullReceiver *ZixiPullReceiver
+	ZixiPullSender *ZixiPullSender
+	ZixiPushReceiver *ZixiPushReceiver
+	ZixiPushSender *ZixiPushSender
 }
 
 // RistSimpleCallerAsTransportProtocol is a convenience function that returns RistSimpleCaller wrapped in TransportProtocol
@@ -62,17 +64,31 @@ func SrtListenerAsTransportProtocol(v *SrtListener) TransportProtocol {
 	}
 }
 
-// ZixiPullAsTransportProtocol is a convenience function that returns ZixiPull wrapped in TransportProtocol
-func ZixiPullAsTransportProtocol(v *ZixiPull) TransportProtocol {
+// ZixiPullReceiverAsTransportProtocol is a convenience function that returns ZixiPullReceiver wrapped in TransportProtocol
+func ZixiPullReceiverAsTransportProtocol(v *ZixiPullReceiver) TransportProtocol {
 	return TransportProtocol{
-		ZixiPull: v,
+		ZixiPullReceiver: v,
 	}
 }
 
-// ZixiPushAsTransportProtocol is a convenience function that returns ZixiPush wrapped in TransportProtocol
-func ZixiPushAsTransportProtocol(v *ZixiPush) TransportProtocol {
+// ZixiPullSenderAsTransportProtocol is a convenience function that returns ZixiPullSender wrapped in TransportProtocol
+func ZixiPullSenderAsTransportProtocol(v *ZixiPullSender) TransportProtocol {
 	return TransportProtocol{
-		ZixiPush: v,
+		ZixiPullSender: v,
+	}
+}
+
+// ZixiPushReceiverAsTransportProtocol is a convenience function that returns ZixiPushReceiver wrapped in TransportProtocol
+func ZixiPushReceiverAsTransportProtocol(v *ZixiPushReceiver) TransportProtocol {
+	return TransportProtocol{
+		ZixiPushReceiver: v,
+	}
+}
+
+// ZixiPushSenderAsTransportProtocol is a convenience function that returns ZixiPushSender wrapped in TransportProtocol
+func ZixiPushSenderAsTransportProtocol(v *ZixiPushSender) TransportProtocol {
+	return TransportProtocol{
+		ZixiPushSender: v,
 	}
 }
 
@@ -166,38 +182,72 @@ func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 		dst.SrtListener = nil
 	}
 
-	// try to unmarshal data into ZixiPull
-	err = newStrictDecoder(data).Decode(&dst.ZixiPull)
+	// try to unmarshal data into ZixiPullReceiver
+	err = newStrictDecoder(data).Decode(&dst.ZixiPullReceiver)
 	if err == nil {
-		jsonZixiPull, _ := json.Marshal(dst.ZixiPull)
-		if string(jsonZixiPull) == "{}" { // empty struct
-			dst.ZixiPull = nil
+		jsonZixiPullReceiver, _ := json.Marshal(dst.ZixiPullReceiver)
+		if string(jsonZixiPullReceiver) == "{}" { // empty struct
+			dst.ZixiPullReceiver = nil
 		} else {
-			if err = validator.Validate(dst.ZixiPull); err != nil {
-				dst.ZixiPull = nil
+			if err = validator.Validate(dst.ZixiPullReceiver); err != nil {
+				dst.ZixiPullReceiver = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.ZixiPull = nil
+		dst.ZixiPullReceiver = nil
 	}
 
-	// try to unmarshal data into ZixiPush
-	err = newStrictDecoder(data).Decode(&dst.ZixiPush)
+	// try to unmarshal data into ZixiPullSender
+	err = newStrictDecoder(data).Decode(&dst.ZixiPullSender)
 	if err == nil {
-		jsonZixiPush, _ := json.Marshal(dst.ZixiPush)
-		if string(jsonZixiPush) == "{}" { // empty struct
-			dst.ZixiPush = nil
+		jsonZixiPullSender, _ := json.Marshal(dst.ZixiPullSender)
+		if string(jsonZixiPullSender) == "{}" { // empty struct
+			dst.ZixiPullSender = nil
 		} else {
-			if err = validator.Validate(dst.ZixiPush); err != nil {
-				dst.ZixiPush = nil
+			if err = validator.Validate(dst.ZixiPullSender); err != nil {
+				dst.ZixiPullSender = nil
 			} else {
 				match++
 			}
 		}
 	} else {
-		dst.ZixiPush = nil
+		dst.ZixiPullSender = nil
+	}
+
+	// try to unmarshal data into ZixiPushReceiver
+	err = newStrictDecoder(data).Decode(&dst.ZixiPushReceiver)
+	if err == nil {
+		jsonZixiPushReceiver, _ := json.Marshal(dst.ZixiPushReceiver)
+		if string(jsonZixiPushReceiver) == "{}" { // empty struct
+			dst.ZixiPushReceiver = nil
+		} else {
+			if err = validator.Validate(dst.ZixiPushReceiver); err != nil {
+				dst.ZixiPushReceiver = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.ZixiPushReceiver = nil
+	}
+
+	// try to unmarshal data into ZixiPushSender
+	err = newStrictDecoder(data).Decode(&dst.ZixiPushSender)
+	if err == nil {
+		jsonZixiPushSender, _ := json.Marshal(dst.ZixiPushSender)
+		if string(jsonZixiPushSender) == "{}" { // empty struct
+			dst.ZixiPushSender = nil
+		} else {
+			if err = validator.Validate(dst.ZixiPushSender); err != nil {
+				dst.ZixiPushSender = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.ZixiPushSender = nil
 	}
 
 	if match > 1 { // more than 1 match
@@ -207,8 +257,10 @@ func (dst *TransportProtocol) UnmarshalJSON(data []byte) error {
 		dst.Rtp = nil
 		dst.SrtCaller = nil
 		dst.SrtListener = nil
-		dst.ZixiPull = nil
-		dst.ZixiPush = nil
+		dst.ZixiPullReceiver = nil
+		dst.ZixiPullSender = nil
+		dst.ZixiPushReceiver = nil
+		dst.ZixiPushSender = nil
 
 		return fmt.Errorf("data matches more than one schema in oneOf(TransportProtocol)")
 	} else if match == 1 {
@@ -240,12 +292,20 @@ func (src TransportProtocol) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.SrtListener)
 	}
 
-	if src.ZixiPull != nil {
-		return json.Marshal(&src.ZixiPull)
+	if src.ZixiPullReceiver != nil {
+		return json.Marshal(&src.ZixiPullReceiver)
 	}
 
-	if src.ZixiPush != nil {
-		return json.Marshal(&src.ZixiPush)
+	if src.ZixiPullSender != nil {
+		return json.Marshal(&src.ZixiPullSender)
+	}
+
+	if src.ZixiPushReceiver != nil {
+		return json.Marshal(&src.ZixiPushReceiver)
+	}
+
+	if src.ZixiPushSender != nil {
+		return json.Marshal(&src.ZixiPushSender)
 	}
 
 	return nil, nil // no data in oneOf schemas
@@ -276,12 +336,20 @@ func (obj *TransportProtocol) GetActualInstance() (interface{}) {
 		return obj.SrtListener
 	}
 
-	if obj.ZixiPull != nil {
-		return obj.ZixiPull
+	if obj.ZixiPullReceiver != nil {
+		return obj.ZixiPullReceiver
 	}
 
-	if obj.ZixiPush != nil {
-		return obj.ZixiPush
+	if obj.ZixiPullSender != nil {
+		return obj.ZixiPullSender
+	}
+
+	if obj.ZixiPushReceiver != nil {
+		return obj.ZixiPushReceiver
+	}
+
+	if obj.ZixiPushSender != nil {
+		return obj.ZixiPushSender
 	}
 
 	// all schemas are nil
@@ -310,12 +378,20 @@ func (obj TransportProtocol) GetActualInstanceValue() (interface{}) {
 		return *obj.SrtListener
 	}
 
-	if obj.ZixiPull != nil {
-		return *obj.ZixiPull
+	if obj.ZixiPullReceiver != nil {
+		return *obj.ZixiPullReceiver
 	}
 
-	if obj.ZixiPush != nil {
-		return *obj.ZixiPush
+	if obj.ZixiPullSender != nil {
+		return *obj.ZixiPullSender
+	}
+
+	if obj.ZixiPushReceiver != nil {
+		return *obj.ZixiPushReceiver
+	}
+
+	if obj.ZixiPushSender != nil {
+		return *obj.ZixiPushSender
 	}
 
 	// all schemas are nil

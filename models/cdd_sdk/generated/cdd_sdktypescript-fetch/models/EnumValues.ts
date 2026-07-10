@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface EnumValues {
     /**
-     * 
+     * See limits.smithy: MAX_ENUM_VALUES
      * @type {Array<string>}
      * @memberof EnumValues
      */

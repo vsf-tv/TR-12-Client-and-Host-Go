@@ -20,13 +20,6 @@ import {
     ChannelStateToJSON,
     ChannelStateToJSONTyped,
 } from './ChannelState';
-import type { Health } from './Health';
-import {
-    HealthFromJSON,
-    HealthFromJSONTyped,
-    HealthToJSON,
-    HealthToJSONTyped,
-} from './Health';
 import type { TransportProtocol } from './TransportProtocol';
 import {
     TransportProtocolFromJSON,
@@ -50,7 +43,9 @@ import {
  */
 export interface ActualChannelConfiguration {
     /**
-     * 
+     * An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+     * Used for channelId, templateId, setting id, profile id, and channel status id.
+     * See limits.smithy: MAX_ID_LENGTH
      * @type {string}
      * @memberof ActualChannelConfiguration
      */
@@ -79,12 +74,6 @@ export interface ActualChannelConfiguration {
      * @memberof ActualChannelConfiguration
      */
     protocol?: TransportProtocol;
-    /**
-     * 
-     * @type {Health}
-     * @memberof ActualChannelConfiguration
-     */
-    health?: Health;
     /**
      * Informs the TR12 Client so it may service Thumbnail Subscriptions.  Host service can ignore.
      * @type {string}
@@ -120,7 +109,6 @@ export function ActualChannelConfigurationFromJSONTyped(json: any, ignoreDiscrim
         'state': ChannelStateFromJSON(json['state']),
         'channelSettings': json['channelSettings'] == null ? undefined : ChannelSettingsFromJSON(json['channelSettings']),
         'protocol': json['protocol'] == null ? undefined : TransportProtocolFromJSON(json['protocol']),
-        'health': json['health'] == null ? undefined : HealthFromJSON(json['health']),
         'thumbnailLocalPath': json['thumbnailLocalPath'] == null ? undefined : json['thumbnailLocalPath'],
     };
 }
@@ -141,7 +129,6 @@ export function ActualChannelConfigurationToJSONTyped(value?: ActualChannelConfi
         'state': ChannelStateToJSON(value['state']),
         'channelSettings': ChannelSettingsToJSON(value['channelSettings']),
         'protocol': TransportProtocolToJSON(value['protocol']),
-        'health': HealthToJSON(value['health']),
         'thumbnailLocalPath': value['thumbnailLocalPath'],
     };
 }

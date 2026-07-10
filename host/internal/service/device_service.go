@@ -918,26 +918,38 @@ var protocolFieldMap = map[string]map[string]bool{
 		"encryption":                 false,
 		"interface":                  false,
 	},
-	"zixiPush": {
-		"streamId":                   false,
+	"zixiPushSender": {
 		"address":                    true,
-		"port":                       true,
-		"minimumLatencyMilliseconds": false,
+		"streamId":                   false,
+		"port":                       false,
+		"maximumLatencyMilliseconds": false,
 		"encryption":                 false,
 	},
-	"zixiPull": {
-		"streamId":                   false,
+	"zixiPushReceiver": {
 		"address":                    true,
+		"streamId":                   false,
+		"port":                       false,
+		"maximumLatencyMilliseconds": false,
+		"encryption":                 false,
+	},
+	"zixiPullSender": {
+		"streamId":                   true,
 		"port":                       true,
-		"minimumLatencyMilliseconds": false,
+		"maximumLatencyMilliseconds": false,
+		"encryption":                 false,
+		"interface":                  false,
+	},
+	"zixiPullReceiver": {
+		"streamId":                   true,
+		"address":                    true,
+		"port":                       false,
+		"maximumLatencyMilliseconds": false,
 		"encryption":                 false,
 	},
 	"rtp": {
 		"address":             true,
 		"port":                true,
 		"sourceAddressFilter": false,
-		"rtpPayloadType":      false,
-		"fecConfig":           false,
 	},
 }
 
@@ -946,10 +958,12 @@ var protocolFieldMap = map[string]map[string]bool{
 var protocolKeyToRegistration = map[string]string{
 	"srtCaller":          "SRT_CALLER",
 	"srtListener":        "SRT_LISTENER",
-	"ristSimpleCaller":   "RIST_SIMPLE_CALLER",
-	"ristSimpleListener": "RIST_SIMPLE_LISTENER",
-	"zixiPush":           "ZIXI_PUSH",
-	"zixiPull":           "ZIXI_PULL",
+	"ristSimpleCaller":   "RIST_SIMPLE_SENDER",
+	"ristSimpleListener": "RIST_SIMPLE_RECEIVER",
+	"zixiPushSender":     "ZIXI_PUSH_SENDER",
+	"zixiPushReceiver":   "ZIXI_PUSH_RECEIVER",
+	"zixiPullSender":     "ZIXI_PULL_SENDER",
+	"zixiPullReceiver":   "ZIXI_PULL_RECEIVER",
 	"rtp":                "RTP",
 }
 

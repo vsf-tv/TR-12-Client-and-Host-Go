@@ -8,6 +8,7 @@ Name | Type
 ------------ | -------------
 `status` | [Array&lt;StatusValue&gt;](StatusValue.md)
 `channels` | [Array&lt;ChannelStatus&gt;](ChannelStatus.md)
+`health` | [Health](Health.md)
 
 ## Example
 
@@ -18,6 +19,7 @@ import type { DeviceStatus } from ''
 const example = {
   "status": null,
   "channels": null,
+  "health": null,
 } satisfies DeviceStatus
 
 console.log(example)

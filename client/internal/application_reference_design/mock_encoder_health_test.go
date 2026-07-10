@@ -14,7 +14,7 @@
 //
 // These tests verify that:
 //   1. A simulated setting failure in the mock encoder causes the channel to be
-//      reported as DEGRADED in the actual configuration.
+//      reported as DEGRADED in the device status.
 //   2. A simulated start/stop failure causes DEGRADED health.
 //   3. Multiple failures accumulate into one DEGRADED health message.
 //   4. Clearing the failure restores HEALTHY.
@@ -190,16 +190,15 @@ func TestClearingFailureRestoresHealthy(t *testing.T) {
 	t.Log("Channel correctly returned to HEALTHY after clearing failure")
 }
 
-// TestShimReflectsDegradedHealthInActualConfig verifies the full shim path:
-// a DEGRADED channel health set on the encoder appears in the ActualDeviceConfiguration
-// returned by GetActualConfiguration. This is what gets published to the host.
-func TestShimReflectsDegradedHealthInActualConfig(t *testing.T) {
+// TestShimReflectsDegradedHealthInDeviceStatus verifies the full shim path:
+// a DEGRADED channel health set on the encoder appears in the DeviceStatus
+// returned by GetDeviceStatus. This is what gets published to the host.
+func TestShimReflectsDegradedHealthInDeviceStatus(t *testing.T) {
 	callbacks := NewArdCallbacks()
 	enc := callbacks.Encoder
 	shim := NewTr12ShimWithCallbacks(callbacks)
 
 	reg := buildTestRegistration()
-	desired := buildTestDesiredConfig("v1", "cv1")
 
 	// Apply settings normally first so there's a valid baseline.
 	callbacks.UpdateChannelSettings("CH01", "RS01", "1920x1080")
@@ -209,24 +208,23 @@ func TestShimReflectsDegradedHealthInActualConfig(t *testing.T) {
 	enc.SimulateFailure("RS01")
 	callbacks.UpdateChannelSettings("CH01", "RS01", "1280x720")
 
-	// Build actual config via the shim.
-	appliedVersions := map[string]string{"CH01": "cv1"}
-	actual := shim.GetActualConfiguration(reg, desired, appliedVersions)
+	// Build device status via the shim.
+	status := shim.GetDeviceStatus(reg)
 
-	if len(actual.Channels) == 0 {
-		t.Fatal("expected at least one channel in actual configuration")
+	if len(status.Channels) == 0 {
+		t.Fatal("expected at least one channel in device status")
 	}
-	ch := actual.Channels[0]
+	ch := status.Channels[0]
 	if ch.Id != "CH01" {
 		t.Fatalf("expected CH01, got %s", ch.Id)
 	}
 	if ch.Health == nil {
-		t.Fatal("expected non-nil health in actual configuration")
+		t.Fatal("expected non-nil health in device status")
 	}
 	if ch.Health.Degraded == nil {
-		t.Fatalf("expected Degraded health in actual config, got healthy=%v", ch.Health.Healthy)
+		t.Fatalf("expected Degraded health in device status, got healthy=%v", ch.Health.Healthy)
 	}
-	t.Logf("Actual config CH01 health: DEGRADED message=%q", ch.Health.Degraded.Degraded.Message)
+	t.Logf("Device status CH01 health: DEGRADED message=%q", ch.Health.Degraded.Degraded.Message)
 }
 
 // TestApplicationLoopLeavesVersionUnrecordedWhenDegraded verifies that the

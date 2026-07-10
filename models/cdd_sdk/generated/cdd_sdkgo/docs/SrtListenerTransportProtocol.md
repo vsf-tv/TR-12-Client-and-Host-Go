@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **StreamId** | Pointer to **string** |  | [optional] 
 **Port** | **float32** |  | 
 **MinimumLatencyMilliseconds** | Pointer to **float32** |  | [optional] [default to 1000]
-**Encryption** | Pointer to [**EncryptionAes**](EncryptionAes.md) |  | [optional] 
+**Encryption** | Pointer to [**SrtEncryption**](SrtEncryption.md) |  | [optional] 
 **Interface** | Pointer to **string** |  | [optional] 
 
 ## Methods
@@ -101,20 +101,20 @@ HasMinimumLatencyMilliseconds returns a boolean if a field has been set.
 
 ### GetEncryption
 
-`func (o *SrtListenerTransportProtocol) GetEncryption() EncryptionAes`
+`func (o *SrtListenerTransportProtocol) GetEncryption() SrtEncryption`
 
 GetEncryption returns the Encryption field if non-nil, zero value otherwise.
 
 ### GetEncryptionOk
 
-`func (o *SrtListenerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool)`
+`func (o *SrtListenerTransportProtocol) GetEncryptionOk() (*SrtEncryption, bool)`
 
 GetEncryptionOk returns a tuple with the Encryption field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetEncryption
 
-`func (o *SrtListenerTransportProtocol) SetEncryption(v EncryptionAes)`
+`func (o *SrtListenerTransportProtocol) SetEncryption(v SrtEncryption)`
 
 SetEncryption sets Encryption field to given value.
 

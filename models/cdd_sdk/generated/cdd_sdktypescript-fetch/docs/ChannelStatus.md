@@ -9,6 +9,7 @@ Name | Type
 `id` | string
 `state` | [ChannelState](ChannelState.md)
 `status` | [Array&lt;StatusValue&gt;](StatusValue.md)
+`health` | [Health](Health.md)
 
 ## Example
 
@@ -20,6 +21,7 @@ const example = {
   "id": null,
   "state": null,
   "status": null,
+  "health": null,
 } satisfies ChannelStatus
 
 console.log(example)

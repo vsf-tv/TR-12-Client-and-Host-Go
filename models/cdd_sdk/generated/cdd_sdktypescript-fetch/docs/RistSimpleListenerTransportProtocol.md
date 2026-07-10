@@ -8,7 +8,7 @@ Name | Type
 ------------ | -------------
 `port` | number
 `minimumLatencyMilliseconds` | number
-`encryption` | [EncryptionAes](EncryptionAes.md)
+`encryption` | [RistEncryption](RistEncryption.md)
 `_interface` | string
 
 ## Example

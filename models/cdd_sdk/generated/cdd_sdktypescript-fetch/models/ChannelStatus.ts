@@ -20,6 +20,13 @@ import {
     ChannelStateToJSON,
     ChannelStateToJSONTyped,
 } from './ChannelState';
+import type { Health } from './Health';
+import {
+    HealthFromJSON,
+    HealthFromJSONTyped,
+    HealthToJSON,
+    HealthToJSONTyped,
+} from './Health';
 import type { StatusValue } from './StatusValue';
 import {
     StatusValueFromJSON,
@@ -35,7 +42,9 @@ import {
  */
 export interface ChannelStatus {
     /**
-     * 
+     * An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+     * Used for channelId, templateId, setting id, profile id, and channel status id.
+     * See limits.smithy: MAX_ID_LENGTH
      * @type {string}
      * @memberof ChannelStatus
      */
@@ -52,6 +61,12 @@ export interface ChannelStatus {
      * @memberof ChannelStatus
      */
     status: Array<StatusValue>;
+    /**
+     * 
+     * @type {Health}
+     * @memberof ChannelStatus
+     */
+    health?: Health;
 }
 
 
@@ -79,6 +94,7 @@ export function ChannelStatusFromJSONTyped(json: any, ignoreDiscriminator: boole
         'id': json['id'],
         'state': ChannelStateFromJSON(json['state']),
         'status': ((json['status'] as Array<any>).map(StatusValueFromJSON)),
+        'health': json['health'] == null ? undefined : HealthFromJSON(json['health']),
     };
 }
 
@@ -96,6 +112,7 @@ export function ChannelStatusToJSONTyped(value?: ChannelStatus | null, ignoreDis
         'id': value['id'],
         'state': ChannelStateToJSON(value['state']),
         'status': ((value['status'] as Array<any>).map(StatusValueToJSON)),
+        'health': HealthToJSON(value['health']),
     };
 }
 

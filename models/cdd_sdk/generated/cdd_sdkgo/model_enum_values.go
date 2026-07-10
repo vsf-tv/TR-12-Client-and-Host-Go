@@ -21,6 +21,7 @@ var _ MappedNullable = &EnumValues{}
 
 // EnumValues struct for EnumValues
 type EnumValues struct {
+	// See limits.smithy: MAX_ENUM_VALUES
 	Values []string `json:"values"`
 	DefaultValue string `json:"defaultValue"`
 }

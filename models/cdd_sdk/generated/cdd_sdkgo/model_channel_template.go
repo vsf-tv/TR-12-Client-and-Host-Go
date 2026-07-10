@@ -21,7 +21,8 @@ var _ MappedNullable = &ChannelTemplate{}
 
 // ChannelTemplate A channel template defines the capabilities shared by one or more channels.
 type ChannelTemplate struct {
-	Id string `json:"id"`
+	// An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters). Used for channelId, templateId, setting id, profile id, and channel status id. See limits.smithy: MAX_ID_LENGTH
+	Id string `json:"id" validate:"regexp=^[a-zA-Z0-9]+$"`
 	ChannelType ChannelType `json:"channelType"`
 	// Settings this channel type supports.
 	Settings []Setting `json:"settings,omitempty"`

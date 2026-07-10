@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { EncryptionAes } from './EncryptionAes';
+import type { SrtEncryption } from './SrtEncryption';
 import {
-    EncryptionAesFromJSON,
-    EncryptionAesFromJSONTyped,
-    EncryptionAesToJSON,
-    EncryptionAesToJSONTyped,
-} from './EncryptionAes';
+    SrtEncryptionFromJSON,
+    SrtEncryptionFromJSONTyped,
+    SrtEncryptionToJSON,
+    SrtEncryptionToJSONTyped,
+} from './SrtEncryption';
 
 /**
  * 
@@ -47,10 +47,10 @@ export interface SrtListenerTransportProtocol {
     minimumLatencyMilliseconds?: number;
     /**
      * 
-     * @type {EncryptionAes}
+     * @type {SrtEncryption}
      * @memberof SrtListenerTransportProtocol
      */
-    encryption?: EncryptionAes;
+    encryption?: SrtEncryption;
     /**
      * 
      * @type {string}
@@ -80,7 +80,7 @@ export function SrtListenerTransportProtocolFromJSONTyped(json: any, ignoreDiscr
         'streamId': json['streamId'] == null ? undefined : json['streamId'],
         'port': json['port'],
         'minimumLatencyMilliseconds': json['minimumLatencyMilliseconds'] == null ? undefined : json['minimumLatencyMilliseconds'],
-        'encryption': json['encryption'] == null ? undefined : EncryptionAesFromJSON(json['encryption']),
+        'encryption': json['encryption'] == null ? undefined : SrtEncryptionFromJSON(json['encryption']),
         '_interface': json['interface'] == null ? undefined : json['interface'],
     };
 }
@@ -99,7 +99,7 @@ export function SrtListenerTransportProtocolToJSONTyped(value?: SrtListenerTrans
         'streamId': value['streamId'],
         'port': value['port'],
         'minimumLatencyMilliseconds': value['minimumLatencyMilliseconds'],
-        'encryption': EncryptionAesToJSON(value['encryption']),
+        'encryption': SrtEncryptionToJSON(value['encryption']),
         'interface': value['_interface'],
     };
 }

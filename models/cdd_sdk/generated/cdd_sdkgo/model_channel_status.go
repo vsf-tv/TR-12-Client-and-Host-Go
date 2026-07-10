@@ -21,10 +21,12 @@ var _ MappedNullable = &ChannelStatus{}
 
 // ChannelStatus struct for ChannelStatus
 type ChannelStatus struct {
-	Id string `json:"id"`
+	// An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters). Used for channelId, templateId, setting id, profile id, and channel status id. See limits.smithy: MAX_ID_LENGTH
+	Id string `json:"id" validate:"regexp=^[a-zA-Z0-9]+$"`
 	State ChannelState `json:"state"`
 	// See limits.smithy: MAX_STATUS_VALUES
 	Status []StatusValue `json:"status"`
+	Health *Health `json:"health,omitempty"`
 }
 
 type _ChannelStatus ChannelStatus
@@ -121,6 +123,38 @@ func (o *ChannelStatus) SetStatus(v []StatusValue) {
 	o.Status = v
 }
 
+// GetHealth returns the Health field value if set, zero value otherwise.
+func (o *ChannelStatus) GetHealth() Health {
+	if o == nil || IsNil(o.Health) {
+		var ret Health
+		return ret
+	}
+	return *o.Health
+}
+
+// GetHealthOk returns a tuple with the Health field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ChannelStatus) GetHealthOk() (*Health, bool) {
+	if o == nil || IsNil(o.Health) {
+		return nil, false
+	}
+	return o.Health, true
+}
+
+// HasHealth returns a boolean if a field has been set.
+func (o *ChannelStatus) HasHealth() bool {
+	if o != nil && !IsNil(o.Health) {
+		return true
+	}
+
+	return false
+}
+
+// SetHealth gets a reference to the given Health and assigns it to the Health field.
+func (o *ChannelStatus) SetHealth(v Health) {
+	o.Health = &v
+}
+
 func (o ChannelStatus) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -134,6 +168,9 @@ func (o ChannelStatus) ToMap() (map[string]interface{}, error) {
 	toSerialize["id"] = o.Id
 	toSerialize["state"] = o.State
 	toSerialize["status"] = o.Status
+	if !IsNil(o.Health) {
+		toSerialize["health"] = o.Health
+	}
 	return toSerialize, nil
 }
 

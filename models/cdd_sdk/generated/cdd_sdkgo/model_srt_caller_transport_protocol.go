@@ -25,7 +25,7 @@ type SrtCallerTransportProtocol struct {
 	Address string `json:"address"`
 	Port float32 `json:"port"`
 	MinimumLatencyMilliseconds *float32 `json:"minimumLatencyMilliseconds,omitempty"`
-	Encryption *EncryptionAes `json:"encryption,omitempty"`
+	Encryption *SrtEncryption `json:"encryption,omitempty"`
 }
 
 type _SrtCallerTransportProtocol SrtCallerTransportProtocol
@@ -166,9 +166,9 @@ func (o *SrtCallerTransportProtocol) SetMinimumLatencyMilliseconds(v float32) {
 }
 
 // GetEncryption returns the Encryption field value if set, zero value otherwise.
-func (o *SrtCallerTransportProtocol) GetEncryption() EncryptionAes {
+func (o *SrtCallerTransportProtocol) GetEncryption() SrtEncryption {
 	if o == nil || IsNil(o.Encryption) {
-		var ret EncryptionAes
+		var ret SrtEncryption
 		return ret
 	}
 	return *o.Encryption
@@ -176,7 +176,7 @@ func (o *SrtCallerTransportProtocol) GetEncryption() EncryptionAes {
 
 // GetEncryptionOk returns a tuple with the Encryption field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SrtCallerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool) {
+func (o *SrtCallerTransportProtocol) GetEncryptionOk() (*SrtEncryption, bool) {
 	if o == nil || IsNil(o.Encryption) {
 		return nil, false
 	}
@@ -192,8 +192,8 @@ func (o *SrtCallerTransportProtocol) HasEncryption() bool {
 	return false
 }
 
-// SetEncryption gets a reference to the given EncryptionAes and assigns it to the Encryption field.
-func (o *SrtCallerTransportProtocol) SetEncryption(v EncryptionAes) {
+// SetEncryption gets a reference to the given SrtEncryption and assigns it to the Encryption field.
+func (o *SrtCallerTransportProtocol) SetEncryption(v SrtEncryption) {
 	o.Encryption = &v
 }
 

@@ -21,7 +21,8 @@ var _ MappedNullable = &IdAndValue{}
 
 // IdAndValue struct for IdAndValue
 type IdAndValue struct {
-	Id string `json:"id"`
+	// An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters). Used for channelId, templateId, setting id, profile id, and channel status id. See limits.smithy: MAX_ID_LENGTH
+	Id string `json:"id" validate:"regexp=^[a-zA-Z0-9]+$"`
 	Value string `json:"value"`
 }
 

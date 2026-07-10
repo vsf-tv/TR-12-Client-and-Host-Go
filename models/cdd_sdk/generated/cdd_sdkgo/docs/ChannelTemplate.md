@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | **string** |  | 
+**Id** | **string** | An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters). Used for channelId, templateId, setting id, profile id, and channel status id. See limits.smithy: MAX_ID_LENGTH | 
 **ChannelType** | [**ChannelType**](ChannelType.md) |  | 
 **Settings** | Pointer to [**[]Setting**](Setting.md) | Settings this channel type supports. | [optional] 
 **Profiles** | Pointer to [**[]ProfileDefinition**](ProfileDefinition.md) | Profiles this channel type supports (mutually exclusive with settings in config). | [optional] 

@@ -110,11 +110,6 @@ func (s *Tr12Shim) GetActualConfiguration(registration *cddsdkgo.DeviceRegistrat
 		result.Version = desired.Version
 	}
 
-	// Device-level health
-	if health := s.CB.GetDeviceHealth(); health != nil {
-		result.Health = health
-	}
-
 	// Device-level standard settings
 	var deviceSettings []cddsdkgo.IdAndValue
 	for _, setting := range registration.Settings {
@@ -157,11 +152,6 @@ func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTem
 	chCfg := cddsdkgo.ActualChannelConfiguration{
 		Id:    channelID,
 		State: s.CB.GetChannelState(channelID),
-	}
-
-	// Health
-	if health := s.CB.GetChannelHealth(channelID); health != nil {
-		chCfg.Health = health
 	}
 
 	// The desired config is the single source of truth for which channelSettings union
@@ -216,16 +206,24 @@ func (s *Tr12Shim) buildChannelConfig(channelID string, tmpl cddsdkgo.ChannelTem
 func (s *Tr12Shim) GetDeviceStatus(registration *cddsdkgo.DeviceRegistration) *cddsdkgo.DeviceStatus {
 	var channelStatuses []cddsdkgo.ChannelStatus
 	for _, rc := range resolveChannels(registration) {
-		channelStatuses = append(channelStatuses, cddsdkgo.ChannelStatus{
+		chStatus := cddsdkgo.ChannelStatus{
 			Id:     rc.channelID,
 			State:  s.CB.GetChannelState(rc.channelID),
 			Status: s.CB.GetChannelStatus(rc.channelID),
-		})
+		}
+		if health := s.CB.GetChannelHealth(rc.channelID); health != nil {
+			chStatus.Health = health
+		}
+		channelStatuses = append(channelStatuses, chStatus)
 	}
-	return &cddsdkgo.DeviceStatus{
+	result := &cddsdkgo.DeviceStatus{
 		Status:   s.CB.GetDeviceStatus(),
 		Channels: channelStatuses,
 	}
+	if health := s.CB.GetDeviceHealth(); health != nil {
+		result.Health = health
+	}
+	return result
 }
 
 // PrintActualConfig is a debug helper.

@@ -136,12 +136,10 @@ components:
             streamId: streamId
             minimumLatencyMilliseconds: 6.027456183070403
             encryption:
-              aes128:
-                passphrase: passphrase
+              keyLength: AES_128
+              passphrase: passphrase
             port: 6190.222739483032
             interface: interface
-        health:
-          healthy: "{}"
         id: id
         state: ACTIVE
         version: version
@@ -160,6 +158,13 @@ components:
         thumbnailLocalPath: thumbnailLocalPath
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         version:
           maxLength: 80
@@ -170,8 +175,6 @@ components:
           $ref: "#/components/schemas/ChannelSettings"
         protocol:
           $ref: "#/components/schemas/TransportProtocol"
-        health:
-          $ref: "#/components/schemas/Health"
         thumbnailLocalPath:
           description: Informs the TR12 Client so it may service Thumbnail Subscriptions.  Host
             service can ignore.
@@ -203,12 +206,10 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
-          health:
-            healthy: "{}"
           id: id
           state: ACTIVE
           version: version
@@ -230,12 +231,10 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
-          health:
-            healthy: "{}"
           id: id
           state: ACTIVE
           version: version
@@ -257,12 +256,10 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
-          health:
-            healthy: "{}"
           id: id
           state: ACTIVE
           version: version
@@ -284,12 +281,10 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
-          health:
-            healthy: "{}"
           id: id
           state: ACTIVE
           version: version
@@ -311,12 +306,10 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
-          health:
-            healthy: "{}"
           id: id
           state: ACTIVE
           version: version
@@ -333,7 +326,6 @@ components:
             - id: id
               value: value
           thumbnailLocalPath: thumbnailLocalPath
-        health: null
         version: version
       properties:
         version:
@@ -351,8 +343,6 @@ components:
             $ref: "#/components/schemas/IdAndValue"
           maxItems: 50
           type: array
-        health:
-          $ref: "#/components/schemas/Health"
       required:
       - channels
       - version
@@ -367,10 +357,24 @@ components:
         channelId: channelId
       properties:
         channelId:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         name:
           type: string
         templateId:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
       required:
       - channelId
@@ -380,6 +384,13 @@ components:
     ChannelProfile:
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
       required:
       - id
@@ -395,6 +406,8 @@ components:
       type: string
     ChannelStatus:
       example:
+        health:
+          healthy: "{}"
         id: id
         state: ACTIVE
         status:
@@ -415,6 +428,13 @@ components:
           value: value
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         state:
           $ref: "#/components/schemas/ChannelState"
@@ -424,6 +444,8 @@ components:
             $ref: "#/components/schemas/StatusValue"
           maxItems: 50
           type: array
+        health:
+          $ref: "#/components/schemas/Health"
       required:
       - id
       - state
@@ -520,6 +542,13 @@ components:
         - SRT_LISTENER
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         channelType:
           $ref: "#/components/schemas/ChannelType"
@@ -572,8 +601,8 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
             id: id
@@ -596,8 +625,8 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
             id: id
@@ -620,8 +649,8 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
             id: id
@@ -644,8 +673,8 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
             id: id
@@ -668,8 +697,8 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
             id: id
@@ -1278,8 +1307,8 @@ components:
             streamId: streamId
             minimumLatencyMilliseconds: 6.027456183070403
             encryption:
-              aes128:
-                passphrase: passphrase
+              keyLength: AES_128
+              passphrase: passphrase
             port: 6190.222739483032
             interface: interface
         id: id
@@ -1299,6 +1328,13 @@ components:
             value: value
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         version:
           maxLength: 80
@@ -1336,8 +1372,8 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
           id: id
@@ -1360,8 +1396,8 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
           id: id
@@ -1384,8 +1420,8 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
           id: id
@@ -1408,8 +1444,8 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
           id: id
@@ -1432,8 +1468,8 @@ components:
               streamId: streamId
               minimumLatencyMilliseconds: 6.027456183070403
               encryption:
-                aes128:
-                  passphrase: passphrase
+                keyLength: AES_128
+                passphrase: passphrase
               port: 6190.222739483032
               interface: interface
           id: id
@@ -2017,7 +2053,9 @@ components:
     DeviceStatus:
       example:
         channels:
-        - id: id
+        - health:
+            healthy: "{}"
+          id: id
           state: ACTIVE
           status:
           - name: name
@@ -2035,7 +2073,9 @@ components:
           - name: name
             description: description
             value: value
-        - id: id
+        - health:
+            healthy: "{}"
+          id: id
           state: ACTIVE
           status:
           - name: name
@@ -2053,7 +2093,9 @@ components:
           - name: name
             description: description
             value: value
-        - id: id
+        - health:
+            healthy: "{}"
+          id: id
           state: ACTIVE
           status:
           - name: name
@@ -2071,7 +2113,9 @@ components:
           - name: name
             description: description
             value: value
-        - id: id
+        - health:
+            healthy: "{}"
+          id: id
           state: ACTIVE
           status:
           - name: name
@@ -2089,7 +2133,9 @@ components:
           - name: name
             description: description
             value: value
-        - id: id
+        - health:
+            healthy: "{}"
+          id: id
           state: ACTIVE
           status:
           - name: name
@@ -2107,6 +2153,7 @@ components:
           - name: name
             description: description
             value: value
+        health: null
         status:
         - name: name
           description: description
@@ -2136,6 +2183,8 @@ components:
             $ref: "#/components/schemas/ChannelStatus"
           maxItems: 50
           type: array
+        health:
+          $ref: "#/components/schemas/Health"
       required:
       - status
       type: object
@@ -2162,36 +2211,6 @@ components:
       - state
       - success
       type: object
-    EncryptionAes:
-      oneOf:
-      - $ref: "#/components/schemas/aes128"
-      - $ref: "#/components/schemas/aes256"
-    EncryptionAes128:
-      example:
-        passphrase: passphrase
-      properties:
-        passphrase:
-          description: A 32-character hexadecimal string.
-          format: password
-          maxLength: 32
-          minLength: 32
-          pattern: "^[a-fA-F0-9]+$"
-          type: string
-      required:
-      - passphrase
-      type: object
-    EncryptionAes256:
-      properties:
-        passphrase:
-          description: A 64-character hexadecimal string.
-          format: password
-          maxLength: 64
-          minLength: 64
-          pattern: "^[a-fA-F0-9]+$"
-          type: string
-      required:
-      - passphrase
-      type: object
     EnumValues:
       example:
         defaultValue: defaultValue
@@ -2203,6 +2222,7 @@ components:
         - values
       properties:
         values:
+          description: "See limits.smithy: MAX_ENUM_VALUES"
           items:
             type: string
           maxItems: 10
@@ -2252,8 +2272,8 @@ components:
                   streamId: streamId
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
-                    aes128:
-                      passphrase: passphrase
+                    keyLength: AES_128
+                    passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
               id: id
@@ -2276,8 +2296,8 @@ components:
                   streamId: streamId
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
-                    aes128:
-                      passphrase: passphrase
+                    keyLength: AES_128
+                    passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
               id: id
@@ -2300,8 +2320,8 @@ components:
                   streamId: streamId
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
-                    aes128:
-                      passphrase: passphrase
+                    keyLength: AES_128
+                    passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
               id: id
@@ -2324,8 +2344,8 @@ components:
                   streamId: streamId
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
-                    aes128:
-                      passphrase: passphrase
+                    keyLength: AES_128
+                    passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
               id: id
@@ -2348,8 +2368,8 @@ components:
                   streamId: streamId
                   minimumLatencyMilliseconds: 6.027456183070403
                   encryption:
-                    aes128:
-                      passphrase: passphrase
+                    keyLength: AES_128
+                    passphrase: passphrase
                   port: 6190.222739483032
                   interface: interface
               id: id
@@ -2443,6 +2463,13 @@ components:
         value: value
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         value:
           type: string
@@ -2459,6 +2486,13 @@ components:
         name:
           type: string
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         description:
           type: string
@@ -3038,12 +3072,10 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
-            health:
-              healthy: "{}"
             id: id
             state: ACTIVE
             version: version
@@ -3065,12 +3097,10 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
-            health:
-              healthy: "{}"
             id: id
             state: ACTIVE
             version: version
@@ -3092,12 +3122,10 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
-            health:
-              healthy: "{}"
             id: id
             state: ACTIVE
             version: version
@@ -3119,12 +3147,10 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
-            health:
-              healthy: "{}"
             id: id
             state: ACTIVE
             version: version
@@ -3146,12 +3172,10 @@ components:
                 streamId: streamId
                 minimumLatencyMilliseconds: 6.027456183070403
                 encryption:
-                  aes128:
-                    passphrase: passphrase
+                  keyLength: AES_128
+                  passphrase: passphrase
                 port: 6190.222739483032
                 interface: interface
-            health:
-              healthy: "{}"
             id: id
             state: ACTIVE
             version: version
@@ -3168,7 +3192,6 @@ components:
               - id: id
                 value: value
             thumbnailLocalPath: thumbnailLocalPath
-          health: null
           version: version
       properties:
         configuration:
@@ -3203,7 +3226,9 @@ components:
       example:
         status:
           channels:
-          - id: id
+          - health:
+              healthy: "{}"
+            id: id
             state: ACTIVE
             status:
             - name: name
@@ -3221,7 +3246,9 @@ components:
             - name: name
               description: description
               value: value
-          - id: id
+          - health:
+              healthy: "{}"
+            id: id
             state: ACTIVE
             status:
             - name: name
@@ -3239,7 +3266,9 @@ components:
             - name: name
               description: description
               value: value
-          - id: id
+          - health:
+              healthy: "{}"
+            id: id
             state: ACTIVE
             status:
             - name: name
@@ -3257,7 +3286,9 @@ components:
             - name: name
               description: description
               value: value
-          - id: id
+          - health:
+              healthy: "{}"
+            id: id
             state: ACTIVE
             status:
             - name: name
@@ -3275,7 +3306,9 @@ components:
             - name: name
               description: description
               value: value
-          - id: id
+          - health:
+              healthy: "{}"
+            id: id
             state: ACTIVE
             status:
             - name: name
@@ -3293,6 +3326,7 @@ components:
             - name: name
               description: description
               value: value
+          health: null
           status:
           - name: name
             description: description
@@ -3338,6 +3372,17 @@ components:
       - state
       - success
       type: object
+    RistEncryption:
+      description: |-
+        RIST encryption (Main Profile, DTLS-PSK mode).
+        Passphrase constraints are implementation-defined.
+      properties:
+        passphrase:
+          format: password
+          type: string
+      required:
+      - passphrase
+      type: object
     RistSimpleCallerTransportProtocol:
       properties:
         address:
@@ -3350,7 +3395,7 @@ components:
           default: 1000
           type: number
         encryption:
-          $ref: "#/components/schemas/EncryptionAes"
+          $ref: "#/components/schemas/RistEncryption"
       required:
       - address
       - port
@@ -3365,35 +3410,11 @@ components:
           default: 1000
           type: number
         encryption:
-          $ref: "#/components/schemas/EncryptionAes"
+          $ref: "#/components/schemas/RistEncryption"
         interface:
           type: string
       required:
       - port
-      type: object
-    RtpFecConfiguration:
-      properties:
-        columnFec:
-          $ref: "#/components/schemas/RtpFecStreamConfig"
-        rowFec:
-          $ref: "#/components/schemas/RtpFecStreamConfig"
-        matrixColumns:
-          type: number
-        matrixRows:
-          type: number
-      required:
-      - columnFec
-      type: object
-    RtpFecStreamConfig:
-      properties:
-        address:
-          type: string
-        port:
-          maximum: 65535
-          minimum: 1024
-          type: number
-        rtpPayloadType:
-          type: number
       type: object
     RtpTransportProtocol:
       properties:
@@ -3405,10 +3426,6 @@ components:
           type: number
         sourceAddressFilter:
           type: string
-        rtpPayloadType:
-          type: number
-        fecConfig:
-          $ref: "#/components/schemas/RtpFecConfiguration"
       required:
       - address
       - port
@@ -3429,6 +3446,13 @@ components:
         id: id
       properties:
         id:
+          description: |-
+            An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters).
+            Used for channelId, templateId, setting id, profile id, and channel status id.
+            See limits.smithy: MAX_ID_LENGTH
+          maxLength: 12
+          minLength: 1
+          pattern: "^[a-zA-Z0-9]+$"
           type: string
         name:
           type: string
@@ -3463,18 +3487,43 @@ components:
           default: 1000
           type: number
         encryption:
-          $ref: "#/components/schemas/EncryptionAes"
+          $ref: "#/components/schemas/SrtEncryption"
       required:
       - address
       - port
       type: object
+    SrtEncryption:
+      description: |-
+        SRT encryption. Passphrase is 10-80 characters (protocol-enforced).
+        Key length selects the AES key size for the derived Stream Encrypting Key.
+        All SRT versions support all three key lengths.
+      example:
+        keyLength: AES_128
+        passphrase: passphrase
+      properties:
+        passphrase:
+          format: password
+          maxLength: 80
+          minLength: 10
+          type: string
+        keyLength:
+          $ref: "#/components/schemas/SrtEncryptionKeyLength"
+      required:
+      - passphrase
+      type: object
+    SrtEncryptionKeyLength:
+      enum:
+      - AES_128
+      - AES_192
+      - AES_256
+      type: string
     SrtListenerTransportProtocol:
       example:
         streamId: streamId
         minimumLatencyMilliseconds: 6.027456183070403
         encryption:
-          aes128:
-            passphrase: passphrase
+          keyLength: AES_128
+          passphrase: passphrase
         port: 6190.222739483032
         interface: interface
       properties:
@@ -3488,7 +3537,7 @@ components:
           default: 1000
           type: number
         encryption:
-          $ref: "#/components/schemas/EncryptionAes"
+          $ref: "#/components/schemas/SrtEncryption"
         interface:
           type: string
       required:
@@ -3517,40 +3566,49 @@ components:
       - $ref: "#/components/schemas/srtCaller"
       - $ref: "#/components/schemas/ristSimpleListener"
       - $ref: "#/components/schemas/ristSimpleCaller"
-      - $ref: "#/components/schemas/zixiPush"
-      - $ref: "#/components/schemas/zixiPull"
+      - $ref: "#/components/schemas/zixiPushSender"
+      - $ref: "#/components/schemas/zixiPushReceiver"
+      - $ref: "#/components/schemas/zixiPullSender"
+      - $ref: "#/components/schemas/zixiPullReceiver"
       - $ref: "#/components/schemas/rtp"
     TransportProtocolName:
       enum:
       - SRT_LISTENER
       - SRT_CALLER
-      - ZIXI_PUSH
-      - ZIXI_PULL
-      - RIST_SIMPLE_CALLER
-      - RIST_SIMPLE_LISTENER
+      - ZIXI_PUSH_SENDER
+      - ZIXI_PULL_SENDER
+      - ZIXI_PUSH_RECEIVER
+      - ZIXI_PULL_RECEIVER
+      - RIST_SIMPLE_SENDER
+      - RIST_SIMPLE_RECEIVER
       - RTP
       type: string
-    ZixiPullTransportProtocol:
+    ZixiEncryption:
+      description: |-
+        Zixi encryption. Passphrase constraints are implementation-defined.
+        Key length selects the AES key size.
       properties:
-        streamId:
+        passphrase:
+          format: password
           type: string
-        address:
-          type: string
-        port:
-          default: 2088
-          maximum: 65535
-          minimum: 1024
-          type: number
-        minimumLatencyMilliseconds:
+        keyLength:
+          $ref: "#/components/schemas/ZixiEncryptionKeyLength"
+      required:
+      - passphrase
+      type: object
+    ZixiEncryptionKeyLength:
+      enum:
+      - AES_128
+      - AES_192
+      - AES_256
+      type: string
+    ZixiPullReceiverTransportProtocol:
+      properties:
+        maximumLatencyMilliseconds:
           default: 1000
           type: number
         encryption:
-          $ref: "#/components/schemas/EncryptionAes"
-      required:
-      - address
-      type: object
-    ZixiPushTransportProtocol:
-      properties:
+          $ref: "#/components/schemas/ZixiEncryption"
         streamId:
           type: string
         address:
@@ -3560,11 +3618,64 @@ components:
           maximum: 65535
           minimum: 1
           type: number
-        minimumLatencyMilliseconds:
+      required:
+      - address
+      - streamId
+      type: object
+    ZixiPullSenderTransportProtocol:
+      properties:
+        maximumLatencyMilliseconds:
           default: 1000
           type: number
         encryption:
-          $ref: "#/components/schemas/EncryptionAes"
+          $ref: "#/components/schemas/ZixiEncryption"
+        streamId:
+          type: string
+        port:
+          maximum: 65535
+          minimum: 1024
+          type: number
+        interface:
+          type: string
+      required:
+      - port
+      - streamId
+      type: object
+    ZixiPushReceiverTransportProtocol:
+      properties:
+        maximumLatencyMilliseconds:
+          default: 1000
+          type: number
+        encryption:
+          $ref: "#/components/schemas/ZixiEncryption"
+        streamId:
+          type: string
+        address:
+          type: string
+        port:
+          default: 2088
+          maximum: 65535
+          minimum: 1
+          type: number
+      required:
+      - address
+      type: object
+    ZixiPushSenderTransportProtocol:
+      properties:
+        maximumLatencyMilliseconds:
+          default: 1000
+          type: number
+        encryption:
+          $ref: "#/components/schemas/ZixiEncryption"
+        streamId:
+          type: string
+        address:
+          type: string
+        port:
+          default: 2088
+          maximum: 65535
+          minimum: 1
+          type: number
       required:
       - address
       type: object
@@ -3599,25 +3710,6 @@ components:
       required:
       - profile
       title: profile
-      type: object
-    aes128:
-      example:
-        aes128:
-          passphrase: passphrase
-      properties:
-        aes128:
-          $ref: "#/components/schemas/EncryptionAes128"
-      required:
-      - aes128
-      title: aes128
-      type: object
-    aes256:
-      properties:
-        aes256:
-          $ref: "#/components/schemas/EncryptionAes256"
-      required:
-      - aes256
-      title: aes256
       type: object
     healthy:
       example:
@@ -3677,8 +3769,8 @@ components:
           streamId: streamId
           minimumLatencyMilliseconds: 6.027456183070403
           encryption:
-            aes128:
-              passphrase: passphrase
+            keyLength: AES_128
+            passphrase: passphrase
           port: 6190.222739483032
           interface: interface
       properties:
@@ -3712,21 +3804,37 @@ components:
       - ristSimpleCaller
       title: ristSimpleCaller
       type: object
-    zixiPush:
+    zixiPushSender:
       properties:
-        zixiPush:
-          $ref: "#/components/schemas/ZixiPushTransportProtocol"
+        zixiPushSender:
+          $ref: "#/components/schemas/ZixiPushSenderTransportProtocol"
       required:
-      - zixiPush
-      title: zixiPush
+      - zixiPushSender
+      title: zixiPushSender
       type: object
-    zixiPull:
+    zixiPushReceiver:
       properties:
-        zixiPull:
-          $ref: "#/components/schemas/ZixiPullTransportProtocol"
+        zixiPushReceiver:
+          $ref: "#/components/schemas/ZixiPushReceiverTransportProtocol"
       required:
-      - zixiPull
-      title: zixiPull
+      - zixiPushReceiver
+      title: zixiPushReceiver
+      type: object
+    zixiPullSender:
+      properties:
+        zixiPullSender:
+          $ref: "#/components/schemas/ZixiPullSenderTransportProtocol"
+      required:
+      - zixiPullSender
+      title: zixiPullSender
+      type: object
+    zixiPullReceiver:
+      properties:
+        zixiPullReceiver:
+          $ref: "#/components/schemas/ZixiPullReceiverTransportProtocol"
+      required:
+      - zixiPullReceiver
+      title: zixiPullReceiver
       type: object
     rtp:
       properties:

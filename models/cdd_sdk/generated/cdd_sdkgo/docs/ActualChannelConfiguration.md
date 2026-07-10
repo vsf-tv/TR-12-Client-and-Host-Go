@@ -4,12 +4,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | **string** |  | 
+**Id** | **string** | An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters). Used for channelId, templateId, setting id, profile id, and channel status id. See limits.smithy: MAX_ID_LENGTH | 
 **Version** | **string** |  | 
 **State** | [**ChannelState**](ChannelState.md) |  | 
 **ChannelSettings** | Pointer to [**ChannelSettings**](ChannelSettings.md) |  | [optional] 
 **Protocol** | Pointer to [**TransportProtocol**](TransportProtocol.md) |  | [optional] 
-**Health** | Pointer to [**Health**](Health.md) |  | [optional] 
 **ThumbnailLocalPath** | Pointer to **string** | Informs the TR12 Client so it may service Thumbnail Subscriptions.  Host service can ignore. | [optional] 
 
 ## Methods
@@ -140,31 +139,6 @@ SetProtocol sets Protocol field to given value.
 `func (o *ActualChannelConfiguration) HasProtocol() bool`
 
 HasProtocol returns a boolean if a field has been set.
-
-### GetHealth
-
-`func (o *ActualChannelConfiguration) GetHealth() Health`
-
-GetHealth returns the Health field if non-nil, zero value otherwise.
-
-### GetHealthOk
-
-`func (o *ActualChannelConfiguration) GetHealthOk() (*Health, bool)`
-
-GetHealthOk returns a tuple with the Health field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetHealth
-
-`func (o *ActualChannelConfiguration) SetHealth(v Health)`
-
-SetHealth sets Health field to given value.
-
-### HasHealth
-
-`func (o *ActualChannelConfiguration) HasHealth() bool`
-
-HasHealth returns a boolean if a field has been set.
 
 ### GetThumbnailLocalPath
 

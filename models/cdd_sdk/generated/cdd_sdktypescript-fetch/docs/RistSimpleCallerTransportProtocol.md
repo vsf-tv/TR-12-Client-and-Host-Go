@@ -9,7 +9,7 @@ Name | Type
 `address` | string
 `port` | number
 `minimumLatencyMilliseconds` | number
-`encryption` | [EncryptionAes](EncryptionAes.md)
+`encryption` | [RistEncryption](RistEncryption.md)
 
 ## Example
 

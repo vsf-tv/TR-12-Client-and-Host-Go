@@ -20,13 +20,6 @@ import {
     IdAndValueToJSON,
     IdAndValueToJSONTyped,
 } from './IdAndValue';
-import type { Health } from './Health';
-import {
-    HealthFromJSON,
-    HealthFromJSONTyped,
-    HealthToJSON,
-    HealthToJSONTyped,
-} from './Health';
 import type { ActualChannelConfiguration } from './ActualChannelConfiguration';
 import {
     ActualChannelConfigurationFromJSON,
@@ -60,12 +53,6 @@ export interface ActualDeviceConfiguration {
      * @memberof ActualDeviceConfiguration
      */
     standardSettings?: Array<IdAndValue>;
-    /**
-     * 
-     * @type {Health}
-     * @memberof ActualDeviceConfiguration
-     */
-    health?: Health;
 }
 
 /**
@@ -90,7 +77,6 @@ export function ActualDeviceConfigurationFromJSONTyped(json: any, ignoreDiscrimi
         'version': json['version'],
         'channels': ((json['channels'] as Array<any>).map(ActualChannelConfigurationFromJSON)),
         'standardSettings': json['standardSettings'] == null ? undefined : ((json['standardSettings'] as Array<any>).map(IdAndValueFromJSON)),
-        'health': json['health'] == null ? undefined : HealthFromJSON(json['health']),
     };
 }
 
@@ -108,7 +94,6 @@ export function ActualDeviceConfigurationToJSONTyped(value?: ActualDeviceConfigu
         'version': value['version'],
         'channels': ((value['channels'] as Array<any>).map(ActualChannelConfigurationToJSON)),
         'standardSettings': value['standardSettings'] == null ? undefined : ((value['standardSettings'] as Array<any>).map(IdAndValueToJSON)),
-        'health': HealthToJSON(value['health']),
     };
 }
 

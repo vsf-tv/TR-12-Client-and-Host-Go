@@ -187,7 +187,7 @@ func TestFullLifecycle(t *testing.T) {
 	t.Log("Phase 7d: Positive — Full Configuration")
 	fullConfig := json.RawMessage(`{
 		"standardSettings": [
-			{"id": "sync_clock_source", "value": "PTP"}
+			{"id": "clocksync", "value": "PTP"}
 		],
 		"channels": [
 			{
@@ -419,7 +419,7 @@ func TestOfflineConfigDelivery(t *testing.T) {
 	// Push a config update while device is offline
 	t.Log("Pushing config update while device is offline...")
 	offlineConfig := json.RawMessage(`{
-		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "clocksync", "value": "PTP"}],
 		"channels": [{
 			"id": "CH01",
 			"state": "IDLE",
@@ -466,7 +466,7 @@ func TestOfflineConfigDelivery(t *testing.T) {
 		t.Fatalf("SDK config missing MB01=5000 after offline update: %s", cfgStr)
 	}
 	if !strings.Contains(cfgStr, "PTP") {
-		t.Fatalf("SDK config missing sync_clock_source=PTP after offline update: %s", cfgStr)
+		t.Fatalf("SDK config missing clocksync=PTP after offline update: %s", cfgStr)
 	}
 	t.Log("TestOfflineConfigDelivery: OK — SDK received config update after reconnect")
 }
@@ -515,7 +515,7 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// ---------------------------------------------------------------
 	t.Log("Phase 1: Full 2-channel configuration update")
 	fullConfig := json.RawMessage(`{
-		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "clocksync", "value": "PTP"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
@@ -589,7 +589,7 @@ func TestTwoChannelEncoder(t *testing.T) {
 	// We use a distinct CH01 value (FR01=25) to confirm it was applied.
 	time.Sleep(1 * time.Second) // ensure epoch second advances for new configurationId
 	ch01OnlyConfig := json.RawMessage(`{
-		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "clocksync", "value": "PTP"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
@@ -648,7 +648,7 @@ func TestTwoChannelEncoder(t *testing.T) {
 	t.Log("Phase 3: Device-level only update — channels should not be reapplied")
 	time.Sleep(1 * time.Second)
 	deviceOnlyConfig := json.RawMessage(`{
-		"standardSettings": [{"id": "sync_clock_source", "value": "GENLOCK"}],
+		"standardSettings": [{"id": "clocksync", "value": "GENLOCK"}],
 		"channels": [
 			{
 				"id": "CH01", "state": "ACTIVE",
@@ -760,7 +760,7 @@ func TestConfigurationIdBumping(t *testing.T) {
 
 	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
 		return json.RawMessage(`{
-			"standardSettings": [{"id": "sync_clock_source", "value": "` + clockSource + `"}],
+			"standardSettings": [{"id": "clocksync", "value": "` + clockSource + `"}],
 			"channels": [
 				{"id": "CH01", "state": "` + ch01State + `", "channelSettings": {"standardSettings": [
 					{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
@@ -923,7 +923,7 @@ func TestARDConfigurationIdEchoBack(t *testing.T) {
 
 	baseConfig := func(ch01State, ch02State, clockSource string) json.RawMessage {
 		return json.RawMessage(`{
-			"standardSettings": [{"id": "sync_clock_source", "value": "` + clockSource + `"}],
+			"standardSettings": [{"id": "clocksync", "value": "` + clockSource + `"}],
 			"channels": [
 				{"id": "CH01", "state": "` + ch01State + `", "channelSettings": {"standardSettings": [
 					{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "30"},
@@ -1319,7 +1319,7 @@ func TestMQTTEnvelopes(t *testing.T) {
 	// -----------------------------------------------------------------------
 	t.Log("Envelope check: desiredDeviceConfiguration (host→device)")
 	cfg := json.RawMessage(`{
-		"standardSettings": [{"id": "sync_clock_source", "value": "PTP"}],
+		"standardSettings": [{"id": "clocksync", "value": "PTP"}],
 		"channels": [{
 			"id": "CH01", "state": "IDLE",
 			"channelSettings": {"standardSettings": [
@@ -1459,7 +1459,7 @@ func TestRegister(t *testing.T) {
 	// ---------------------------------------------------------------
 	badAssignments := deepCopyReg(t, registration)
 	badAssignments["channelAssignments"] = []interface{}{
-		map[string]interface{}{"channelId": "CH99", "name": "Changed Channel", "templateId": "source_encoder"},
+		map[string]interface{}{"channelId": "CH99", "name": "Changed Channel", "templateId": "main"},
 	}
 	resp = env.sdkRegister(badAssignments)
 	if resp.Success {
@@ -1567,14 +1567,14 @@ func deepCopyReg(t *testing.T, reg map[string]interface{}) map[string]interface{
 //
 //  1. Connect to the host
 //  2. Push a config update
-//  3. Report actual_configuration with DEGRADED channel health via the SDK API
-//  4. Verify the host stores the DEGRADED health in actual_configuration
-//  5. Report healthy and verify the host sees HEALTHY again
+//  3. Report DEGRADED channel health via the STATUS payload (PUT /report_status)
+//  4. Verify the host stores the DEGRADED health in status
+//  5. Report healthy via STATUS and verify the host sees HEALTHY again
 //
+// Health is reported in the status payload, not in actual_configuration.
 // This exercises the scenario where a device-side failure (e.g. native API error,
-// hardware fault) is surfaced to the cloud operator via the TR-12 health field.
-// The test harness drives this directly via PUT /report_actual_configuration since
-// that is the exact path a real device shim uses — no ARD binary involved.
+// hardware fault) is surfaced to the cloud operator via the TR-12 health field
+// in the device status.
 func TestChannelHealthReporting(t *testing.T) {
 	env := newTestEnv(t)
 	env.startHost()
@@ -1604,18 +1604,22 @@ func TestChannelHealthReporting(t *testing.T) {
 	}
 
 	// -----------------------------------------------------------------------
-	// Phase: report actual_configuration with DEGRADED channel health.
-	// The test harness drives this directly via PUT /report_actual_configuration
-	// since that is exactly what a real device shim does.
+	// Phase: report status with DEGRADED channel health.
+	// Health is reported via PUT /report_status with the health field on
+	// channels in the status payload.
 	// -----------------------------------------------------------------------
-	t.Log("Reporting actual_configuration with DEGRADED health for CH01")
-	degradedActualConfig := map[string]interface{}{
-		"version": "1",
+	t.Log("Reporting status with DEGRADED health for CH01")
+	degradedStatus := map[string]interface{}{
+		"status": []map[string]interface{}{
+			{"name": "cpu", "value": "41", "description": "Current CPU % utilization."},
+		},
 		"channels": []interface{}{
 			map[string]interface{}{
-				"id":      "CH01",
-				"version": "1",
-				"state":   "ACTIVE",
+				"id":    "CH01",
+				"state": "ACTIVE",
+				"status": []map[string]interface{}{
+					{"name": "bitrate", "value": "9500", "description": "Current output bitrate (Kbps)"},
+				},
 				"health": map[string]interface{}{
 					"degraded": map[string]interface{}{
 						"message":   "TEST: native API returned error code 503 — codec unavailable",
@@ -1624,35 +1628,38 @@ func TestChannelHealthReporting(t *testing.T) {
 				},
 			},
 		},
+		"health": map[string]interface{}{
+			"healthy": map[string]interface{}{},
+		},
 	}
-	reportResp := env.sdkReportActualConfig(degradedActualConfig)
+	reportResp := env.sdkReportStatus(degradedStatus)
 	if !reportResp.Success {
-		t.Fatalf("report_actual_configuration failed: %s", reportResp.Message)
+		t.Fatalf("report_status failed: %s", reportResp.Message)
 	}
 
-	// Wait for the host to store the actual_configuration with DEGRADED health.
+	// Wait for the host to store the status with DEGRADED channel health.
 	deadline := time.Now().Add(15 * time.Second)
 	foundDegraded := false
 	for time.Now().Before(deadline) {
 		detail := env.hostDescribeDevice(deviceID, token)
-		if len(detail.ActualConfiguration) == 0 || string(detail.ActualConfiguration) == "null" {
+		if len(detail.Status) == 0 || string(detail.Status) == "null" {
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
-		var ac struct {
+		var st struct {
 			Channels []struct {
 				ID     string          `json:"id"`
 				Health json.RawMessage `json:"health,omitempty"`
 			} `json:"channels"`
 		}
-		if err := json.Unmarshal(detail.ActualConfiguration, &ac); err != nil {
+		if err := json.Unmarshal(detail.Status, &st); err != nil {
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
-		for _, ch := range ac.Channels {
+		for _, ch := range st.Channels {
 			if ch.ID == "CH01" && len(ch.Health) > 0 {
 				healthStr := string(ch.Health)
-				t.Logf("CH01 health from host: %s", healthStr)
+				t.Logf("CH01 health from host status: %s", healthStr)
 				if strings.Contains(healthStr, "degraded") {
 					foundDegraded = true
 				}
@@ -1665,52 +1672,59 @@ func TestChannelHealthReporting(t *testing.T) {
 	}
 	if !foundDegraded {
 		detail := env.hostDescribeDevice(deviceID, token)
-		t.Fatalf("expected DEGRADED health for CH01 in host actual_configuration, got: %s",
-			string(detail.ActualConfiguration))
+		t.Fatalf("expected DEGRADED health for CH01 in host status, got: %s",
+			string(detail.Status))
 	}
-	t.Log("DEGRADED health confirmed in host actual_configuration")
+	t.Log("DEGRADED health confirmed in host status")
 
 	// -----------------------------------------------------------------------
-	// Phase: report actual_configuration with HEALTHY channel state.
+	// Phase: report status with HEALTHY channel state.
 	// -----------------------------------------------------------------------
-	t.Log("Reporting actual_configuration with HEALTHY state for CH01")
-	healthyActualConfig := map[string]interface{}{
-		"version": "1",
+	t.Log("Reporting status with HEALTHY state for CH01")
+	healthyStatus := map[string]interface{}{
+		"status": []map[string]interface{}{
+			{"name": "cpu", "value": "38", "description": "Current CPU % utilization."},
+		},
 		"channels": []interface{}{
 			map[string]interface{}{
-				"id":      "CH01",
-				"version": "1",
-				"state":   "ACTIVE",
+				"id":    "CH01",
+				"state": "ACTIVE",
+				"status": []map[string]interface{}{
+					{"name": "bitrate", "value": "9500", "description": "Current output bitrate (Kbps)"},
+				},
 				"health": map[string]interface{}{
 					"healthy": map[string]interface{}{},
 				},
 			},
 		},
+		"health": map[string]interface{}{
+			"healthy": map[string]interface{}{},
+		},
 	}
-	reportResp = env.sdkReportActualConfig(healthyActualConfig)
+	reportResp = env.sdkReportStatus(healthyStatus)
 	if !reportResp.Success {
-		t.Fatalf("report_actual_configuration (healthy) failed: %s", reportResp.Message)
+		t.Fatalf("report_status (healthy) failed: %s", reportResp.Message)
 	}
 
 	deadline = time.Now().Add(15 * time.Second)
 	foundHealthy := false
 	for time.Now().Before(deadline) {
 		detail := env.hostDescribeDevice(deviceID, token)
-		if len(detail.ActualConfiguration) == 0 || string(detail.ActualConfiguration) == "null" {
+		if len(detail.Status) == 0 || string(detail.Status) == "null" {
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
-		var ac struct {
+		var st struct {
 			Channels []struct {
 				ID     string          `json:"id"`
 				Health json.RawMessage `json:"health,omitempty"`
 			} `json:"channels"`
 		}
-		if err := json.Unmarshal(detail.ActualConfiguration, &ac); err != nil {
+		if err := json.Unmarshal(detail.Status, &st); err != nil {
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
-		for _, ch := range ac.Channels {
+		for _, ch := range st.Channels {
 			if ch.ID == "CH01" {
 				healthStr := string(ch.Health)
 				t.Logf("CH01 health after healthy report: %s", healthStr)
@@ -1726,10 +1740,10 @@ func TestChannelHealthReporting(t *testing.T) {
 	}
 	if !foundHealthy {
 		detail := env.hostDescribeDevice(deviceID, token)
-		t.Fatalf("expected HEALTHY for CH01 after clearing health, got: %s",
-			string(detail.ActualConfiguration))
+		t.Fatalf("expected HEALTHY for CH01 after reporting healthy status, got: %s",
+			string(detail.Status))
 	}
-	t.Log("HEALTHY state confirmed after reporting healthy actual_configuration")
+	t.Log("HEALTHY state confirmed after reporting healthy status")
 
 	t.Log("=== TestChannelHealthReporting PASSED ===")
 }
@@ -1763,7 +1777,7 @@ func TestSequentialPerChannelStops(t *testing.T) {
 	// Start both channels via full-device update
 	t.Log("Phase 1: Start both channels")
 	fullConfig := json.RawMessage(`{
-		"standardSettings": [{"id": "sync_clock_source", "value": "NTP"}],
+		"standardSettings": [{"id": "clocksync", "value": "NTP"}],
 		"channels": [
 			{"id": "CH01", "state": "ACTIVE", "channelSettings": {"standardSettings": [
 				{"id": "RS01", "value": "1920x1080"}, {"id": "FR01", "value": "60"},
@@ -1867,4 +1881,224 @@ func TestSequentialPerChannelStops(t *testing.T) {
 	t.Log("Phase 3: OK — both channels IDLE with independent versions")
 
 	t.Log("=== TestSequentialPerChannelStops PASSED ===")
+}
+
+// TestSrtEncryptionRoundTrip verifies that an SRT channel configuration with
+// encryption (passphrase + keyLength) is correctly delivered to the device SDK
+// and can be reported back in actual_configuration.
+func TestSrtEncryptionRoundTrip(t *testing.T) {
+	env := newTestEnv(t)
+	env.startHost()
+	env.startSDK("integ-enc-001")
+
+	registration := loadRegistration(t)
+
+	// Setup: pair and connect
+	acct := env.hostRegisterAccount("encuser", "testpass123", "Encryption Test")
+	token := acct.Token
+	pairingCode := env.waitForPairingCode("tr12-host", registration, 15*time.Second)
+	env.hostClaim(pairingCode, token)
+	env.waitForSDKConnected("tr12-host", registration, 30*time.Second)
+
+	devices := env.hostListDevices(token)
+	if len(devices) != 1 {
+		t.Fatalf("expected 1 device, got %d", len(devices))
+	}
+	deviceID := devices[0].DeviceID
+
+	// ---------------------------------------------------------------
+	// Phase 1: Push SRT Caller config with AES-256 encryption
+	// ---------------------------------------------------------------
+	t.Log("Phase 1: Push SRT Caller with AES-256 encryption")
+	encConfig := json.RawMessage(`{
+		"channels": [{
+			"id": "CH01",
+			"state": "ACTIVE",
+			"channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"},
+				{"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"},
+				{"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"},
+				{"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
+			]},
+			"protocol": {
+				"srtCaller": {
+					"address": "10.0.0.50",
+					"port": 9000,
+					"minimumLatencyMilliseconds": 500,
+					"streamId": "live/feed1",
+					"encryption": {
+						"passphrase": "MySecurePassphrase2024!",
+						"keyLength": "AES_256"
+					}
+				}
+			}
+		}]
+	}`)
+	code, body := env.hostUpdateConfig(deviceID, token, encConfig)
+	if code != 200 {
+		t.Fatalf("Phase 1: expected 200, got %d: %s", code, body)
+	}
+
+	time.Sleep(3 * time.Second)
+	sdkCfg := env.sdkGetConfiguration()
+	if sdkCfg.Configuration == nil {
+		t.Fatal("Phase 1: SDK returned nil configuration")
+	}
+	cfgStr := string(mustMarshal(sdkCfg.Configuration))
+
+	// Verify encryption fields arrived at the device
+	if !strings.Contains(cfgStr, "MySecurePassphrase2024!") {
+		t.Fatalf("Phase 1: SDK config missing passphrase: %s", cfgStr)
+	}
+	if !strings.Contains(cfgStr, "AES_256") {
+		t.Fatalf("Phase 1: SDK config missing keyLength AES_256: %s", cfgStr)
+	}
+	if !strings.Contains(cfgStr, "live/feed1") {
+		t.Fatalf("Phase 1: SDK config missing streamId: %s", cfgStr)
+	}
+	t.Log("Phase 1: OK — encryption config delivered to device")
+
+	// ---------------------------------------------------------------
+	// Phase 2: Push SRT Listener config with AES-128 encryption
+	// ---------------------------------------------------------------
+	t.Log("Phase 2: Push SRT Listener with AES-128 encryption")
+	encConfig2 := json.RawMessage(`{
+		"channels": [{
+			"id": "CH01",
+			"state": "ACTIVE",
+			"channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"},
+				{"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"},
+				{"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"},
+				{"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
+			]},
+			"protocol": {
+				"srtListener": {
+					"port": 4900,
+					"minimumLatencyMilliseconds": 300,
+					"encryption": {
+						"passphrase": "ShortButValid!",
+						"keyLength": "AES_128"
+					}
+				}
+			}
+		}]
+	}`)
+	code, body = env.hostUpdateConfig(deviceID, token, encConfig2)
+	if code != 200 {
+		t.Fatalf("Phase 2: expected 200, got %d: %s", code, body)
+	}
+
+	time.Sleep(3 * time.Second)
+	sdkCfg2 := env.sdkGetConfiguration()
+	if sdkCfg2.Configuration == nil {
+		t.Fatal("Phase 2: SDK returned nil configuration")
+	}
+	cfgStr2 := string(mustMarshal(sdkCfg2.Configuration))
+
+	if !strings.Contains(cfgStr2, "ShortButValid!") {
+		t.Fatalf("Phase 2: SDK config missing passphrase: %s", cfgStr2)
+	}
+	if !strings.Contains(cfgStr2, "AES_128") {
+		t.Fatalf("Phase 2: SDK config missing keyLength AES_128: %s", cfgStr2)
+	}
+	if !strings.Contains(cfgStr2, "4900") {
+		t.Fatalf("Phase 2: SDK config missing port 4900: %s", cfgStr2)
+	}
+	t.Log("Phase 2: OK — SRT Listener with AES-128 delivered")
+
+	// ---------------------------------------------------------------
+	// Phase 3: Push SRT Caller with no encryption (null/omitted)
+	// ---------------------------------------------------------------
+	t.Log("Phase 3: Push SRT Caller with no encryption")
+	noEncConfig := json.RawMessage(`{
+		"channels": [{
+			"id": "CH01",
+			"state": "ACTIVE",
+			"channelSettings": {"standardSettings": [
+				{"id": "RS01", "value": "1920x1080"},
+				{"id": "FR01", "value": "30"},
+				{"id": "MB01", "value": "10000"},
+				{"id": "RC01", "value": "CBR"},
+				{"id": "CO01", "value": "H.264"},
+				{"id": "GP01", "value": "60"},
+				{"id": "IN01", "value": "SDI1"}
+			]},
+			"protocol": {
+				"srtCaller": {
+					"address": "10.0.0.50",
+					"port": 9000,
+					"minimumLatencyMilliseconds": 200
+				}
+			}
+		}]
+	}`)
+	code, body = env.hostUpdateConfig(deviceID, token, noEncConfig)
+	if code != 200 {
+		t.Fatalf("Phase 3: expected 200, got %d: %s", code, body)
+	}
+
+	time.Sleep(3 * time.Second)
+	sdkCfg3 := env.sdkGetConfiguration()
+	if sdkCfg3.Configuration == nil {
+		t.Fatal("Phase 3: SDK returned nil configuration")
+	}
+	cfgStr3 := string(mustMarshal(sdkCfg3.Configuration))
+
+	// Verify no passphrase or keyLength present
+	if strings.Contains(cfgStr3, "passphrase") {
+		t.Fatalf("Phase 3: SDK config should NOT contain passphrase: %s", cfgStr3)
+	}
+	if strings.Contains(cfgStr3, "keyLength") {
+		t.Fatalf("Phase 3: SDK config should NOT contain keyLength: %s", cfgStr3)
+	}
+	t.Log("Phase 3: OK — no encryption config when omitted")
+
+	// ---------------------------------------------------------------
+	// Phase 4: Echo-back — device reports actual config with encryption
+	// ---------------------------------------------------------------
+	t.Log("Phase 4: Verify encryption in actual_configuration round-trip")
+
+	// Re-push encrypted config
+	code, _ = env.hostUpdateConfig(deviceID, token, encConfig)
+	if code != 200 {
+		t.Fatalf("Phase 4: re-push expected 200, got %d", code)
+	}
+	time.Sleep(3 * time.Second)
+
+	sdkCfg4 := env.sdkGetConfiguration()
+	var actualCfg map[string]interface{}
+	if p, ok := sdkCfg4.Configuration["payload"]; ok {
+		b, _ := json.Marshal(p)
+		json.Unmarshal(b, &actualCfg)
+	}
+	if actualCfg == nil {
+		t.Fatal("Phase 4: could not extract payload")
+	}
+
+	// Report it back as actual config
+	cfgResp := env.sdkReportActualConfig(actualCfg)
+	if !cfgResp.Success {
+		t.Fatalf("Phase 4: report_actual_configuration failed: %s", cfgResp.Message)
+	}
+	time.Sleep(3 * time.Second)
+
+	// Verify host has the encryption in actual_configuration
+	detail := env.hostDescribeDevice(deviceID, token)
+	actualStr := string(detail.ActualConfiguration)
+	if !strings.Contains(actualStr, "MySecurePassphrase2024!") {
+		t.Fatalf("Phase 4: host actual_configuration missing passphrase: %s", actualStr)
+	}
+	if !strings.Contains(actualStr, "AES_256") {
+		t.Fatalf("Phase 4: host actual_configuration missing AES_256: %s", actualStr)
+	}
+	t.Log("Phase 4: OK — encryption round-trips through actual_configuration")
+
+	t.Log("=== TestSrtEncryptionRoundTrip PASSED ===")
 }

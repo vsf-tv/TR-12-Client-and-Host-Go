@@ -8,15 +8,17 @@ Name | Type | Description | Notes
 **SrtCaller** | [**SrtCallerTransportProtocol**](SrtCallerTransportProtocol.md) |  | 
 **RistSimpleListener** | [**RistSimpleListenerTransportProtocol**](RistSimpleListenerTransportProtocol.md) |  | 
 **RistSimpleCaller** | [**RistSimpleCallerTransportProtocol**](RistSimpleCallerTransportProtocol.md) |  | 
-**ZixiPush** | [**ZixiPushTransportProtocol**](ZixiPushTransportProtocol.md) |  | 
-**ZixiPull** | [**ZixiPullTransportProtocol**](ZixiPullTransportProtocol.md) |  | 
+**ZixiPushSender** | [**ZixiPushSenderTransportProtocol**](ZixiPushSenderTransportProtocol.md) |  | 
+**ZixiPushReceiver** | [**ZixiPushReceiverTransportProtocol**](ZixiPushReceiverTransportProtocol.md) |  | 
+**ZixiPullSender** | [**ZixiPullSenderTransportProtocol**](ZixiPullSenderTransportProtocol.md) |  | 
+**ZixiPullReceiver** | [**ZixiPullReceiverTransportProtocol**](ZixiPullReceiverTransportProtocol.md) |  | 
 **Rtp** | [**RtpTransportProtocol**](RtpTransportProtocol.md) |  | 
 
 ## Methods
 
 ### NewTransportProtocol
 
-`func NewTransportProtocol(srtListener SrtListenerTransportProtocol, srtCaller SrtCallerTransportProtocol, ristSimpleListener RistSimpleListenerTransportProtocol, ristSimpleCaller RistSimpleCallerTransportProtocol, zixiPush ZixiPushTransportProtocol, zixiPull ZixiPullTransportProtocol, rtp RtpTransportProtocol, ) *TransportProtocol`
+`func NewTransportProtocol(srtListener SrtListenerTransportProtocol, srtCaller SrtCallerTransportProtocol, ristSimpleListener RistSimpleListenerTransportProtocol, ristSimpleCaller RistSimpleCallerTransportProtocol, zixiPushSender ZixiPushSenderTransportProtocol, zixiPushReceiver ZixiPushReceiverTransportProtocol, zixiPullSender ZixiPullSenderTransportProtocol, zixiPullReceiver ZixiPullReceiverTransportProtocol, rtp RtpTransportProtocol, ) *TransportProtocol`
 
 NewTransportProtocol instantiates a new TransportProtocol object
 This constructor will assign default values to properties that have it defined,
@@ -111,44 +113,84 @@ and a boolean to check if the value has been set.
 SetRistSimpleCaller sets RistSimpleCaller field to given value.
 
 
-### GetZixiPush
+### GetZixiPushSender
 
-`func (o *TransportProtocol) GetZixiPush() ZixiPushTransportProtocol`
+`func (o *TransportProtocol) GetZixiPushSender() ZixiPushSenderTransportProtocol`
 
-GetZixiPush returns the ZixiPush field if non-nil, zero value otherwise.
+GetZixiPushSender returns the ZixiPushSender field if non-nil, zero value otherwise.
 
-### GetZixiPushOk
+### GetZixiPushSenderOk
 
-`func (o *TransportProtocol) GetZixiPushOk() (*ZixiPushTransportProtocol, bool)`
+`func (o *TransportProtocol) GetZixiPushSenderOk() (*ZixiPushSenderTransportProtocol, bool)`
 
-GetZixiPushOk returns a tuple with the ZixiPush field if it's non-nil, zero value otherwise
+GetZixiPushSenderOk returns a tuple with the ZixiPushSender field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetZixiPush
+### SetZixiPushSender
 
-`func (o *TransportProtocol) SetZixiPush(v ZixiPushTransportProtocol)`
+`func (o *TransportProtocol) SetZixiPushSender(v ZixiPushSenderTransportProtocol)`
 
-SetZixiPush sets ZixiPush field to given value.
+SetZixiPushSender sets ZixiPushSender field to given value.
 
 
-### GetZixiPull
+### GetZixiPushReceiver
 
-`func (o *TransportProtocol) GetZixiPull() ZixiPullTransportProtocol`
+`func (o *TransportProtocol) GetZixiPushReceiver() ZixiPushReceiverTransportProtocol`
 
-GetZixiPull returns the ZixiPull field if non-nil, zero value otherwise.
+GetZixiPushReceiver returns the ZixiPushReceiver field if non-nil, zero value otherwise.
 
-### GetZixiPullOk
+### GetZixiPushReceiverOk
 
-`func (o *TransportProtocol) GetZixiPullOk() (*ZixiPullTransportProtocol, bool)`
+`func (o *TransportProtocol) GetZixiPushReceiverOk() (*ZixiPushReceiverTransportProtocol, bool)`
 
-GetZixiPullOk returns a tuple with the ZixiPull field if it's non-nil, zero value otherwise
+GetZixiPushReceiverOk returns a tuple with the ZixiPushReceiver field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetZixiPull
+### SetZixiPushReceiver
 
-`func (o *TransportProtocol) SetZixiPull(v ZixiPullTransportProtocol)`
+`func (o *TransportProtocol) SetZixiPushReceiver(v ZixiPushReceiverTransportProtocol)`
 
-SetZixiPull sets ZixiPull field to given value.
+SetZixiPushReceiver sets ZixiPushReceiver field to given value.
+
+
+### GetZixiPullSender
+
+`func (o *TransportProtocol) GetZixiPullSender() ZixiPullSenderTransportProtocol`
+
+GetZixiPullSender returns the ZixiPullSender field if non-nil, zero value otherwise.
+
+### GetZixiPullSenderOk
+
+`func (o *TransportProtocol) GetZixiPullSenderOk() (*ZixiPullSenderTransportProtocol, bool)`
+
+GetZixiPullSenderOk returns a tuple with the ZixiPullSender field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetZixiPullSender
+
+`func (o *TransportProtocol) SetZixiPullSender(v ZixiPullSenderTransportProtocol)`
+
+SetZixiPullSender sets ZixiPullSender field to given value.
+
+
+### GetZixiPullReceiver
+
+`func (o *TransportProtocol) GetZixiPullReceiver() ZixiPullReceiverTransportProtocol`
+
+GetZixiPullReceiver returns the ZixiPullReceiver field if non-nil, zero value otherwise.
+
+### GetZixiPullReceiverOk
+
+`func (o *TransportProtocol) GetZixiPullReceiverOk() (*ZixiPullReceiverTransportProtocol, bool)`
+
+GetZixiPullReceiverOk returns a tuple with the ZixiPullReceiver field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetZixiPullReceiver
+
+`func (o *TransportProtocol) SetZixiPullReceiver(v ZixiPullReceiverTransportProtocol)`
+
+SetZixiPullReceiver sets ZixiPullReceiver field to given value.
 
 
 ### GetRtp

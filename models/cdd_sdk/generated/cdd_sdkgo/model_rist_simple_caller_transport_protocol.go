@@ -24,7 +24,7 @@ type RistSimpleCallerTransportProtocol struct {
 	Address string `json:"address"`
 	Port float32 `json:"port"`
 	MinimumLatencyMilliseconds *float32 `json:"minimumLatencyMilliseconds,omitempty"`
-	Encryption *EncryptionAes `json:"encryption,omitempty"`
+	Encryption *RistEncryption `json:"encryption,omitempty"`
 }
 
 type _RistSimpleCallerTransportProtocol RistSimpleCallerTransportProtocol
@@ -133,9 +133,9 @@ func (o *RistSimpleCallerTransportProtocol) SetMinimumLatencyMilliseconds(v floa
 }
 
 // GetEncryption returns the Encryption field value if set, zero value otherwise.
-func (o *RistSimpleCallerTransportProtocol) GetEncryption() EncryptionAes {
+func (o *RistSimpleCallerTransportProtocol) GetEncryption() RistEncryption {
 	if o == nil || IsNil(o.Encryption) {
-		var ret EncryptionAes
+		var ret RistEncryption
 		return ret
 	}
 	return *o.Encryption
@@ -143,7 +143,7 @@ func (o *RistSimpleCallerTransportProtocol) GetEncryption() EncryptionAes {
 
 // GetEncryptionOk returns a tuple with the Encryption field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RistSimpleCallerTransportProtocol) GetEncryptionOk() (*EncryptionAes, bool) {
+func (o *RistSimpleCallerTransportProtocol) GetEncryptionOk() (*RistEncryption, bool) {
 	if o == nil || IsNil(o.Encryption) {
 		return nil, false
 	}
@@ -159,8 +159,8 @@ func (o *RistSimpleCallerTransportProtocol) HasEncryption() bool {
 	return false
 }
 
-// SetEncryption gets a reference to the given EncryptionAes and assigns it to the Encryption field.
-func (o *RistSimpleCallerTransportProtocol) SetEncryption(v EncryptionAes) {
+// SetEncryption gets a reference to the given RistEncryption and assigns it to the Encryption field.
+func (o *RistSimpleCallerTransportProtocol) SetEncryption(v RistEncryption) {
 	o.Encryption = &v
 }
 

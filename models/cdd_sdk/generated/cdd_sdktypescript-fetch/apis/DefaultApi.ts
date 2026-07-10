@@ -21,6 +21,8 @@ import type {
   DisconnectResponseContent,
   GetConfigurationResponseContent,
   GetConnectionStatusResponseContent,
+  RegisterRequestContent,
+  RegisterResponseContent,
   ReportActualConfigurationRequestContent,
   ReportActualConfigurationResponseContent,
   ReportStatusRequestContent,
@@ -39,6 +41,10 @@ import {
     GetConfigurationResponseContentToJSON,
     GetConnectionStatusResponseContentFromJSON,
     GetConnectionStatusResponseContentToJSON,
+    RegisterRequestContentFromJSON,
+    RegisterRequestContentToJSON,
+    RegisterResponseContentFromJSON,
+    RegisterResponseContentToJSON,
     ReportActualConfigurationRequestContentFromJSON,
     ReportActualConfigurationRequestContentToJSON,
     ReportActualConfigurationResponseContentFromJSON,
@@ -56,6 +62,10 @@ export interface ConnectRequest {
 export interface DeprovisionRequest {
     hostId: string;
     force?: boolean;
+}
+
+export interface RegisterRequest {
+    registerRequestContent: RegisterRequestContent;
 }
 
 export interface ReportActualConfigurationRequest {
@@ -135,6 +145,19 @@ export interface DefaultApiInterface {
     /**
      */
     getConnectionStatus(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetConnectionStatusResponseContent>;
+
+    /**
+     * 
+     * @param {RegisterRequestContent} registerRequestContent 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApiInterface
+     */
+    registerRaw(requestParameters: RegisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RegisterResponseContent>>;
+
+    /**
+     */
+    register(requestParameters: RegisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RegisterResponseContent>;
 
     /**
      * 
@@ -326,6 +349,43 @@ export class DefaultApi extends runtime.BaseAPI implements DefaultApiInterface {
      */
     async getConnectionStatus(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetConnectionStatusResponseContent> {
         const response = await this.getConnectionStatusRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async registerRaw(requestParameters: RegisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RegisterResponseContent>> {
+        if (requestParameters['registerRequestContent'] == null) {
+            throw new runtime.RequiredError(
+                'registerRequestContent',
+                'Required parameter "registerRequestContent" was null or undefined when calling register().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/register`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RegisterRequestContentToJSON(requestParameters['registerRequestContent']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RegisterResponseContentFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async register(requestParameters: RegisterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RegisterResponseContent> {
+        const response = await this.registerRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

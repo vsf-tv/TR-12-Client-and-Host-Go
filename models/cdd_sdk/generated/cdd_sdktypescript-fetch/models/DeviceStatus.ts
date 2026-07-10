@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Health } from './Health';
+import {
+    HealthFromJSON,
+    HealthFromJSONTyped,
+    HealthToJSON,
+    HealthToJSONTyped,
+} from './Health';
 import type { ChannelStatus } from './ChannelStatus';
 import {
     ChannelStatusFromJSON,
@@ -46,6 +53,12 @@ export interface DeviceStatus {
      * @memberof DeviceStatus
      */
     channels?: Array<ChannelStatus>;
+    /**
+     * 
+     * @type {Health}
+     * @memberof DeviceStatus
+     */
+    health?: Health;
 }
 
 /**
@@ -68,6 +81,7 @@ export function DeviceStatusFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'status': ((json['status'] as Array<any>).map(StatusValueFromJSON)),
         'channels': json['channels'] == null ? undefined : ((json['channels'] as Array<any>).map(ChannelStatusFromJSON)),
+        'health': json['health'] == null ? undefined : HealthFromJSON(json['health']),
     };
 }
 
@@ -84,6 +98,7 @@ export function DeviceStatusToJSONTyped(value?: DeviceStatus | null, ignoreDiscr
         
         'status': ((value['status'] as Array<any>).map(StatusValueToJSON)),
         'channels': value['channels'] == null ? undefined : ((value['channels'] as Array<any>).map(ChannelStatusToJSON)),
+        'health': HealthToJSON(value['health']),
     };
 }
 

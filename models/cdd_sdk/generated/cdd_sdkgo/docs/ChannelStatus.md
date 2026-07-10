@@ -4,9 +4,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | **string** |  | 
+**Id** | **string** | An identifier string: 1–12 alphanumeric characters (letters and digits only, no special characters). Used for channelId, templateId, setting id, profile id, and channel status id. See limits.smithy: MAX_ID_LENGTH | 
 **State** | [**ChannelState**](ChannelState.md) |  | 
 **Status** | [**[]StatusValue**](StatusValue.md) | See limits.smithy: MAX_STATUS_VALUES | 
+**Health** | Pointer to [**Health**](Health.md) |  | [optional] 
 
 ## Methods
 
@@ -86,6 +87,31 @@ and a boolean to check if the value has been set.
 
 SetStatus sets Status field to given value.
 
+
+### GetHealth
+
+`func (o *ChannelStatus) GetHealth() Health`
+
+GetHealth returns the Health field if non-nil, zero value otherwise.
+
+### GetHealthOk
+
+`func (o *ChannelStatus) GetHealthOk() (*Health, bool)`
+
+GetHealthOk returns a tuple with the Health field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetHealth
+
+`func (o *ChannelStatus) SetHealth(v Health)`
+
+SetHealth sets Health field to given value.
+
+### HasHealth
+
+`func (o *ChannelStatus) HasHealth() bool`
+
+HasHealth returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

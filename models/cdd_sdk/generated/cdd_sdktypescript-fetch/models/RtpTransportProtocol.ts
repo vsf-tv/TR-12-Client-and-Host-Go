@@ -13,14 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { RtpFecConfiguration } from './RtpFecConfiguration';
-import {
-    RtpFecConfigurationFromJSON,
-    RtpFecConfigurationFromJSONTyped,
-    RtpFecConfigurationToJSON,
-    RtpFecConfigurationToJSONTyped,
-} from './RtpFecConfiguration';
-
 /**
  * 
  * @export
@@ -45,18 +37,6 @@ export interface RtpTransportProtocol {
      * @memberof RtpTransportProtocol
      */
     sourceAddressFilter?: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof RtpTransportProtocol
-     */
-    rtpPayloadType?: number;
-    /**
-     * 
-     * @type {RtpFecConfiguration}
-     * @memberof RtpTransportProtocol
-     */
-    fecConfig?: RtpFecConfiguration;
 }
 
 /**
@@ -81,8 +61,6 @@ export function RtpTransportProtocolFromJSONTyped(json: any, ignoreDiscriminator
         'address': json['address'],
         'port': json['port'],
         'sourceAddressFilter': json['sourceAddressFilter'] == null ? undefined : json['sourceAddressFilter'],
-        'rtpPayloadType': json['rtpPayloadType'] == null ? undefined : json['rtpPayloadType'],
-        'fecConfig': json['fecConfig'] == null ? undefined : RtpFecConfigurationFromJSON(json['fecConfig']),
     };
 }
 
@@ -100,8 +78,6 @@ export function RtpTransportProtocolToJSONTyped(value?: RtpTransportProtocol | n
         'address': value['address'],
         'port': value['port'],
         'sourceAddressFilter': value['sourceAddressFilter'],
-        'rtpPayloadType': value['rtpPayloadType'],
-        'fecConfig': RtpFecConfigurationToJSON(value['fecConfig']),
     };
 }
 

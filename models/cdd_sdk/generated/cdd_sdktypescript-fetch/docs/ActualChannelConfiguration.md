@@ -12,7 +12,6 @@ Name | Type
 `state` | [ChannelState](ChannelState.md)
 `channelSettings` | [ChannelSettings](ChannelSettings.md)
 `protocol` | [TransportProtocol](TransportProtocol.md)
-`health` | [Health](Health.md)
 `thumbnailLocalPath` | string
 
 ## Example
@@ -27,7 +26,6 @@ const example = {
   "state": null,
   "channelSettings": null,
   "protocol": null,
-  "health": null,
   "thumbnailLocalPath": null,
 } satisfies ActualChannelConfiguration
 
