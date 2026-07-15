@@ -32,6 +32,9 @@ go.work.sum
 models/TR-12-Models/build/
 models/cdd_sdk/build/
 
+# Generated SDK output — produced by generate-client-sdk-models.sh, not tracked
+models/cdd_sdk/generated/
+
 # Built binaries — all go into bin/ directories, never tracked
 client/bin/
 host/bin/
