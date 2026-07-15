@@ -9,17 +9,48 @@ A Go implementation of the TR-12 Client Device Discovery SDK, providing discover
 
 ## Quick Start
 
-### 1. Build
+### Prerequisites
+
+- Go 1.22 or newer
+- Git (for submodule checkout)
+- Make (optional, but recommended)
+
+Check your environment:
 
 ```bash
+make doctor
+```
+
+### 1. Build
+
+From the repository root:
+
+```bash
+make          # init submodules + build both binaries
+```
+
+Or step by step:
+
+```bash
+make setup    # init submodules + download Go modules
+make build    # compile bin/cdd-sdk and bin/ard
+```
+
+<details>
+<summary>Manual build (without Make)</summary>
+
+```bash
+# From the repo root; init submodules first
+git submodule update --init --recursive
+
 cd client
-
-# Build the SDK daemon
+export GOPROXY=direct   # needed if proxy.golang.org is unreachable
+go mod download
 go build -o bin/cdd-sdk ./cmd/cdd-sdk/
-
-# Build the Application Reference Design
 go build -o bin/ard ./cmd/application_reference_design/
 ```
+
+</details>
 
 ### 2. Start the SDK
 
