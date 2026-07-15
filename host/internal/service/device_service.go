@@ -423,9 +423,7 @@ func (s *DeviceService) mergeChannelUpdate(storedConfig json.RawMessage, channel
 	}
 
 	merged["channels"] = channels
-	// The device model requires a top-level version on DesiredDeviceConfiguration.
-	// Bump it alongside the channel version so the MQTT payload is always valid.
-	merged["version"] = newVersion
+	// Device-level version is NOT bumped — a channel update only affects that channel's version.
 	log.Printf("[HOST UpdateChannelConfig] channel %s → version=%s", channelID, newVersion)
 	return merged, mqttChannel, nil
 }
@@ -516,6 +514,41 @@ func channelCount(cfg map[string]interface{}) int {
 	return 0
 }
 
+// channelContentChanged reports whether two channel maps differ in any field
+// except "version". Both arguments may be nil.
+func channelContentChanged(incoming, stored map[string]interface{}) bool {
+	if stored == nil {
+		return true // new channel — always bump
+	}
+	// Compare every field in incoming (except "version") against stored.
+	for k, v := range incoming {
+		if k == "version" {
+			continue
+		}
+		sv, exists := stored[k]
+		if !exists {
+			return true
+		}
+		// Use JSON round-trip for deep equality.
+		ib, _ := json.Marshal(v)
+		sb, _ := json.Marshal(sv)
+		if string(ib) != string(sb) {
+			return true
+		}
+	}
+	return false
+}
+
+// deviceSettingsChanged reports whether the device-level standardSettings changed.
+func deviceSettingsChanged(incoming, stored map[string]interface{}) bool {
+	if stored == nil {
+		return true
+	}
+	ib, _ := json.Marshal(incoming["standardSettings"])
+	sb, _ := json.Marshal(stored["standardSettings"])
+	return string(ib) != string(sb)
+}
+
 // UpdateConfiguration is the legacy full-device update path (kept for backward compat).
 // It unconditionally bumps every channel's version — use UpdateChannelConfig for
 // per-channel operations.
@@ -543,14 +576,52 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 	var full map[string]interface{}
 	json.Unmarshal(cfgJSON, &full)
 
-	// Bump device version.
-	full["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
+	// Build a lookup of the current stored config for selective version bumping.
+	var currentFull map[string]interface{}
+	if len(device.DesiredConfig) > 0 {
+		json.Unmarshal(device.DesiredConfig, &currentFull)
+	}
 
-	// Unconditionally bump every channel version.
+	// Only bump device version if standardSettings changed.
+	if deviceSettingsChanged(full, currentFull) {
+		full["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
+	} else if currentFull != nil {
+		if v, ok := currentFull["version"]; ok {
+			full["version"] = v
+		}
+	}
+
+	// Build a lookup of current channel configs (by id) so we can do selective versioning.
+	currentChannels := map[string]map[string]interface{}{}
+	if currentFull != nil {
+		if chs, ok := currentFull["channels"].([]interface{}); ok {
+			for _, ch := range chs {
+				if chMap, ok := ch.(map[string]interface{}); ok {
+					if id, ok := chMap["id"].(string); ok {
+						currentChannels[id] = chMap
+					}
+				}
+			}
+		}
+	}
+
+	// Only bump a channel's version if its content changed vs the stored config.
 	if channels, ok := full["channels"].([]interface{}); ok {
 		for _, ch := range channels {
-			if chMap, ok := ch.(map[string]interface{}); ok {
+			chMap, ok := ch.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			id, _ := chMap["id"].(string)
+			if channelContentChanged(chMap, currentChannels[id]) {
 				chMap["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
+			} else if id != "" {
+				// Preserve the existing version.
+				if existing, ok := currentChannels[id]; ok {
+					if v, ok := existing["version"]; ok {
+						chMap["version"] = v
+					}
+				}
 			}
 		}
 	}
