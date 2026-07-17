@@ -423,7 +423,11 @@ func (s *DeviceService) mergeChannelUpdate(storedConfig json.RawMessage, channel
 	}
 
 	merged["channels"] = channels
-	// Device-level version is NOT bumped — a channel update only affects that channel's version.
+	// Device-level version is NOT bumped on a channel update — only the channel's version changes.
+	// However, if this is the first config (no prior stored version), we must set one now.
+	if _, hasVersion := merged["version"]; !hasVersion {
+		merged["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
+	}
 	log.Printf("[HOST UpdateChannelConfig] channel %s → version=%s", channelID, newVersion)
 	return merged, mqttChannel, nil
 }
@@ -582,10 +586,10 @@ func (s *DeviceService) UpdateConfiguration(deviceID, accountID string, cfgJSON 
 		json.Unmarshal(device.DesiredConfig, &currentFull)
 	}
 
-	// Only bump device version if standardSettings changed.
-	if deviceSettingsChanged(full, currentFull) {
+	// Only bump device version if standardSettings changed, or if there's no prior config (first push).
+	if deviceSettingsChanged(full, currentFull) || currentFull == nil {
 		full["version"] = strconv.FormatInt(time.Now().UnixNano(), 10)
-	} else if currentFull != nil {
+	} else {
 		if v, ok := currentFull["version"]; ok {
 			full["version"] = v
 		}
@@ -975,19 +979,15 @@ var protocolFieldMap = map[string]map[string]bool{
 		"minimumLatencyMilliseconds": false,
 		"streamId":                   false,
 		"encryption":                 false,
-		"interface":                  false,
 	},
 	"ristSimpleCaller": {
 		"address":                    true,
 		"port":                       true,
 		"minimumLatencyMilliseconds": false,
-		"encryption":                 false,
 	},
 	"ristSimpleListener": {
 		"port":                       true,
 		"minimumLatencyMilliseconds": false,
-		"encryption":                 false,
-		"interface":                  false,
 	},
 	"zixiPushSender": {
 		"address":                    true,
@@ -997,9 +997,8 @@ var protocolFieldMap = map[string]map[string]bool{
 		"encryption":                 false,
 	},
 	"zixiPushReceiver": {
-		"address":                    true,
+		"port":                       true,
 		"streamId":                   false,
-		"port":                       false,
 		"maximumLatencyMilliseconds": false,
 		"encryption":                 false,
 	},
@@ -1008,7 +1007,6 @@ var protocolFieldMap = map[string]map[string]bool{
 		"port":                       true,
 		"maximumLatencyMilliseconds": false,
 		"encryption":                 false,
-		"interface":                  false,
 	},
 	"zixiPullReceiver": {
 		"streamId":                   true,
@@ -1018,9 +1016,10 @@ var protocolFieldMap = map[string]map[string]bool{
 		"encryption":                 false,
 	},
 	"rtp": {
-		"address":             true,
-		"port":                true,
-		"sourceAddressFilter": false,
+		"address":                true,
+		"port":                   true,
+		"sourceAddressFilter":    false,
+		"forwardErrorCorrection": true,
 	},
 }
 
@@ -1029,8 +1028,8 @@ var protocolFieldMap = map[string]map[string]bool{
 var protocolKeyToRegistration = map[string]string{
 	"srtCaller":          "SRT_CALLER",
 	"srtListener":        "SRT_LISTENER",
-	"ristSimpleCaller":   "RIST_SIMPLE_SENDER",
-	"ristSimpleListener": "RIST_SIMPLE_RECEIVER",
+	"ristSimpleCaller":   "RIST_SIMPLE_CALLER",
+	"ristSimpleListener": "RIST_SIMPLE_LISTENER",
 	"zixiPushSender":     "ZIXI_PUSH_SENDER",
 	"zixiPushReceiver":   "ZIXI_PUSH_RECEIVER",
 	"zixiPullSender":     "ZIXI_PULL_SENDER",
