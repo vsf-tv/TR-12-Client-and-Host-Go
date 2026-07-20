@@ -980,12 +980,12 @@ var protocolFieldMap = map[string]map[string]bool{
 		"streamId":                   false,
 		"encryption":                 false,
 	},
-	"ristSimpleCaller": {
+	"ristSimpleSender": {
 		"address":                    true,
 		"port":                       true,
 		"minimumLatencyMilliseconds": false,
 	},
-	"ristSimpleListener": {
+	"ristSimpleReceiver": {
 		"port":                       true,
 		"minimumLatencyMilliseconds": false,
 	},
@@ -1028,8 +1028,8 @@ var protocolFieldMap = map[string]map[string]bool{
 var protocolKeyToRegistration = map[string]string{
 	"srtCaller":          "SRT_CALLER",
 	"srtListener":        "SRT_LISTENER",
-	"ristSimpleCaller":   "RIST_SIMPLE_CALLER",
-	"ristSimpleListener": "RIST_SIMPLE_LISTENER",
+	"ristSimpleSender":   "RIST_SIMPLE_SENDER",
+	"ristSimpleReceiver": "RIST_SIMPLE_RECEIVER",
 	"zixiPushSender":     "ZIXI_PUSH_SENDER",
 	"zixiPushReceiver":   "ZIXI_PUSH_RECEIVER",
 	"zixiPullSender":     "ZIXI_PULL_SENDER",
