@@ -730,6 +730,7 @@ func (s *DeviceService) RotateCredentials(deviceID, accountID string) error {
 	rotate := tr12models.DeviceSubscribesToCertificateRotationResponseContent{
 		MqttUri:           mqttURI,
 		DeviceCertificate: string(newCert),
+		CaCertificate:     tr12models.PtrString(string(s.ca.CACertPEM)),
 		RegionName:        tr12models.PtrString("local"),
 	}
 	payload, _ := json.Marshal(rotate)

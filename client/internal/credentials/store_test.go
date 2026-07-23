@@ -310,6 +310,180 @@ func TestRotateCerts_SameCertNewURI(t *testing.T) {
 	}
 }
 
+func TestRotateCerts_CaChanged(t *testing.T) {
+	// The new-in-9.0.0 path: host supplies a new CA cert that differs from disk.
+	// Expect the CA on disk to be replaced and updated=true so the SDK reconnects.
+	dir := t.TempDir()
+	s, _ := NewStore(dir, "dev1", "host1")
+	s.PrivKey = "key"
+
+	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
+	auth.SetCaCertificate("old-ca")
+	auth.SetDeviceCertificate("same-cert")
+	auth.SetMqttUri("tls://same:8883")
+	auth.SetRegionName("local")
+	auth.SetHostSettings(*hs)
+	s.WriteToFilesystem("dev1", auth)
+
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
+		MqttUri:           "tls://same:8883",
+		DeviceCertificate: "same-cert",
+		CaCertificate:     tr12models.PtrString("new-ca"),
+		RegionName:        tr12models.PtrString("local"),
+	}
+	updated, err := s.RotateCerts(rotate)
+	if err != nil {
+		t.Fatalf("RotateCerts: %v", err)
+	}
+	if !updated {
+		t.Fatal("expected updated=true when CA changed")
+	}
+	data, _ := os.ReadFile(s.CACertFile)
+	if string(data) != "new-ca" {
+		t.Fatalf("expected new-ca on disk, got %q", string(data))
+	}
+}
+
+func TestRotateCerts_CaSameAsDisk_NoUpdate(t *testing.T) {
+	// Host sends the CA in every rotation. When it matches what's already on disk,
+	// no write and no reconnect should be triggered.
+	dir := t.TempDir()
+	s, _ := NewStore(dir, "dev1", "host1")
+	s.PrivKey = "key"
+
+	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
+	auth.SetCaCertificate("ca")
+	auth.SetDeviceCertificate("same-cert")
+	auth.SetMqttUri("tls://same:8883")
+	auth.SetRegionName("local")
+	auth.SetHostSettings(*hs)
+	s.WriteToFilesystem("dev1", auth)
+
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
+		MqttUri:           "tls://same:8883",
+		DeviceCertificate: "same-cert",
+		CaCertificate:     tr12models.PtrString("ca"),
+		RegionName:        tr12models.PtrString("local"),
+	}
+	updated, err := s.RotateCerts(rotate)
+	if err != nil {
+		t.Fatalf("RotateCerts: %v", err)
+	}
+	if updated {
+		t.Fatal("expected updated=false when CA on payload matches disk")
+	}
+}
+
+func TestRotateCerts_CaOmitted_ExistingCaUntouched(t *testing.T) {
+	// Backward-compat: host doesn't supply a CA. Existing ca_cert on disk must be preserved.
+	dir := t.TempDir()
+	s, _ := NewStore(dir, "dev1", "host1")
+	s.PrivKey = "key"
+
+	hs := tr12models.NewHostSettings("mqtt", 1800, 1, 30, "a", "b", "c", "d", "e", "f", "g", "h", "i")
+	auth := tr12models.NewAuthenticatePairingCodeResponseContent(tr12models.PAIRINGCODEAUTHORIZEDSTATUS_CLAIMED)
+	auth.SetCaCertificate("original-ca")
+	auth.SetDeviceCertificate("old-cert")
+	auth.SetMqttUri("tls://same:8883")
+	auth.SetRegionName("local")
+	auth.SetHostSettings(*hs)
+	s.WriteToFilesystem("dev1", auth)
+
+	rotate := &tr12models.DeviceSubscribesToCertificateRotationResponseContent{
+		MqttUri:           "tls://same:8883",
+		DeviceCertificate: "new-cert",
+		// CaCertificate deliberately absent
+		RegionName: tr12models.PtrString("local"),
+	}
+	if _, err := s.RotateCerts(rotate); err != nil {
+		t.Fatalf("RotateCerts: %v", err)
+	}
+	ca, _ := os.ReadFile(s.CACertFile)
+	if string(ca) != "original-ca" {
+		t.Fatalf("expected ca_cert untouched, got %q", string(ca))
+	}
+	cert, _ := os.ReadFile(s.DeviceCertFile)
+	if string(cert) != "new-cert" {
+		t.Fatalf("expected new-cert, got %q", string(cert))
+	}
+}
+
+func TestRecovery_MarkerAndNewFiles_FinishesRenames(t *testing.T) {
+	// Simulate crash between commit-marker write and finishing the renames.
+	// Boot must complete the pending renames and delete the marker.
+	dir := t.TempDir()
+	storeDir := filepath.Join(dir, "dev1", "host1")
+	os.MkdirAll(storeDir, 0755)
+	os.WriteFile(filepath.Join(storeDir, "ca_cert"), []byte("old-ca"), 0600)
+	os.WriteFile(filepath.Join(storeDir, "device_cert"), []byte("old-cert"), 0600)
+	// Pending rotation state on disk: both .new files present, marker present.
+	os.WriteFile(filepath.Join(storeDir, "ca_cert.new"), []byte("new-ca"), 0600)
+	os.WriteFile(filepath.Join(storeDir, "device_cert.new"), []byte("new-cert"), 0600)
+	os.WriteFile(filepath.Join(storeDir, rotationDoneMarker), nil, 0600)
+
+	if err := recoverPendingRotation(storeDir); err != nil {
+		t.Fatalf("recoverPendingRotation: %v", err)
+	}
+	ca, _ := os.ReadFile(filepath.Join(storeDir, "ca_cert"))
+	cert, _ := os.ReadFile(filepath.Join(storeDir, "device_cert"))
+	if string(ca) != "new-ca" {
+		t.Fatalf("expected recovered ca=new-ca, got %q", string(ca))
+	}
+	if string(cert) != "new-cert" {
+		t.Fatalf("expected recovered cert=new-cert, got %q", string(cert))
+	}
+	if _, err := os.Stat(filepath.Join(storeDir, rotationDoneMarker)); !os.IsNotExist(err) {
+		t.Fatal("expected marker to be removed after recovery")
+	}
+	if _, err := os.Stat(filepath.Join(storeDir, "ca_cert.new")); !os.IsNotExist(err) {
+		t.Fatal("expected ca_cert.new to be renamed away")
+	}
+}
+
+func TestRecovery_NewFilesNoMarker_DiscardsThem(t *testing.T) {
+	// Simulate crash during Phase 1 (writing .new files, marker never created).
+	// Recovery must delete the .new files and leave the real files untouched.
+	dir := t.TempDir()
+	storeDir := filepath.Join(dir, "dev1", "host1")
+	os.MkdirAll(storeDir, 0755)
+	os.WriteFile(filepath.Join(storeDir, "ca_cert"), []byte("original-ca"), 0600)
+	os.WriteFile(filepath.Join(storeDir, "ca_cert.new"), []byte("partial-junk"), 0600)
+
+	if err := recoverPendingRotation(storeDir); err != nil {
+		t.Fatalf("recoverPendingRotation: %v", err)
+	}
+	ca, _ := os.ReadFile(filepath.Join(storeDir, "ca_cert"))
+	if string(ca) != "original-ca" {
+		t.Fatalf("expected original-ca preserved, got %q", string(ca))
+	}
+	if _, err := os.Stat(filepath.Join(storeDir, "ca_cert.new")); !os.IsNotExist(err) {
+		t.Fatal("expected ca_cert.new to be discarded")
+	}
+}
+
+func TestRecovery_MarkerAloneNoNewFiles_JustRemovesMarker(t *testing.T) {
+	// Simulate crash after renames complete but before marker deletion.
+	// Recovery must simply remove the marker; real files are already correct.
+	dir := t.TempDir()
+	storeDir := filepath.Join(dir, "dev1", "host1")
+	os.MkdirAll(storeDir, 0755)
+	os.WriteFile(filepath.Join(storeDir, "ca_cert"), []byte("new-ca"), 0600)
+	os.WriteFile(filepath.Join(storeDir, rotationDoneMarker), nil, 0600)
+
+	if err := recoverPendingRotation(storeDir); err != nil {
+		t.Fatalf("recoverPendingRotation: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(storeDir, rotationDoneMarker)); !os.IsNotExist(err) {
+		t.Fatal("expected marker to be removed")
+	}
+	ca, _ := os.ReadFile(filepath.Join(storeDir, "ca_cert"))
+	if string(ca) != "new-ca" {
+		t.Fatalf("expected ca untouched, got %q", string(ca))
+	}
+}
+
 func TestRotateCerts_NilConnSettings_URINotUpdated(t *testing.T) {
 	// If ConnSettings is nil (e.g. connection_settings file was deleted),
 	// the URI update is skipped but the cert is still updated.
